@@ -1,28 +1,21 @@
 // =====================================================================
-//  ERGEBNISSE – nur diese Datei musst du bearbeiten
+//  ERGEBNISSE
 // =====================================================================
 //
-//  So trägst du einen neuen Spieltag ein:
+//  Diese Datei kannst du auf der Seite über „Ergebnisse bearbeiten“
+//  ändern oder weiterhin hier von Hand bearbeiten.
 //
-//  1. Kopiere einen kompletten Spieltag-Block von  {  bis  },
-//     und füge ihn am Ende der Liste ein (vor der Zeile  ];  ).
-//  2. Trag Nummer und Datum ein.
-//  3. Trag die Spieler in der Reihenfolge A bis H ein:
-//        VF1: Spieler 1 gegen 2     VF2: Spieler 3 gegen 4
-//        VF3: Spieler 5 gegen 6     VF4: Spieler 7 gegen 8
-//     Spielen weniger als 8 mit, schreib für jeden freien Platz  null
-//     (ohne Anführungszeichen). Der Gegner kommt dann kampflos weiter.
-//  4. Trag bei jedem Spiel den Namen des Siegers ein, sobald es gespielt
-//     ist. Noch nicht gespielt? Einfach  ""  stehen lassen.
+//  Aufbau eines Spieltags:
+//  - spieler: bis zu 8 Namen in der Reihenfolge A bis H, freie Plätze = null
+//        VF1: A gegen B   VF2: C gegen D   VF3: E gegen F   VF4: G gegen H
+//  - sieger:  Name des Siegers je Spiel; noch nicht gespielte Spiele weglassen
+//        7–8 Spieler: VF1–VF4, PR1, PR2, HF1, HF2, P7, P5, P3, Finale
+//        5–6 Spieler: VF1–VF3, Gewinnergruppe G1–G3, Verlierergruppe V1–V3
+//          G1: Sieger VF1 – VF2   G2: Sieger VF2 – VF3   G3: Sieger VF1 – VF3
+//          (V1–V3 genauso mit den Verlierern)
+//  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1
 //
-//  Wichtig:
-//  - Namen immer genau gleich schreiben (z. B. immer "Max", nie "max"),
-//    sonst zählt die Seite sie als zwei verschiedene Spieler.
-//  - Jeder Name steht in Anführungszeichen, danach kommt ein Komma.
-//  - Wer an einem Spieltag nicht dabei ist, bekommt automatisch keine Punkte.
-//
-//  Die Seite zeigt oben einen roten Hinweis, wenn ein Sieger nicht zu
-//  den Spielern des Spiels passt (z. B. bei einem Tippfehler).
+//  Namen immer genau gleich schreiben (z. B. immer "Max", nie "max").
 // =====================================================================
 
 const LIGA = {
@@ -35,27 +28,15 @@ const SPIELTAGE = [
   {
     nr: 1,
     datum: "19.10.2026",
-
     spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian"],
     sieger: {
-      // Viertelfinale
       VF1: "Johannes",
       VF2: "Andres",
       VF3: "Kilian",
-      // Gewinnerrunde
       G1: "Johannes",
       G2: "Kilian",
       G3: "Kilian",
-      // Verliererrunde
       V1: "Ben",
-    }
+    },
   },
-  {
-    nr: 2,
-    datum: "19.10.2026",
-    
-    spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian"],
-    sieger: {
-    }
-  }
 ];
