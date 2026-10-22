@@ -13,6 +13,8 @@
 //        5–6 Spieler: VF1–VF3, Gewinnergruppe G1–G3, Verlierergruppe V1–V3
 //          G1: Sieger VF1 – VF2   G2: Sieger VF2 – VF3   G3: Sieger VF1 – VF3
 //          (V1–V3 genauso mit den Verlierern)
+//  - ergebnisse: Legs je Spiel, z. B. VF1: { "Anna": 3, "Ben": 1 }
+//        (optional; der Sieger ergibt sich dann aus den Legs)
 //  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1
 //
 //  Namen immer genau gleich schreiben (z. B. immer "Max", nie "max").
@@ -37,6 +39,14 @@ const SPIELTAGE = [
       G2: "Kilian",
       G3: "Kilian",
       V1: "Ben",
+    },
+    ergebnisse: {
+      VF1: { "Tom": 0, "Johannes": 2 },
+      VF2: { "Andres": 2, "Ben": 1 },
+      G1: { "Johannes": 3, "Andres": 0 },
+      G2: { "Andres": 0, "Kilian": 3 },
+      G3: { "Johannes": 2, "Kilian": 3 },
+      V1: { "Tom": 0, "Ben": 3 },
     },
   },
 ];
