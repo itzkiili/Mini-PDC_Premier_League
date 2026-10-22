@@ -35,7 +35,7 @@ const SPIELTAGE = [
   {
     nr: 1,
     datum: "19.10.2026",
-    //         A        B       C        D        E       F        G        H
+
     spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian"],
     sieger: {
       // Viertelfinale
@@ -48,6 +48,14 @@ const SPIELTAGE = [
       G3: "Kilian",
       // Verliererrunde
       V1: "Ben",
-    },
+    }
+  },
+  {
+    nr: 2,
+    datum: "19.10.2026",
+    
+    spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian"],
+    sieger: {
+    }
   }
 ];
