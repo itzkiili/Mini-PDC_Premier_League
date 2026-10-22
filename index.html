@@ -132,6 +132,8 @@
   .note { font-size: 0.85rem; color: var(--muted); margin: 10px 0 0; }
 
   /* Regeln */
+  .rules-link { margin: 16px 0 0 !important; }
+  a.btn { display: inline-block; text-decoration: none; }
   .rules { padding: 16px 20px; }
   .rules p { margin: 0 0 10px; }
   .pts-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 12px; }
@@ -195,6 +197,7 @@
       <a href="#tabelle">Tabelle</a>
       <a href="#spieltage">Spieltage</a>
       <a href="#regeln">Regeln</a>
+      <a class="pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Regelwerk (PDF)</a>
     </nav>
     <div id="warnings"></div>
     <div id="admin" hidden></div>
@@ -218,6 +221,7 @@
       <p>Bei 5 oder 6 Spielern gibt es nur drei Viertelfinals. Die Sieger spielen danach in einer Dreiergruppe jeder gegen jeden um die Plätze 1 bis 3, die Verlierer ebenso um die Plätze 4 bis 6. Gewinnt in einer Gruppe jeder genau ein Spiel, entscheidet ein Stechen.</p>
       <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Bei Punktgleichheit entscheidet die Zahl der Turniersiege.</p>
       <div class="pts-grid" id="pts-grid"></div>
+      <p class="rules-link"><a class="btn pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Vollständiges Regelwerk öffnen (PDF)</a></p>
     </div>
   </section>
 
@@ -235,6 +239,13 @@
   // ===================================================================
   //  Daten
   // ===================================================================
+  // ------------------------------------------------------------------
+  //  Dateiname des Regelwerks im Repository (gleicher Ordner wie diese Seite).
+  //  Bei einem anderen Namen nur hier ändern, z. B. "Regelwerk_Liga.pdf".
+  // ------------------------------------------------------------------
+  const REGELWERK_PDF = "Mini_PDC_Premier_League_Regelwerk.pdf";
+  document.querySelectorAll(".pdf-link").forEach(function (a) { a.setAttribute("href", encodeURI(REGELWERK_PDF)); });
+
   const DATA_FILE = "ergebnisse.js";
   const DEFAULT_PUNKTE = [15, 13, 12, 10, 9, 7, 6, 4];
   const loadError = typeof SPIELTAGE === "undefined";
