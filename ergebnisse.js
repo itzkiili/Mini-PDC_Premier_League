@@ -21,7 +21,7 @@
 const LIGA = {
   name: "Liga 2026/27",
   // Punkte für Platz 1 bis 8 an jedem Spieltag
-  punkte: [15, 13, 12, 10, 9, 7, 6, 4],
+  punkte: [15, 12, 10, 8, 7, 6, 5, 4],
 };
 
 const SPIELTAGE = [
