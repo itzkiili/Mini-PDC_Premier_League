@@ -4,35 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Liga – Tabelle &amp; Spieltage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f5f1;
-    --surface: #ffffff;
-    --surface-2: #f0eee8;
-    --text: #1d1d1b;
-    --muted: #6d6a62;
-    --line: #dedad0;
-    --accent: #1f5f4a;
-    --accent-soft: #e2efe9;
-    --gold: #b8860b;
-    --warn-bg: #fdecea;
-    --warn-text: #8a1f11;
-    --radius: 10px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #151614;
-      --surface: #1f201d;
-      --surface-2: #282925;
-      --text: #ecebe6;
-      --muted: #a29f95;
-      --line: #393a35;
-      --accent: #6cc4a1;
-      --accent-soft: #1f3a30;
-      --gold: #e2b54a;
-      --warn-bg: #3d1d18;
-      --warn-text: #f2b8ae;
-    }
+    color-scheme: dark;
+    --bg: #0d1015;
+    --surface: #161a21;
+    --surface-2: #1f242d;
+    --text: #eef1f4;
+    --muted: #8b94a3;
+    --line: #272d37;
+    --accent: #c8f03c;
+    --accent-soft: #2a3314;
+    --gold: #f5c542;
+    --silver: #c9d1db;
+    --bronze: #d08a4c;
+    --warn-bg: #3d1d18;
+    --warn-text: #f2b8ae;
+    --radius: 6px;
+    --display: "Oswald", "Arial Narrow", sans-serif;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -186,6 +178,39 @@
   .admin .status { font-size: 0.88rem; margin: 10px 0 0; color: var(--muted); }
   .admin .status.err { color: var(--warn-text); }
   .admin .status.ok { color: var(--accent); }
+
+  /* Leg-Ergebnisse */
+  .slot .right { display: inline-flex; align-items: center; gap: 8px; }
+  .slot .score { font-family: var(--display); font-size: 1rem; min-width: 1.2em; text-align: right; }
+  .slot.win .score { color: var(--accent); }
+  .score-in {
+    width: 3.2rem; font: inherit; font-size: 0.9rem; text-align: center; padding: 2px 4px;
+    border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text);
+  }
+  td.diff { font-weight: 600; }
+  .table-stechen { padding: 12px 14px; border-top: 1px solid var(--line); }
+  .table-stechen .hint { margin: 4px 0 6px; }
+  @media (max-width: 560px) { th.opt, td.opt { display: none; } }
+
+  /* Stil „Flutlicht“ */
+  h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
+    font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  h1 { font-size: 2.6rem; font-weight: 700; }
+  h1::after { content: ""; display: block; width: 56px; height: 5px; background: var(--accent); margin-top: 10px; }
+  h2 { font-size: 1.5rem; font-weight: 500; }
+  nav a { border-radius: 4px; font-size: 0.95rem; }
+  .btn { font-size: 0.95rem; }
+  td.pts { color: var(--accent); font-family: var(--display); font-size: 1.3rem; font-weight: 500; }
+  tr.r1 td.rank { color: var(--gold); }
+  tr.r2 td.rank { color: var(--silver); }
+  tr.r3 td.rank { color: var(--bronze); }
+  tr.r1 td, tr.r2 td, tr.r3 td { font-weight: 600; }
+  tr.r1 td.pts, tr.r2 td.pts, tr.r3 td.pts { font-weight: 700; }
+  .tabs button[aria-pressed="true"] { color: var(--bg); }
+  .btn.primary { color: var(--bg); }
+  .slot.win { color: var(--accent); }
+  .editbar { box-shadow: 0 -6px 20px rgba(0,0,0,0.5); }
 </style>
 </head>
 <body>
@@ -219,7 +244,8 @@
     <div class="card rules">
       <p>Jeder Spieltag ist ein eigenes Turnier mit bis zu 8 Spielern. Die Sieger der Viertelfinals spielen um die Plätze 1 bis 4, die Verlierer unter sich um die Plätze 5 bis 8. So wird jeder Platz ausgespielt.</p>
       <p>Bei 5 oder 6 Spielern gibt es nur drei Viertelfinals. Die Sieger spielen danach in einer Dreiergruppe jeder gegen jeden um die Plätze 1 bis 3, die Verlierer ebenso um die Plätze 4 bis 6. Gewinnt in einer Gruppe jeder genau ein Spiel, entscheidet ein Stechen.</p>
-      <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Bei Punktgleichheit entscheidet die Zahl der Turniersiege.</p>
+      <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Ergebnisse werden in Legs eingetragen.</p>
+      <p>Bei Punktgleichheit in der Gesamttabelle entscheiden nacheinander: 1. der direkte Vergleich, sofern jeder der Punktgleichen gegen jeden gespielt hat, 2. die bessere Legdifferenz über die Saison, 3. mehr gewonnene Spieltage, 4. ein Entscheidungsleg oder Stechen.</p>
       <div class="pts-grid" id="pts-grid"></div>
       <p class="rules-link"><a class="btn pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Vollständiges Regelwerk öffnen (PDF)</a></p>
     </div>
@@ -243,7 +269,7 @@
   //  Dateiname des Regelwerks im Repository (gleicher Ordner wie diese Seite).
   //  Bei einem anderen Namen nur hier ändern, z. B. "Regelwerk_Liga.pdf".
   // ------------------------------------------------------------------
-  const REGELWERK_PDF = "Mini_PDC_Premier_League_Regelwerk.pdf";
+  const REGELWERK_PDF = "Regelwerk.pdf";
   document.querySelectorAll(".pdf-link").forEach(function (a) { a.setAttribute("href", encodeURI(REGELWERK_PDF)); });
 
   const DATA_FILE = "ergebnisse.js";
@@ -300,6 +326,17 @@
     const sieger = day.sieger || {};
     const m = {};
     const invalid = [];
+    const invalidScore = [];
+    const erg = (day.ergebnisse && typeof day.ergebnisse === "object") ? day.ergebnisse : {};
+    function scoreFor(id, an, bn) {
+      const e = erg[id];
+      if (!e || typeof e !== "object") return null;
+      const keys = Object.keys(e);
+      if (keys.length !== 2 || !(an in e) || !(bn in e)) { invalidScore.push(id); return null; }
+      const x = Number(e[an]), y = Number(e[bn]);
+      if (!isFinite(x) || !isFinite(y) || x < 0 || y < 0 || e[an] === "" || e[bn] === "" || e[an] === null || e[bn] === null) { invalidScore.push(id); return null; }
+      return { a: x, b: y };
+    }
 
     function play(id, a, b) {
       const match = { id: id, a: a, b: b, winner: null, loser: null, state: "offen" };
@@ -307,15 +344,24 @@
         match.state = "wartet";
         match.w = waiting("Sieger " + id); match.l = waiting("Verlierer " + id);
         if (clean(sieger[id])) invalid.push(id);
+        if (erg[id]) invalidScore.push(id);
       } else if (a.name === null && b.name === null) {
+        if (erg[id]) invalidScore.push(id);
         match.state = "leer";
         match.w = known(null); match.l = known(null);
       } else if (a.name === null || b.name === null) {
         const real = a.name !== null ? a.name : b.name;
+        if (erg[id]) invalidScore.push(id);
         match.state = "freilos"; match.winner = real;
         match.w = known(real); match.l = known(null);
       } else {
-        const w = clean(sieger[id]);
+        let w = clean(sieger[id]);
+        const sc = scoreFor(id, a.name, b.name);
+        if (sc) {
+          match.score = sc;
+          if (sc.a !== sc.b) w = sc.a > sc.b ? a.name : b.name;
+          else warnings.push(label + ", " + id + ": Ein Unentschieden (" + sc.a + ":" + sc.b + ") ist nicht möglich.");
+        }
         if (!w) {
           match.state = "offen";
           match.w = waiting("Sieger " + id); match.l = waiting("Verlierer " + id);
@@ -352,6 +398,13 @@
         g.members.forEach(function (n) { g.wins[n] = 0; });
         const real = matches.filter(function (mt) { return mt.state !== "leer" && mt.state !== "freilos"; });
         real.forEach(function (mt) { if (mt.state === "gespielt") g.wins[mt.winner]++; });
+        g.legs = {};
+        g.members.forEach(function (n) { g.legs[n] = { w: 0, l: 0, any: false }; });
+        real.forEach(function (mt) {
+          if (!mt.score) return;
+          g.legs[mt.a.name].w += mt.score.a; g.legs[mt.a.name].l += mt.score.b; g.legs[mt.a.name].any = true;
+          g.legs[mt.b.name].w += mt.score.b; g.legs[mt.b.name].l += mt.score.a; g.legs[mt.b.name].any = true;
+        });
         if (real.some(function (mt) { return mt.state !== "gespielt"; })) return g;
         const sorted = g.members.slice().sort(function (a, b) { return g.wins[b] - g.wins[a]; });
         const values = sorted.map(function (n) { return g.wins[n]; });
@@ -385,7 +438,7 @@
       });
       return {
         mode: "gruppe", count: count, nr: day.nr, datum: day.datum, players: players, matches: m,
-        groups: groups, places: gPlaces, invalid: invalid,
+        groups: groups, places: gPlaces, invalid: invalid, invalidScore: invalidScore,
         complete: groups.every(function (g) { return g.order; }),
       };
     }
@@ -409,7 +462,7 @@
     places.forEach(function (p) { p.points = p.name ? (punkte()[p.place - 1] || 0) : 0; });
 
     const complete = ["Finale", "P3", "P5", "P7"].every(function (id) { return !m[id].w.pending; });
-    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, invalid: invalid, complete: complete };
+    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, invalid: invalid, invalidScore: invalidScore, complete: complete };
   }
 
   // Entfernt Sieger-Einträge, die nach einer Änderung nicht mehr passen
@@ -420,6 +473,7 @@
       const r = resolveDay(day, []);
       let changed = false;
       r.invalid.forEach(function (id) { delete day.sieger[id]; changed = true; });
+      r.invalidScore.forEach(function (id) { if (day.ergebnisse) { delete day.ergebnisse[id]; changed = true; } });
       if (r.groups) r.groups.forEach(function (g) {
         if (day.stechen && day.stechen[g.key] && day.stechen[g.key].length && (!g.tie || g.badStechen)) {
           delete day.stechen[g.key]; changed = true;
@@ -428,6 +482,7 @@
       if (!changed) break;
     }
     Object.keys(day.sieger).forEach(function (k) { if (!clean(day.sieger[k])) delete day.sieger[k]; });
+    if (day.ergebnisse && !Object.keys(day.ergebnisse).length) delete day.ergebnisse;
   }
 
   // ===================================================================
@@ -467,8 +522,9 @@
 
     // Gesamttabelle
     const stats = {};
+    const h2h = {};
     function stat(name) {
-      if (!stats[name]) stats[name] = { name: name, days: 0, wins: 0, points: 0 };
+      if (!stats[name]) stats[name] = { name: name, days: 0, wins: 0, seconds: 0, points: 0, lw: 0, ll: 0, legs: false };
       return stats[name];
     }
     resolved.forEach(function (d) {
@@ -478,13 +534,101 @@
         const s = stat(pl.name);
         s.points += pl.points;
         if (pl.place === 1) s.wins++;
+        if (pl.place === 2) s.seconds++;
+      });
+      Object.keys(d.matches).forEach(function (id) {
+        const mt = d.matches[id];
+        if (mt.state !== "gespielt") return;
+        const an = mt.a.name, bn = mt.b.name;
+        if (mt.score) {
+          const sa = stat(an), sb = stat(bn);
+          sa.lw += mt.score.a; sa.ll += mt.score.b; sa.legs = true;
+          sb.lw += mt.score.b; sb.ll += mt.score.a; sb.legs = true;
+        }
+        h2h[mt.winner] = h2h[mt.winner] || {};
+        h2h[mt.winner][mt.loser] = (h2h[mt.winner][mt.loser] || 0) + 1;
       });
     });
-    const rows = Object.keys(stats).map(function (k) { return stats[k]; });
-    rows.sort(function (a, b) {
-      return b.points - a.points || b.wins - a.wins || a.name.localeCompare(b.name, "de");
-    });
+    function h2hWins(x, y) { return (h2h[x] && h2h[x][y]) || 0; }
+    const tableStechen = (Array.isArray(LIGA_DATA.stechen) ? LIGA_DATA.stechen : []).map(clean).filter(Boolean);
 
+    // Sortierung: Punkte, dann bei Gleichstand: 1. direkter Vergleich (wenn jeder
+    // gegen jeden gespielt hat), 2. Legdifferenz, 3. gewonnene Spieltage,
+    // 4. Entscheidungsleg/Stechen
+    const base = Object.keys(stats).map(function (k) { return stats[k]; });
+    function keyOf(r) { return [r.points]; }
+    base.sort(function (a, b) {
+      const ka = keyOf(a), kb = keyOf(b);
+      for (let i = 0; i < ka.length; i++) if (kb[i] !== ka[i]) return kb[i] - ka[i];
+      return 0;
+    });
+    const rows = [];
+    const openTies = [];
+    let rankCounter = 0;
+    function pushGroup(list, shared) {
+      const rank = rankCounter + 1;
+      list.forEach(function (r, i) { r.rank = shared ? rank : rank + i; r.tied = shared && list.length > 1; rows.push(r); });
+      rankCounter += list.length;
+    }
+    function resolveTie(list) {
+      if (list.length === 1) { pushGroup(list, false); return; }
+      // direkter Vergleich: nur wenn jeder gegen jeden mindestens einmal gespielt hat
+      let meaningful = true;
+      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+        if (!h2hWins(list[i].name, list[j].name) && !h2hWins(list[j].name, list[i].name)) meaningful = false;
+      }
+      if (meaningful) {
+        list.forEach(function (r) {
+          r.h2h = list.reduce(function (sum, o) { return sum + (o === r ? 0 : h2hWins(r.name, o.name)); }, 0);
+        });
+        const sorted = list.slice().sort(function (a, b) { return b.h2h - a.h2h; });
+        let i = 0;
+        while (i < sorted.length) {
+          let j = i;
+          while (j + 1 < sorted.length && sorted[j + 1].h2h === sorted[i].h2h) j++;
+          secondary(sorted.slice(i, j + 1));
+          i = j + 1;
+        }
+      } else {
+        secondary(list);
+      }
+    }
+    function secondary(list) {
+      if (list.length === 1) { pushGroup(list, false); return; }
+      const k2 = function (r) { return [r.lw - r.ll, r.wins]; };
+      const sorted = list.slice().sort(function (a, b) {
+        const ka = k2(a), kb = k2(b);
+        return (kb[0] - ka[0]) || (kb[1] - ka[1]);
+      });
+      let i = 0;
+      while (i < sorted.length) {
+        let j = i;
+        while (j + 1 < sorted.length && k2(sorted[j + 1]).join() === k2(sorted[i]).join()) j++;
+        stechenGroup(sorted.slice(i, j + 1));
+        i = j + 1;
+      }
+    }
+    function stechenGroup(list) {
+      if (list.length === 1) { pushGroup(list, false); return; }
+      const allIn = list.every(function (r) { return tableStechen.indexOf(r.name) >= 0; });
+      if (allIn) {
+        list.slice().sort(function (a, b) { return tableStechen.indexOf(a.name) - tableStechen.indexOf(b.name); })
+          .forEach(function (r) { pushGroup([r], false); });
+      } else {
+        list.sort(function (a, b) { return a.name.localeCompare(b.name, "de"); });
+        if (list[0].points > 0) openTies.push(list.map(function (r) { return r.name; }));
+        pushGroup(list, true);
+      }
+    }
+    let gi = 0;
+    while (gi < base.length) {
+      let gj = gi;
+      while (gj + 1 < base.length && keyOf(base[gj + 1]).join() === keyOf(base[gi]).join()) gj++;
+      resolveTie(base.slice(gi, gj + 1));
+      gi = gj + 1;
+    }
+
+    function signed(n) { return n > 0 ? "+" + n : String(n); }
     const standings = document.getElementById("standings");
     standings.innerHTML = "";
     if (!rows.length) {
@@ -492,24 +636,29 @@
     } else {
       const thead = el("thead", null, [el("tr", null, [
         el("th", { text: "Pl." }), el("th", { text: "Spieler" }),
-        el("th", { class: "num", text: "Spieltage" }), el("th", { class: "num", text: "Siege" }),
+        el("th", { class: "num opt", text: "Spieltage" }),
+        el("th", { class: "num", text: "Siege", title: "Gewonnene Spieltage" }),
+        el("th", { class: "num opt", text: "2. Pl.", title: "Zweite Plätze" }),
+        el("th", { class: "num opt", text: "Legs" }),
+        el("th", { class: "num", text: "Diff." }),
         el("th", { class: "num", text: "Punkte" }),
       ])]);
       const tbody = el("tbody");
-      let lastKey = null, lastRank = 0;
-      rows.forEach(function (r, i) {
-        const key = r.points + "|" + r.wins;
-        const rank = key === lastKey ? lastRank : i + 1;
-        lastKey = key; lastRank = rank;
-        tbody.appendChild(el("tr", { class: rank === 1 && r.points > 0 ? "top1" : "" }, [
+      rows.forEach(function (r) {
+        const rank = r.rank;
+        tbody.appendChild(el("tr", { class: r.points > 0 && rank <= 3 ? "r" + rank + (rank === 1 ? " top1" : "") : "" }, [
           el("td", { class: "rank", text: rank + "." }),
           el("td", { text: r.name }),
-          el("td", { class: "num", text: String(r.days) }),
+          el("td", { class: "num opt", text: String(r.days) }),
           el("td", { class: "num", text: String(r.wins) }),
+          el("td", { class: "num opt", text: String(r.seconds) }),
+          el("td", { class: "num opt" + (r.legs ? "" : " dash"), text: r.legs ? r.lw + ":" + r.ll : "–" }),
+          el("td", { class: "num diff" + (r.legs ? "" : " dash"), text: r.legs ? signed(r.lw - r.ll) : "–" }),
           el("td", { class: "num pts", text: String(r.points) }),
         ]));
       });
       standings.appendChild(el("table", null, [thead, tbody]));
+      if (editing && openTies.length) standings.appendChild(tableStechenEl(openTies));
     }
 
     // Namensliste für die Eingabefelder
@@ -643,7 +792,7 @@
     }
 
     const treeBox = el("div", null, [el("h3", { text: "Turnierbaum" }), el("div", { class: "card" }, tree)]);
-    if (editing && d.count) treeBox.appendChild(el("p", { class: "hint", text: "Klick auf den Namen des Siegers, um ein Ergebnis einzutragen. Ein zweiter Klick entfernt es wieder." }));
+    if (editing && d.count) treeBox.appendChild(el("p", { class: "hint", text: "Trag in die Felder die Legs ein, der Sieger ergibt sich dann automatisch. Ohne Legs kannst du auch einfach auf den Namen des Siegers klicken; ein zweiter Klick entfernt das Ergebnis wieder." }));
     wrap.appendChild(el("div", { class: "day-grid" }, [places, treeBox]));
     return wrap;
   }
@@ -673,6 +822,65 @@
     ]);
   }
 
+  function tableStechenEl(ties) {
+    const box = el("div", { class: "table-stechen" }, [
+      el("strong", { text: "Gleichstand in der Gesamttabelle" }),
+      el("p", { class: "hint", text: "Nur nötig, wenn ein Entscheidungsleg oder Stechen gespielt wurde (meist am Saisonende). Trag die Reihenfolge ein:" }),
+    ]);
+    ties.forEach(function (names) {
+      const row = el("div", { class: "stechen" });
+      const selects = names.map(function (_, i) {
+        return el("select", { "aria-label": (i + 1) + ". dieser Gruppe" }, [el("option", { value: "", text: "–" })]
+          .concat(names.map(function (n) { return el("option", { value: n, text: n }); })));
+      });
+      const apply = function () {
+        const vals = selects.map(function (s) { return s.value; });
+        const filled = vals.filter(Boolean);
+        if (filled.length < names.length) return;
+        if (!filled.every(function (v, j) { return filled.indexOf(v) === j; })) { statusText = "Beim Entscheidungsleg jeden Spieler nur einmal wählen."; statusKind = "err"; renderEditBar(); return; }
+        const list = (Array.isArray(LIGA_DATA.stechen) ? LIGA_DATA.stechen : []).filter(function (n) { return names.indexOf(n) < 0; });
+        LIGA_DATA.stechen = list.concat(vals);
+        changed();
+      };
+      selects.forEach(function (s, i) {
+        s.addEventListener("change", apply);
+        row.appendChild(el("label", null, [document.createTextNode((i + 1) + ". "), s]));
+      });
+      box.appendChild(row);
+    });
+    return box;
+  }
+
+  function scoreInput(day, match, side) {
+    const s = side === "a" ? match.a : match.b;
+    const val = match.score ? String(side === "a" ? match.score.a : match.score.b) : "";
+    return el("input", {
+      class: "score-in", type: "number", min: "0", max: "99", inputmode: "numeric", value: val,
+      "aria-label": "Legs " + s.name + " (" + LABELS[match.id] + ")", "data-side": side,
+      onclick: function (e) { e.stopPropagation(); },
+      onkeydown: function (e) { e.stopPropagation(); },
+      onchange: function (e) {
+        const box = e.target.closest(".match");
+        const ins = box.querySelectorAll(".score-in");
+        const va = ins[0].value.trim(), vb = ins[1].value.trim();
+        day.ergebnisse = day.ergebnisse || {};
+        day.sieger = day.sieger || {};
+        if (va === "" && vb === "") {
+          delete day.ergebnisse[match.id];
+        } else if (va === "" || vb === "") {
+          return; // auf das zweite Feld warten
+        } else {
+          const x = Math.max(0, parseInt(va, 10) || 0), y = Math.max(0, parseInt(vb, 10) || 0);
+          const res = {}; res[match.a.name] = x; res[match.b.name] = y;
+          day.ergebnisse[match.id] = res;
+          if (x !== y) day.sieger[match.id] = x > y ? match.a.name : match.b.name;
+        }
+        cleanupDay(day);
+        changed();
+      },
+    });
+  }
+
   function slotEl(day, match, side, tagText) {
     const s = side === "a" ? match.a : match.b;
     if (s.pending) return el("div", { class: "slot tbd" }, [el("span", { text: s.from })]);
@@ -681,8 +889,12 @@
     if (match.winner) cls += match.winner === s.name ? " win" : " lose";
     const pickable = editing && (match.state === "offen" || match.state === "gespielt");
     if (pickable) cls += " pick";
-    const kids = [el("span", { text: s.name })];
-    if (tagText) kids.push(el("span", { class: "tag", text: tagText }));
+    const kids = [el("span", { class: "nm", text: s.name })];
+    const right = el("span", { class: "right" });
+    if (tagText) right.appendChild(el("span", { class: "tag", text: tagText }));
+    if (pickable) right.appendChild(scoreInput(day, match, side));
+    else if (match.score) right.appendChild(el("span", { class: "score", text: String(side === "a" ? match.score.a : match.score.b) }));
+    kids.push(right);
     return el("div", {
       class: cls,
       role: pickable ? "button" : null,
@@ -695,8 +907,18 @@
 
   function pickWinner(day, id, name) {
     day.sieger = day.sieger || {};
-    if (clean(day.sieger[id]) === name) delete day.sieger[id];
-    else day.sieger[id] = name;
+    const e = day.ergebnisse && day.ergebnisse[id];
+    if (clean(day.sieger[id]) === name) {
+      delete day.sieger[id];
+      if (e) delete day.ergebnisse[id];
+    } else {
+      day.sieger[id] = name;
+      // Ein Leg-Ergebnis, das nicht zum neuen Sieger passt, wird entfernt
+      if (e) {
+        const other = Object.keys(e).filter(function (k) { return k !== name; })[0];
+        if (!(Number(e[name]) > Number(e[other]))) delete day.ergebnisse[id];
+      }
+    }
     cleanupDay(day);
     changed();
   }
@@ -741,6 +963,7 @@
           el("td", { class: "rank", text: g.order ? (g.offset + i + 1) + "." : "–" }),
           el("td", { text: n }),
           el("td", { class: "num", text: g.wins[n] + (g.wins[n] === 1 ? " Sieg" : " Siege") }),
+          el("td", { class: "num dash", text: g.legs && g.legs[n] && g.legs[n].any ? g.legs[n].w + ":" + g.legs[n].l : "" }),
         ]);
       });
     }
@@ -1169,6 +1392,8 @@
     "//        5–6 Spieler: VF1–VF3, Gewinnergruppe G1–G3, Verlierergruppe V1–V3",
     "//          G1: Sieger VF1 – VF2   G2: Sieger VF2 – VF3   G3: Sieger VF1 – VF3",
     "//          (V1–V3 genauso mit den Verlierern)",
+    "//  - ergebnisse: Legs je Spiel, z. B. VF1: { \"Anna\": 3, \"Ben\": 1 }",
+    "//        (optional; der Sieger ergibt sich dann aus den Legs)",
     "//  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1",
     "//",
     "//  Namen immer genau gleich schreiben (z. B. immer \"Max\", nie \"max\").",
@@ -1184,6 +1409,11 @@
     out.push("  name: " + JSON.stringify(LIGA_DATA.name || "Liga") + ",");
     out.push("  // Punkte für Platz 1 bis 8 an jedem Spieltag");
     out.push("  punkte: [" + punkte().map(Number).join(", ") + "],");
+    const ts = (Array.isArray(LIGA_DATA.stechen) ? LIGA_DATA.stechen : []).map(clean).filter(Boolean);
+    if (ts.length) {
+      out.push("  // Entscheidungsleg/Stechen bei Gleichstand in der Gesamttabelle (bessere zuerst)");
+      out.push("  stechen: [" + ts.map(q).join(", ") + "],");
+    }
     out.push("};");
     out.push("");
     out.push("const SPIELTAGE = [");
@@ -1203,6 +1433,16 @@
         out.push("    },");
       } else {
         out.push("    sieger: {},");
+      }
+      const eg = day.ergebnisse || {};
+      const egKeys = KEY_ORDER.filter(function (k) { return eg[k] && typeof eg[k] === "object" && Object.keys(eg[k]).length === 2; });
+      if (egKeys.length) {
+        out.push("    ergebnisse: {");
+        egKeys.forEach(function (k) {
+          const pair = Object.keys(eg[k]).map(function (n) { return q(n) + ": " + (Number(eg[k][n]) || 0); }).join(", ");
+          out.push("      " + k + ": { " + pair + " },");
+        });
+        out.push("    },");
       }
       const st = day.stechen || {};
       const stKeys = Object.keys(st).filter(function (k) {
