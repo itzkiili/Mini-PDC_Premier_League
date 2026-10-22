@@ -36,24 +36,19 @@ const SPIELTAGE = [
     nr: 1,
     datum: "19.10.2026",
     //         A        B       C        D        E       F        G        H
-    spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian", "frei", "frei", "frei"],
+    spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian"],
     sieger: {
       // Viertelfinale
       VF1: "Joahnnes",
       VF2: "Andres",
       VF3: "Kilian",
-      VF4: "frei",
-      // Platzierungsrunde (Verlierer der Viertelfinals)
-      PR1: "Ben",
-      PR2: "Tom",
-      // Halbfinale
-      HF1: "Johannes",
-      HF2: "Kilian",
-      // Platzierungsspiele
-      P7: "frei",
-      P5: "Ben",
-      P3: "Andres",
-      Finale: "Kilian",
+      // Gewinnerrunde
+      G1: "Kilian",
+      G2: "Johannes",
+      G3: "Andres",
+      // Verliererrunde
+      V1: "Ben",
+      V2: "Tom",
     },
   }
 ];
