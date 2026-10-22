@@ -39,7 +39,7 @@ const SPIELTAGE = [
     spieler: ["Tom", "Johannes", "Andres", "Ben", "Kilian"],
     sieger: {
       // Viertelfinale
-      VF1: "Joahnnes",
+      VF1: "Johannes",
       VF2: "Andres",
       VF3: "Kilian",
       // Gewinnerrunde
