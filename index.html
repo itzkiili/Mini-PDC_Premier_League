@@ -121,6 +121,15 @@
   .slot.tbd, .slot.bye { color: var(--muted); font-style: italic; }
   .slot .tag { font-size: 0.75rem; color: var(--muted); font-weight: 400; font-style: normal; }
 
+  /* Dreiergruppen */
+  .group-grid { display: grid; grid-template-columns: 220px 1fr; gap: 14px; align-items: start; }
+  .games { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 760px) { .group-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .games { grid-template-columns: 1fr; } }
+  table.mini { border: 1px solid var(--line); border-radius: 8px; border-collapse: separate; border-spacing: 0; }
+  table.mini td { padding: 6px 10px; font-size: 0.9rem; }
+  .note { font-size: 0.85rem; color: var(--muted); margin: 10px 0 0; }
+
   /* Regeln */
   .rules { padding: 16px 20px; }
   .rules p { margin: 0 0 10px; }
@@ -161,6 +170,7 @@
     <h2>Modus &amp; Punkte</h2>
     <div class="card rules">
       <p>Jeder Spieltag ist ein eigenes Turnier mit bis zu 8 Spielern. Die Sieger der Viertelfinals spielen um die Plätze 1 bis 4, die Verlierer unter sich um die Plätze 5 bis 8. So wird jeder Platz ausgespielt.</p>
+      <p>Bei 5 oder 6 Spielern gibt es nur drei Viertelfinals. Die Sieger spielen danach in einer Dreiergruppe jeder gegen jeden um die Plätze 1 bis 3, die Verlierer ebenso um die Plätze 4 bis 6. Gewinnt in einer Gruppe jeder genau ein Spiel, entscheidet ein Stechen.</p>
       <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Bei Punktgleichheit entscheidet die Zahl der Turniersiege.</p>
       <div class="pts-grid" id="pts-grid"></div>
     </div>
@@ -182,6 +192,8 @@
     VF1: "Viertelfinale 1", VF2: "Viertelfinale 2", VF3: "Viertelfinale 3", VF4: "Viertelfinale 4",
     HF1: "Halbfinale 1", HF2: "Halbfinale 2", Finale: "Finale", P3: "Spiel um Platz 3",
     PR1: "Platzierungsrunde 1", PR2: "Platzierungsrunde 2", P5: "Spiel um Platz 5", P7: "Spiel um Platz 7",
+    G1: "Gruppenspiel 1", G2: "Gruppenspiel 2", G3: "Gruppenspiel 3",
+    V1: "Gruppenspiel 1", V2: "Gruppenspiel 2", V3: "Gruppenspiel 3",
   };
   const PLACE_OF = { Finale: [1, 2], P3: [3, 4], P5: [5, 6], P7: [7, 8] };
 
@@ -241,6 +253,58 @@
       return match;
     }
 
+    const count = players.filter(Boolean).length;
+    if (count === 5 || count === 6) {
+      const list = players.filter(Boolean);
+      while (list.length < 6) list.push(null);
+      const Q = list.map(known);
+      play("VF1", Q[0], Q[1]); play("VF2", Q[2], Q[3]); play("VF3", Q[4], Q[5]);
+      const stechen = day.stechen || {};
+
+      const makeGroup = function (key, title, slots, ids, offset) {
+        const pairs = [[0, 1], [1, 2], [0, 2]];
+        const matches = ids.map(function (id, i) { return play(id, slots[pairs[i][0]], slots[pairs[i][1]]); });
+        const g = { key: key, title: title, offset: offset, matches: matches, members: [], wins: {}, order: null, tie: false };
+        if (slots.some(function (x) { return x.pending; })) return g;
+        g.members = slots.map(function (x) { return x.name; }).filter(Boolean);
+        g.members.forEach(function (n) { g.wins[n] = 0; });
+        const real = matches.filter(function (mt) { return mt.state !== "leer" && mt.state !== "freilos"; });
+        real.forEach(function (mt) { if (mt.state === "gespielt") g.wins[mt.winner]++; });
+        if (real.some(function (mt) { return mt.state !== "gespielt"; })) return g;
+        const sorted = g.members.slice().sort(function (a, b) { return g.wins[b] - g.wins[a]; });
+        const values = sorted.map(function (n) { return g.wins[n]; });
+        const distinct = values.every(function (v, i) { return values.indexOf(v) === i; });
+        if (distinct) { g.order = sorted; return g; }
+        g.tie = true;
+        const st = (Array.isArray(stechen[key]) ? stechen[key] : []).map(clean).filter(Boolean);
+        const ok = st.length === g.members.length && g.members.every(function (n) { return st.indexOf(n) >= 0; });
+        if (ok) g.order = st;
+        else if (st.length) warnings.push(label + ", " + title + ": Bei stechen." + key + " müssen genau diese Spieler stehen: " + g.members.join(", ") + ".");
+        return g;
+      };
+
+      const groups = [
+        makeGroup("G", "Gewinnergruppe", [m.VF1.w, m.VF2.w, m.VF3.w], ["G1", "G2", "G3"], 0),
+        makeGroup("V", "Verlierergruppe", [m.VF1.l, m.VF2.l, m.VF3.l], ["V1", "V2", "V3"], 3),
+      ];
+      const gPlaces = [];
+      groups.forEach(function (g) {
+        for (let i = 0; i < 3; i++) {
+          const place = g.offset + i + 1;
+          let name;
+          if (g.order) name = g.order[i] !== undefined ? g.order[i] : null;
+          else if (!g.members.length) name = undefined;
+          else name = i < g.members.length ? undefined : null;
+          gPlaces.push({ place: place, name: name, points: name ? (PUNKTE[place - 1] || 0) : 0 });
+        }
+      });
+      return {
+        mode: "gruppe", count: count, nr: day.nr, datum: day.datum, players: players, matches: m,
+        groups: groups, places: gPlaces,
+        complete: groups.every(function (g) { return g.order; }),
+      };
+    }
+
     const P = players.map(known);
     play("VF1", P[0], P[1]); play("VF2", P[2], P[3]);
     play("VF3", P[4], P[5]); play("VF4", P[6], P[7]);
@@ -261,7 +325,7 @@
     places.forEach(function (p) { p.points = p.name ? (PUNKTE[p.place - 1] || 0) : 0; });
 
     const complete = ["Finale", "P3", "P5", "P7"].every(function (id) { return !m[id].w.pending; });
-    return { nr: day.nr, datum: day.datum, players: players, matches: m, places: places, complete: complete };
+    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, complete: complete };
   }
 
   const resolved = DAYS.map(resolveDay);
@@ -360,8 +424,40 @@
     return el("div", { class: "round" }, [
       el("div", { class: "round-title", text: title }),
       el("div", { class: "round-body" }, matches.map(function (mt) {
-        return mt.state === "leer" ? null : matchEl(mt, mt.id === finalId);
+        return (!mt || mt.state === "leer") ? null : matchEl(mt, mt.id === finalId);
       })),
+    ]);
+  }
+
+  function groupEl(g) {
+    const size = g.members.length || 3;
+    const range = "Plätze " + (g.offset + 1) + "–" + (g.offset + size);
+    let rows;
+    if (!g.members.length) {
+      rows = [el("tr", null, [el("td", { class: "dash", text: "Wartet auf die Viertelfinals" })])];
+    } else {
+      const list = g.order || g.members.slice().sort(function (a, b) { return g.wins[b] - g.wins[a]; });
+      rows = list.map(function (n, i) {
+        return el("tr", null, [
+          el("td", { class: "rank", text: g.order ? (g.offset + i + 1) + "." : "–" }),
+          el("td", { text: n }),
+          el("td", { class: "num", text: g.wins[n] + (g.wins[n] === 1 ? " Sieg" : " Siege") }),
+        ]);
+      });
+    }
+    let note = null;
+    if (g.tie && !g.order) note = el("p", { class: "note", text: "Gleichstand: Jeder hat ein Spiel gewonnen. Die Reihenfolge wird per Stechen ermittelt." });
+    else if (g.tie) note = el("p", { class: "note", text: "Reihenfolge nach Stechen." });
+    const games = g.matches.filter(function (mt) {
+      return mt.state !== "leer" && mt.state !== "freilos";
+    }).map(function (mt) { return matchEl(mt); });
+    return el("div", { class: "bracket" }, [
+      el("h3", { text: g.title + " · " + range }),
+      el("div", { class: "group-grid" }, [
+        el("table", { class: "mini" }, [el("tbody", null, rows)]),
+        el("div", { class: "games" }, games),
+      ]),
+      note,
     ]);
   }
 
@@ -376,6 +472,7 @@
     const head = el("div", { class: "day-head" }, [
       el("h3", { text: "Spieltag " + (d.nr != null ? d.nr : idx + 1) + (d.datum ? " · " + d.datum : "") }),
       el("span", { class: "badge" + (d.complete ? " done" : ""), text: d.complete ? "abgeschlossen" : "läuft" }),
+      el("span", { class: "badge", text: d.count + " Spieler · " + (d.mode === "gruppe" ? "Dreiergruppen" : "Turnierbaum") }),
     ]);
 
     const placeRows = d.places.filter(function (p) { return p.name !== null; }).map(function (p) {
@@ -390,6 +487,15 @@
       el("div", { class: "card places" }, [el("table", null, [el("tbody", null, placeRows)])]),
     ]);
 
+    let tree;
+    if (d.mode === "gruppe") {
+      tree = [el("div", { class: "bracket" }, [
+        el("h3", { text: "Viertelfinale" }),
+        el("div", { class: "rounds" }, [m.VF1, m.VF2, m.VF3].map(function (mt) {
+          return el("div", { class: "round" }, [matchEl(mt)]);
+        })),
+      ])].concat(d.groups.map(groupEl));
+    }
     const main = el("div", { class: "bracket" }, [
       el("h3", { text: "Hauptrunde · Plätze 1–4" }),
       el("div", { class: "rounds" }, [
@@ -409,7 +515,7 @@
     view.appendChild(head);
     view.appendChild(el("div", { class: "day-grid" }, [
       places,
-      el("div", null, [el("h3", { text: "Turnierbaum" }), el("div", { class: "card" }, [main, lower])]),
+      el("div", null, [el("h3", { text: "Turnierbaum" }), el("div", { class: "card" }, tree || [main, lower])]),
     ]));
   }
 
