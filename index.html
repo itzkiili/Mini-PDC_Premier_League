@@ -1,1 +1,453 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liga – Tabelle &amp; Spieltage</title>
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --surface-2: #f0eee8;
+    --text: #1d1d1b;
+    --muted: #6d6a62;
+    --line: #dedad0;
+    --accent: #1f5f4a;
+    --accent-soft: #e2efe9;
+    --gold: #b8860b;
+    --warn-bg: #fdecea;
+    --warn-text: #8a1f11;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151614;
+      --surface: #1f201d;
+      --surface-2: #282925;
+      --text: #ecebe6;
+      --muted: #a29f95;
+      --line: #393a35;
+      --accent: #6cc4a1;
+      --accent-soft: #1f3a30;
+      --gold: #e2b54a;
+      --warn-bg: #3d1d18;
+      --warn-text: #f2b8ae;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
+  header { padding: 32px 0 8px; }
+  h1 { font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+  nav { display: flex; gap: 8px; margin: 20px 0 8px; flex-wrap: wrap; }
+  nav a {
+    color: var(--text); text-decoration: none; padding: 6px 14px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+    font-size: 0.92rem;
+  }
+  nav a:hover { border-color: var(--accent); color: var(--accent); }
+  section { margin-top: 36px; }
+  h2 { font-size: 1.3rem; margin: 0 0 12px; }
+  h3 { font-size: 1rem; margin: 0 0 10px; color: var(--muted); font-weight: 600; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
 
+  .warn {
+    background: var(--warn-bg); color: var(--warn-text); border-radius: var(--radius);
+    padding: 12px 16px; margin-top: 16px; font-size: 0.92rem;
+  }
+  .warn ul { margin: 6px 0 0; padding-left: 20px; }
+
+  /* Tabelle */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 10px 14px; text-align: left; white-space: nowrap; }
+  th {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line);
+  }
+  td { border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; }
+  @media (max-width: 560px) { th, td { padding: 9px 8px; } th { letter-spacing: 0; } }
+  td.rank { width: 3rem; color: var(--muted); font-weight: 600; }
+  td.pts { font-weight: 700; font-size: 1.05rem; }
+  tr.top1 td.rank { color: var(--gold); }
+  td.dash { color: var(--muted); }
+  .empty { padding: 20px; color: var(--muted); }
+
+  /* Spieltag-Auswahl */
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tabs button {
+    font: inherit; font-size: 0.9rem; cursor: pointer;
+    padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text);
+  }
+  .tabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+  .day-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .day-head h3 { margin: 0; color: var(--text); font-size: 1.1rem; }
+  .badge { font-size: 0.78rem; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .badge.done { background: var(--accent-soft); color: var(--accent); }
+
+  .day-grid { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 760px) { .day-grid { grid-template-columns: 1fr; } }
+
+  .places { padding: 6px 0; }
+  .places table td { padding: 7px 14px; }
+
+  /* Turnierbaum */
+  .bracket { padding: 16px; }
+  .bracket + .bracket { border-top: 1px solid var(--line); }
+  .rounds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rounds.two { grid-template-columns: repeat(2, 1fr); }
+  .round { display: flex; flex-direction: column; }
+  .round-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; }
+  .round-body { display: flex; flex-direction: column; justify-content: space-around; gap: 10px; flex: 1; }
+  @media (max-width: 560px) {
+    .rounds, .rounds.two { grid-template-columns: 1fr; }
+  }
+  .match { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+  .match.final { border-color: var(--accent); border-width: 2px; }
+  .match-head { font-size: 0.72rem; color: var(--muted); padding: 4px 10px; background: var(--surface-2); display: flex; justify-content: space-between; }
+  .slot { display: flex; justify-content: space-between; gap: 8px; padding: 5px 10px; font-size: 0.9rem; }
+  .slot + .slot { border-top: 1px solid var(--line); }
+  .slot.win { font-weight: 700; }
+  .slot.lose { color: var(--muted); }
+  .slot.tbd, .slot.bye { color: var(--muted); font-style: italic; }
+  .slot .tag { font-size: 0.75rem; color: var(--muted); font-weight: 400; font-style: normal; }
+
+  /* Regeln */
+  .rules { padding: 16px 20px; }
+  .rules p { margin: 0 0 10px; }
+  .pts-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 12px; }
+  @media (max-width: 560px) { .pts-grid { grid-template-columns: repeat(4, 1fr); } }
+  .pts-grid div { background: var(--surface-2); border-radius: 8px; text-align: center; padding: 8px 4px; }
+  .pts-grid b { display: block; font-size: 1.15rem; }
+  .pts-grid span { font-size: 0.78rem; color: var(--muted); }
+
+  footer { margin-top: 40px; color: var(--muted); font-size: 0.82rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="liga-name">Liga</h1>
+    <p class="sub" id="liga-sub"></p>
+    <nav>
+      <a href="#tabelle">Tabelle</a>
+      <a href="#spieltage">Spieltage</a>
+      <a href="#regeln">Regeln</a>
+    </nav>
+    <div id="warnings"></div>
+  </header>
+
+  <section id="tabelle">
+    <h2>Gesamttabelle</h2>
+    <div class="card table-wrap" id="standings"></div>
+  </section>
+
+  <section id="spieltage">
+    <h2>Spieltage</h2>
+    <div class="tabs" id="day-tabs"></div>
+    <div id="day-view"></div>
+  </section>
+
+  <section id="regeln">
+    <h2>Modus &amp; Punkte</h2>
+    <div class="card rules">
+      <p>Jeder Spieltag ist ein eigenes Turnier mit bis zu 8 Spielern. Die Sieger der Viertelfinals spielen um die Plätze 1 bis 4, die Verlierer unter sich um die Plätze 5 bis 8. So wird jeder Platz ausgespielt.</p>
+      <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Bei Punktgleichheit entscheidet die Zahl der Turniersiege.</p>
+      <div class="pts-grid" id="pts-grid"></div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script src="ergebnisse.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const PUNKTE = (typeof LIGA !== "undefined" && LIGA.punkte) || [15, 13, 12, 10, 9, 7, 6, 4];
+  const DAYS = (typeof SPIELTAGE !== "undefined" && Array.isArray(SPIELTAGE)) ? SPIELTAGE : [];
+  const warnings = [];
+
+  const LABELS = {
+    VF1: "Viertelfinale 1", VF2: "Viertelfinale 2", VF3: "Viertelfinale 3", VF4: "Viertelfinale 4",
+    HF1: "Halbfinale 1", HF2: "Halbfinale 2", Finale: "Finale", P3: "Spiel um Platz 3",
+    PR1: "Platzierungsrunde 1", PR2: "Platzierungsrunde 2", P5: "Spiel um Platz 5", P7: "Spiel um Platz 7",
+  };
+  const PLACE_OF = { Finale: [1, 2], P3: [3, 4], P5: [5, 6], P7: [7, 8] };
+
+  function clean(n) {
+    if (n === null || n === undefined) return null;
+    const s = String(n).trim();
+    return s === "" ? null : s;
+  }
+
+  // Ein Slot ist entweder bekannt ({name}) – name kann null sein (Freilos) –
+  // oder wartet noch auf ein anderes Spiel ({pending, from}).
+  function known(name) { return { pending: false, name: name }; }
+  function waiting(from) { return { pending: true, from: from }; }
+
+  function resolveDay(day) {
+    const label = "Spieltag " + (day.nr != null ? day.nr : "?");
+    const raw = Array.isArray(day.spieler) ? day.spieler.slice(0, 8) : [];
+    while (raw.length < 8) raw.push(null);
+    const players = raw.map(clean);
+    const seen = {};
+    players.forEach(function (p) {
+      if (!p) return;
+      if (seen[p]) warnings.push(label + ": „" + p + "“ steht zweimal in der Spielerliste.");
+      seen[p] = true;
+    });
+    const sieger = day.sieger || {};
+    const m = {};
+
+    function play(id, a, b) {
+      const match = { id: id, a: a, b: b, winner: null, loser: null, state: "offen" };
+      if (a.pending || b.pending) {
+        match.state = "wartet";
+        match.w = waiting("Sieger " + id); match.l = waiting("Verlierer " + id);
+      } else if (a.name === null && b.name === null) {
+        match.state = "leer";
+        match.w = known(null); match.l = known(null);
+      } else if (a.name === null || b.name === null) {
+        const real = a.name !== null ? a.name : b.name;
+        match.state = "freilos"; match.winner = real;
+        match.w = known(real); match.l = known(null);
+      } else {
+        const w = clean(sieger[id]);
+        if (!w) {
+          match.state = "offen";
+          match.w = waiting("Sieger " + id); match.l = waiting("Verlierer " + id);
+        } else if (w !== a.name && w !== b.name) {
+          warnings.push(label + ", " + id + ": „" + w + "“ ist kein Spieler dieses Spiels (" + a.name + " gegen " + b.name + ").");
+          match.state = "offen";
+          match.w = waiting("Sieger " + id); match.l = waiting("Verlierer " + id);
+        } else {
+          match.state = "gespielt"; match.winner = w;
+          match.loser = w === a.name ? b.name : a.name;
+          match.w = known(w); match.l = known(match.loser);
+        }
+      }
+      m[id] = match;
+      return match;
+    }
+
+    const P = players.map(known);
+    play("VF1", P[0], P[1]); play("VF2", P[2], P[3]);
+    play("VF3", P[4], P[5]); play("VF4", P[6], P[7]);
+    play("HF1", m.VF1.w, m.VF2.w); play("HF2", m.VF3.w, m.VF4.w);
+    play("PR1", m.VF1.l, m.VF2.l); play("PR2", m.VF3.l, m.VF4.l);
+    play("Finale", m.HF1.w, m.HF2.w); play("P3", m.HF1.l, m.HF2.l);
+    play("P5", m.PR1.w, m.PR2.w); play("P7", m.PR1.l, m.PR2.l);
+
+    // Platzierungen
+    const places = [];
+    Object.keys(PLACE_OF).forEach(function (id) {
+      const mt = m[id], pl = PLACE_OF[id];
+      const done = !mt.w.pending;
+      places.push({ place: pl[0], name: done ? mt.w.name : undefined });
+      places.push({ place: pl[1], name: done ? mt.l.name : undefined });
+    });
+    places.sort(function (x, y) { return x.place - y.place; });
+    places.forEach(function (p) { p.points = p.name ? (PUNKTE[p.place - 1] || 0) : 0; });
+
+    const complete = ["Finale", "P3", "P5", "P7"].every(function (id) { return !m[id].w.pending; });
+    return { nr: day.nr, datum: day.datum, players: players, matches: m, places: places, complete: complete };
+  }
+
+  const resolved = DAYS.map(resolveDay);
+
+  // ---------- Gesamttabelle ----------
+  const stats = {};
+  function stat(name) {
+    if (!stats[name]) stats[name] = { name: name, days: 0, wins: 0, points: 0 };
+    return stats[name];
+  }
+  resolved.forEach(function (d) {
+    d.players.forEach(function (p) { if (p) stat(p).days++; });
+    d.places.forEach(function (pl) {
+      if (!pl.name) return;
+      const s = stat(pl.name);
+      s.points += pl.points;
+      if (pl.place === 1) s.wins++;
+    });
+  });
+  const rows = Object.keys(stats).map(function (k) { return stats[k]; });
+  rows.sort(function (a, b) {
+    return b.points - a.points || b.wins - a.wins || a.name.localeCompare(b.name, "de");
+  });
+
+  function el(tag, attrs, children) {
+    const e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "text") e.textContent = attrs[k];
+      else if (k === "class") e.className = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+
+  const standings = document.getElementById("standings");
+  if (!rows.length) {
+    standings.appendChild(el("div", { class: "empty", text: "Noch keine Ergebnisse eingetragen." }));
+  } else {
+    const thead = el("thead", null, [el("tr", null, [
+      el("th", { text: "Pl." }), el("th", { text: "Spieler" }),
+      el("th", { class: "num", text: "Spieltage" }), el("th", { class: "num", text: "Siege" }),
+      el("th", { class: "num", text: "Punkte" }),
+    ])]);
+    const tbody = el("tbody");
+    let lastKey = null, lastRank = 0;
+    rows.forEach(function (r, i) {
+      const key = r.points + "|" + r.wins;
+      const rank = key === lastKey ? lastRank : i + 1;
+      lastKey = key; lastRank = rank;
+      tbody.appendChild(el("tr", { class: rank === 1 && r.points > 0 ? "top1" : "" }, [
+        el("td", { class: "rank", text: rank + "." }),
+        el("td", { text: r.name }),
+        el("td", { class: "num", text: String(r.days) }),
+        el("td", { class: "num", text: String(r.wins) }),
+        el("td", { class: "num pts", text: String(r.points) }),
+      ]));
+    });
+    standings.appendChild(el("table", null, [thead, tbody]));
+  }
+
+  // ---------- Spieltage ----------
+  const tabs = document.getElementById("day-tabs");
+  const view = document.getElementById("day-view");
+
+  function slotEl(match, side, tagText) {
+    const s = side === "a" ? match.a : match.b;
+    if (s.pending) return el("div", { class: "slot tbd" }, [el("span", { text: s.from })]);
+    if (s.name === null) return el("div", { class: "slot bye" }, [el("span", { text: "Freilos" })]);
+    let cls = "slot";
+    if (match.winner) cls += match.winner === s.name ? " win" : " lose";
+    const kids = [el("span", { text: s.name })];
+    if (tagText) kids.push(el("span", { class: "tag", text: tagText }));
+    return el("div", { class: cls }, kids);
+  }
+
+  function matchEl(match, isFinal) {
+    const pl = PLACE_OF[match.id];
+    function tagFor(side) {
+      if (!pl || !match.winner) return null;
+      const s = side === "a" ? match.a : match.b;
+      if (!s.name) return null;
+      return "Platz " + (s.name === match.winner ? pl[0] : pl[1]);
+    }
+    let state = "";
+    if (match.state === "freilos") state = "kampflos";
+    else if (match.state === "offen") state = "offen";
+    return el("div", { class: "match" + (isFinal ? " final" : "") }, [
+      el("div", { class: "match-head" }, [el("span", { text: LABELS[match.id] }), el("span", { text: state })]),
+      slotEl(match, "a", tagFor("a")),
+      slotEl(match, "b", tagFor("b")),
+    ]);
+  }
+
+  function roundEl(title, matches, finalId) {
+    return el("div", { class: "round" }, [
+      el("div", { class: "round-title", text: title }),
+      el("div", { class: "round-body" }, matches.map(function (mt) {
+        return mt.state === "leer" ? null : matchEl(mt, mt.id === finalId);
+      })),
+    ]);
+  }
+
+  function showDay(idx) {
+    Array.prototype.forEach.call(tabs.children, function (b, i) {
+      b.setAttribute("aria-pressed", i === idx ? "true" : "false");
+    });
+    const d = resolved[idx];
+    const m = d.matches;
+    view.innerHTML = "";
+
+    const head = el("div", { class: "day-head" }, [
+      el("h3", { text: "Spieltag " + (d.nr != null ? d.nr : idx + 1) + (d.datum ? " · " + d.datum : "") }),
+      el("span", { class: "badge" + (d.complete ? " done" : ""), text: d.complete ? "abgeschlossen" : "läuft" }),
+    ]);
+
+    const placeRows = d.places.filter(function (p) { return p.name !== null; }).map(function (p) {
+      return el("tr", null, [
+        el("td", { class: "rank", text: p.place + "." }),
+        el("td", { class: p.name === undefined ? "dash" : "", text: p.name === undefined ? "–" : p.name }),
+        el("td", { class: "num" + (p.name ? " pts" : " dash"), text: p.name ? p.points + " P." : "" }),
+      ]);
+    });
+    const places = el("div", null, [
+      el("h3", { text: "Platzierung" }),
+      el("div", { class: "card places" }, [el("table", null, [el("tbody", null, placeRows)])]),
+    ]);
+
+    const main = el("div", { class: "bracket" }, [
+      el("h3", { text: "Hauptrunde · Plätze 1–4" }),
+      el("div", { class: "rounds" }, [
+        roundEl("Viertelfinale", [m.VF1, m.VF2, m.VF3, m.VF4]),
+        roundEl("Halbfinale", [m.HF1, m.HF2]),
+        roundEl("Platzierung", [m.Finale, m.P3], "Finale"),
+      ]),
+    ]);
+    const lower = el("div", { class: "bracket" }, [
+      el("h3", { text: "Platzierungsrunde · Plätze 5–8" }),
+      el("div", { class: "rounds two" }, [
+        roundEl("Platzierungsrunde", [m.PR1, m.PR2]),
+        roundEl("Platzierung", [m.P5, m.P7]),
+      ]),
+    ]);
+
+    view.appendChild(head);
+    view.appendChild(el("div", { class: "day-grid" }, [
+      places,
+      el("div", null, [el("h3", { text: "Turnierbaum" }), el("div", { class: "card" }, [main, lower])]),
+    ]));
+  }
+
+  if (!resolved.length) {
+    view.appendChild(el("div", { class: "card empty", text: "Noch keine Spieltage eingetragen." }));
+  } else {
+    resolved.forEach(function (d, i) {
+      const b = el("button", { type: "button", text: "Spieltag " + (d.nr != null ? d.nr : i + 1) });
+      b.addEventListener("click", function () { showDay(i); });
+      tabs.appendChild(b);
+    });
+    showDay(resolved.length - 1);
+  }
+
+  // ---------- Kopf, Regeln, Hinweise ----------
+  const name = (typeof LIGA !== "undefined" && LIGA.name) || "Liga";
+  document.getElementById("liga-name").textContent = name;
+  document.title = name + " – Tabelle & Spieltage";
+  const played = resolved.filter(function (d) { return d.complete; }).length;
+  document.getElementById("liga-sub").textContent =
+    played + (played === 1 ? " Spieltag" : " Spieltage") + " abgeschlossen · " + rows.length + " Spieler";
+
+  const grid = document.getElementById("pts-grid");
+  PUNKTE.forEach(function (p, i) {
+    grid.appendChild(el("div", null, [el("b", { text: String(p) }), el("span", { text: "Platz " + (i + 1) })]));
+  });
+
+  if (typeof SPIELTAGE === "undefined") {
+    warnings.unshift("Die Datei ergebnisse.js wurde nicht gefunden oder enthält einen Fehler (z. B. ein fehlendes Komma oder Anführungszeichen).");
+  }
+  if (warnings.length) {
+    const box = el("div", { class: "warn" }, [
+      el("strong", { text: "Bitte prüfen:" }),
+      el("ul", null, warnings.map(function (w) { return el("li", { text: w }); })),
+    ]);
+    document.getElementById("warnings").appendChild(box);
+  }
+})();
+</script>
+</body>
+</html>
