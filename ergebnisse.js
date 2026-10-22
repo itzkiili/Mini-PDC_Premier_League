@@ -43,12 +43,11 @@ const SPIELTAGE = [
       VF2: "Andres",
       VF3: "Kilian",
       // Gewinnerrunde
-      G1: "Kilian",
-      G2: "Johannes",
-      G3: "Andres",
+      G1: "Johannes",
+      G2: "Kilian",
+      G3: "Kilian",
       // Verliererrunde
       V1: "Ben",
-      V2: "Tom",
     },
   }
 ];
