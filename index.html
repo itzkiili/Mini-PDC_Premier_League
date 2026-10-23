@@ -675,7 +675,7 @@
       name: name, days: 0, doneDays: 0, points: 0, best: null, bestCount: 0,
       w: 0, l: 0, lw: 0, ll: 0, legGames: 0, dec: 0, decW: 0, nil: 0,
       avgSum: 0, avgN: 0, bestAvg: null, coHit: 0, coMiss: 0,
-      bonus: 0, donePoints: 0, n180: 0, hiCo: null, bestLeg: null,
+      bonus: 0, donePoints: 0, n180: 0, hiCo: null, bestLeg: null, coTops: 0, legTops: 0, days180: 0,
       history: [], results: [], opp: {},
     };
     lastResolved.forEach(function (d, idx) {
@@ -688,6 +688,9 @@
       st.bonus += bpts; st.points += bpts;
       if (bp) {
         st.n180 += bp.n180 || 0;
+        if (bp.n180) st.days180++;
+        if (bp.gotCo) st.coTops++;
+        if (bp.gotLeg) st.legTops++;
         if (bp.co && (st.hiCo === null || bp.co > st.hiCo)) st.hiCo = bp.co;
         if (bp.leg && (st.bestLeg === null || bp.leg < st.bestLeg)) st.bestLeg = bp.leg;
       }
@@ -796,7 +799,9 @@
       tile("Checkout-Quote", (st.coHit + st.coMiss) ? pct(st.coHit, st.coHit + st.coMiss) : "–",
         (st.coHit + st.coMiss) ? st.coHit + " von " + (st.coHit + st.coMiss) + " Doppeln" : "noch nicht erfasst"),
       tile("Bonuspunkte", st.bonus ? "+" + st.bonus : "–", "in den Punkten enthalten"),
-      tile("180er", String(st.n180), [st.hiCo ? "High Finish " + st.hiCo : null, st.bestLeg ? "Bestes Leg " + st.bestLeg + " Darts" : null].filter(Boolean).join(" · ") || "noch nichts erfasst"),
+      tile("180er", String(st.n180), st.n180 ? "an " + st.days180 + (st.days180 === 1 ? " Spieltag" : " Spieltagen") : "noch keine"),
+      tile("Höchstes Finish", st.hiCo ? String(st.hiCo) : "–", st.coTops ? st.coTops + "× Tagesbestwert" : (st.hiCo ? "Saison-Bestwert" : "noch nicht erfasst")),
+      tile("Kürzestes Leg", st.bestLeg ? st.bestLeg + " Darts" : "–", st.legTops ? st.legTops + "× Tagesbestwert" : (st.bestLeg ? "Saison-Bestwert" : "noch nicht erfasst")),
     ]);
 
     const facts = [];
