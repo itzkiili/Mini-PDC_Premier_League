@@ -99,6 +99,7 @@ const SPIELTAGE = [
       "Andres": { n180: 1 },
       "Leon": { n180: 1 },
       "Jonas": { n180: 1 },
+      "Tom": { co: 40, leg: 24 },
     },
     statistik: {
       VF3: { "Philipp": { avg: 44, miss: 1 }, "Andres": { avg: 33, miss: 2 } },
