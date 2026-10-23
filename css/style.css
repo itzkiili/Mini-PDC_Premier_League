@@ -199,11 +199,11 @@ td.diff { font-weight: 600; }
 /* Spielerkarte */
 .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
 .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-#player-dialog {
+#player-dialog, #compare-dialog {
   width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
 }
-#player-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+#player-dialog::backdrop, #compare-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
 .pc { padding: 20px; }
 .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .pc-head h2 { margin: 0; font-size: 1.7rem; }
@@ -265,6 +265,62 @@ td.trend.same, td.trend.new { color: var(--muted); font-weight: 400; }
 #saisonfinale .note { margin: -4px 0 12px; }
 #final-bracket .slot .player-link { font-weight: 600; }
 .match.bye-card { border-style: dashed; }
+
+/* Direktvergleich */
+.vs-link { font: inherit; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; cursor: pointer;
+  padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); }
+.vs-link:hover { color: var(--accent); border-color: var(--accent); }
+.cmp-switch {
+  display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap;
+  margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line);
+}
+.cmp-switch .note {
+  margin: 0; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 0.9rem; color: var(--muted);
+}
+.cmp-select {
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+  font-family: var(--display); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 7px 38px 7px 14px; border-radius: 4px; border: 1px solid var(--line);
+  color: var(--text); background-color: var(--surface-2);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23c8f03c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center; background-size: 12px 8px;
+}
+.cmp-select:hover, .cmp-select:focus-visible { border-color: var(--accent); outline: none; }
+.cmp-select option { font-family: system-ui, sans-serif; text-transform: none; background: var(--surface); color: var(--text); }
+.cmp-head { display: grid; grid-template-columns: 1fr auto 1fr auto; align-items: center; gap: 10px; }
+.cmp-side { display: flex; flex-direction: column; min-width: 0; }
+.cmp-side.b { text-align: right; align-items: flex-end; }
+.cmp-name { font-family: var(--display); font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.04em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.cmp-side.a .cmp-name { color: var(--accent); }
+.cmp-side .sub { font-size: 0.85rem; margin: 0; }
+.cmp-vs { font-family: var(--display); color: var(--muted); font-size: 1.1rem; }
+.cmp-score { display: flex; align-items: baseline; justify-content: center; gap: 10px; font-family: var(--display); margin-bottom: 8px; }
+.cmp-score b { font-size: 2.2rem; font-weight: 500; color: var(--muted); }
+.cmp-score b.lead { color: var(--accent); }
+.cmp-score .note { font-family: system-ui, sans-serif; margin: 0 0 0 6px; }
+table.cmp-duels { width: 100%; }
+@media (max-width: 480px) { .opt-avg { display: none; } }
+.cmp-bars { display: flex; flex-direction: column; gap: 6px; }
+.cmp-row { display: grid; grid-template-columns: 4.2rem 1fr 7.5rem 1fr 4.2rem; align-items: center; gap: 8px; font-size: 0.88rem; }
+@media (max-width: 480px) { .cmp-row { grid-template-columns: 3.6rem 1fr 6rem 1fr 3.6rem; gap: 5px; font-size: 0.8rem; } }
+.cmp-label { text-align: center; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.cmp-val { font-variant-numeric: tabular-nums; color: var(--muted); }
+.cmp-val.a { text-align: right; }
+.cmp-val.better { color: var(--text); font-weight: 700; }
+.cmp-bar { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; display: flex; }
+.cmp-bar.a { justify-content: flex-end; }
+.cmp-bar i { display: block; height: 100%; background: var(--muted); opacity: 0.5; border-radius: 4px; }
+.cmp-bar i.better { background: var(--accent); opacity: 1; }
+.spark .line-a { fill: none; stroke: var(--accent); stroke-width: 2; }
+.spark .line-b { fill: none; stroke: var(--silver); stroke-width: 2; stroke-dasharray: 5 4; }
+.spark .dot-a { fill: var(--accent); }
+.spark .dot-b { fill: var(--surface); stroke: var(--silver); stroke-width: 2; }
+.spark.cmp-chart { max-width: 460px; margin: 0 auto; }
+.cmp-legend { display: flex; gap: 16px; justify-content: center; font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+.cmp-legend .key::before { content: ""; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; }
+.cmp-legend .key.a::before { background: var(--accent); }
+.cmp-legend .key.b::before { background: var(--silver); }
 
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
