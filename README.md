@@ -2,7 +2,7 @@
 
 Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spielerstatistiken und das Saisonfinale. Die Seite läuft kostenlos über **GitHub Pages**. Ergebnisse lassen sich direkt auf der Website eintragen, die Tabelle rechnet sich automatisch.
 
-**➡️ Zur Liga:** `https://BENUTZERNAME.github.io/REPOSITORY/` *(Link anpassen)*
+**➡️ Zur Liga:** `[https://BENUTZERNAME.github.io/REPOSITORY/](https://itzkiili.github.io/Mini-PDC_Premier_League/)`
 
 ---
 
