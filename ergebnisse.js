@@ -57,9 +57,13 @@ const SPIELTAGE = [
       V1: { "Tom": 0, "Ben": 3 },
     },
     bonus: {
-      "Kilian": { leg: 22 },
+      "Kilian": { co: 24, leg: 22 },
+      "Andres": { co: 5, leg: 32 },
+      "Johannes": { co: 35, leg: 32 },
+      "Ben": { co: 4, leg: 39 },
     },
     statistik: {
+      VF2: { "Andres": { avg: 36.41, miss: 39 }, "Ben": { avg: 35.53, miss: 13 } },
       G2: { "Andres": { avg: 45.6, miss: 5 }, "Kilian": { avg: 50.66, miss: 8 } },
       G3: { "Johannes": { avg: 41.05, miss: 24 }, "Kilian": { avg: 43.18, miss: 29 } },
     },
