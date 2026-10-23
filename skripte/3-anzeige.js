@@ -31,15 +31,11 @@ function changed() {
 // ===================================================================
 //  Rendern
 // ===================================================================
-function render() {
-  const warnings = [];
-  const resolved = DAYS.map(function (d) { return resolveDay(d, warnings); });
-  lastResolved = resolved;
-  document.body.classList.toggle("editing", editing);
-
-  if (currentIdx === null || currentIdx >= DAYS.length) currentIdx = DAYS.length - 1;
-
-  // Gesamttabelle
+// ---------------------------------------------------------------------
+//  Gesamttabelle aus einer Liste ausgewerteter Spieltage berechnen
+//  (wird auch für den Stand vor dem letzten Spieltag genutzt -> Trendpfeile)
+// ---------------------------------------------------------------------
+function computeStandings(resolved) {
   const stats = {};
   const h2h = {};
   function stat(name) {
@@ -153,6 +149,100 @@ function render() {
     resolveTie(base.slice(gi, gj + 1));
     gi = gj + 1;
   }
+  return { rows: rows, openTies: openTies };
+}
+
+// Trendpfeil: Veränderung des Tabellenplatzes seit dem letzten Spieltag
+function trendCell(prevRank, r) {
+  if (!prevRank) return el("td", { class: "trend" });
+  const before = prevRank[r.name];
+  if (before === undefined) return el("td", { class: "trend new", text: "neu", title: "Neu in der Tabelle" });
+  const diff = before - r.rank;
+  if (diff > 0) return el("td", { class: "trend up", text: "▲" + diff, title: "Seit dem letzten Spieltag " + diff + (diff === 1 ? " Platz" : " Plätze") + " verbessert (vorher " + before + ".)" });
+  if (diff < 0) return el("td", { class: "trend down", text: "▼" + (-diff), title: "Seit dem letzten Spieltag " + (-diff) + (diff === -1 ? " Platz" : " Plätze") + " verloren (vorher " + before + ".)" });
+  return el("td", { class: "trend same", text: "–", title: "Platz unverändert" });
+}
+
+// ---------------------------------------------------------------------
+//  Saisonfinale (provisorisch nach aktuellem Tabellenstand)
+//  Platz 1 hat ein Freilos, Viertelfinale 2–7, 3–6, 4–5,
+//  Halbfinale: Platz 1 gegen Sieger 4–5, Sieger 2–7 gegen Sieger 3–6
+// ---------------------------------------------------------------------
+function renderSeasonFinal(rows, playedDays) {
+  const box = document.getElementById("final-bracket");
+  const note = document.getElementById("final-note");
+  if (!box) return;
+  box.innerHTML = "";
+  const at = function (place) {
+    const r = rows[place - 1];
+    return { label: "Platz " + place, name: r && r.points > 0 ? r.name : null };
+  };
+  const ref = function (text) { return { label: null, name: null, ref: text }; };
+  note.textContent = playedDays
+    ? "Provisorisch nach dem aktuellen Tabellenstand (" + playedDays + (playedDays === 1 ? " Spieltag" : " Spieltage") + "). Die endgültigen Paarungen stehen nach dem letzten Spieltag fest."
+    : "Die Paarungen ergeben sich aus der Tabelle am Saisonende.";
+
+  function slot(s) {
+    if (s.ref) return el("div", { class: "slot tbd" }, [el("span", { class: "nm", text: s.ref })]);
+    if (!s.name) return el("div", { class: "slot tbd" }, [el("span", { class: "nm", text: s.label })]);
+    return el("div", { class: "slot" }, [nameBtn(s.name), el("span", { class: "right" }, [el("span", { class: "tag", text: s.label })])]);
+  }
+  function match(title, a, b, isFinal) {
+    return el("div", { class: "match" + (isFinal ? " final" : "") }, [
+      el("div", { class: "match-head" }, [el("span", { text: title })]),
+      slot(a), slot(b),
+    ]);
+  }
+  function bye(s) {
+    return el("div", { class: "match bye-card" }, [
+      el("div", { class: "match-head" }, [el("span", { text: "Freilos" })]),
+      slot(s),
+      el("div", { class: "slot tbd" }, [el("span", { class: "nm", text: "direkt im Halbfinale" })]),
+    ]);
+  }
+  function round(title, items) {
+    return el("div", { class: "round" }, [el("div", { class: "round-title", text: title }), el("div", { class: "round-body" }, items)]);
+  }
+  box.appendChild(el("div", { class: "bracket" }, [
+    el("div", { class: "rounds" }, [
+      round("Viertelfinale", [
+        bye(at(1)),
+        match("VF1", at(2), at(7)),
+        match("VF2", at(3), at(6)),
+        match("VF3", at(4), at(5)),
+      ]),
+      round("Halbfinale", [
+        match("HF1", at(1), ref("Sieger VF3 (4–5)")),
+        match("HF2", ref("Sieger VF1 (2–7)"), ref("Sieger VF2 (3–6)")),
+      ]),
+      round("Finale", [
+        match("Finale", ref("Sieger HF1"), ref("Sieger HF2"), true),
+      ]),
+    ]),
+  ]));
+}
+
+function render() {
+  const warnings = [];
+  const resolved = DAYS.map(function (d) { return resolveDay(d, warnings); });
+  lastResolved = resolved;
+  document.body.classList.toggle("editing", editing);
+
+  if (currentIdx === null || currentIdx >= DAYS.length) currentIdx = DAYS.length - 1;
+
+  // Gesamttabelle
+  const standingsData = computeStandings(resolved);
+  const rows = standingsData.rows, openTies = standingsData.openTies;
+
+  // Trend: Vergleich mit dem Stand vor dem letzten Spieltag mit Ergebnissen
+  const playedIdx = resolved.map(function (d, i) { return d.places.some(function (pl) { return pl.name; }) ? i : -1; })
+    .filter(function (i) { return i >= 0; });
+  let prevRank = null;
+  if (playedIdx.length >= 2) {
+    prevRank = {};
+    computeStandings(resolved.slice(0, playedIdx[playedIdx.length - 1])).rows
+      .forEach(function (r) { prevRank[r.name] = r.rank; });
+  }
 
   lastRows = rows;
   function signed(n) { return n > 0 ? "+" + n : String(n); }
@@ -162,7 +252,9 @@ function render() {
     standings.appendChild(el("div", { class: "empty", text: "Noch keine Ergebnisse eingetragen." }));
   } else {
     const thead = el("thead", null, [el("tr", null, [
-      el("th", { text: "Pl." }), el("th", { text: "Spieler" }),
+      el("th", { text: "Pl." }),
+      el("th", { class: "trend", text: "", title: "Veränderung seit dem letzten Spieltag" }),
+      el("th", { text: "Spieler" }),
       el("th", { class: "num opt", text: "Spieltage" }),
       el("th", { class: "num", text: "Siege", title: "Gewonnene Spieltage" }),
       el("th", { class: "num opt", text: "2. Pl.", title: "Zweite Plätze" }),
@@ -178,6 +270,7 @@ function render() {
       const rank = r.rank;
       tbody.appendChild(el("tr", { class: r.points > 0 && rank <= 3 ? "r" + rank + (rank === 1 ? " top1" : "") : "" }, [
         el("td", { class: "rank", text: rank + "." }),
+        trendCell(prevRank, r),
         el("td", null, [nameBtn(r.name)]),
         el("td", { class: "num opt", text: String(r.days) }),
         el("td", { class: "num", text: String(r.wins) }),
@@ -193,6 +286,8 @@ function render() {
     standings.appendChild(el("table", null, [thead, tbody]));
     if (editing && openTies.length) standings.appendChild(tableStechenEl(openTies));
   }
+
+  renderSeasonFinal(rows, playedIdx.length);
 
   // Namensliste für die Eingabefelder
   const dl = document.getElementById("known-names");

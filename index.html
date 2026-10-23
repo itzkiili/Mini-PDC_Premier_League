@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=1">
+<link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
 <div class="wrap">
@@ -17,6 +17,7 @@
     <nav>
       <a href="#tabelle">Tabelle</a>
       <a href="#spieltage">Spieltage</a>
+      <a href="#saisonfinale">Saisonfinale</a>
       <a href="#regeln">Regeln</a>
       <a class="pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Regelwerk (PDF)</a>
     </nav>
@@ -48,6 +49,12 @@
     </div>
   </section>
 
+  <section id="saisonfinale">
+    <h2>Saisonfinale</h2>
+    <p class="note" id="final-note"></p>
+    <div class="card" id="final-bracket"></div>
+  </section>
+
   <div id="editbar" class="editbar" hidden></div>
   <datalist id="known-names"></datalist>
   <dialog id="player-dialog" aria-label="Spielerstatistik"></dialog>
@@ -57,12 +64,12 @@
 <script src="zugang.js"></script>
 <script src="ergebnisse.js"></script>
 <!-- Programmlogik, in dieser Reihenfolge laden -->
-<script src="skripte/1-daten.js?v=1"></script>
-<script src="skripte/2-auswertung.js?v=1"></script>
-<script src="skripte/3-anzeige.js?v=1"></script>
-<script src="skripte/4-spielerkarte.js?v=1"></script>
-<script src="skripte/5-eingabe.js?v=1"></script>
-<script src="skripte/6-speichern.js?v=1"></script>
-<script src="skripte/7-start.js?v=1"></script>
+<script src="js/1-daten.js?v=2"></script>
+<script src="js/2-auswertung.js?v=2"></script>
+<script src="js/3-anzeige.js?v=2"></script>
+<script src="js/4-spielerkarte.js?v=2"></script>
+<script src="js/5-eingabe.js?v=2"></script>
+<script src="js/6-speichern.js?v=2"></script>
+<script src="js/7-start.js?v=2"></script>
 </body>
 </html>

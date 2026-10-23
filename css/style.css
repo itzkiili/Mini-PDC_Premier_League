@@ -255,6 +255,17 @@ td.bad { color: var(--warn-text); font-weight: 600; }
 table.bonus-edit td, table.bonus-edit th { padding: 6px 10px; }
 table.bonus-edit .st-in { width: 3.6rem; }
 
+/* Trendpfeile */
+th.trend, td.trend { width: 2.6rem; padding-left: 0; padding-right: 4px; font-size: 0.78rem; font-weight: 600; text-align: left; }
+td.trend.up { color: var(--accent); }
+td.trend.down { color: var(--warn-text); }
+td.trend.same, td.trend.new { color: var(--muted); font-weight: 400; }
+
+/* Saisonfinale */
+#saisonfinale .note { margin: -4px 0 12px; }
+#final-bracket .slot .player-link { font-weight: 600; }
+.match.bye-card { border-style: dashed; }
+
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
   font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;
