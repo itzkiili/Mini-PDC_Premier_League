@@ -200,6 +200,40 @@
   .table-stechen .hint { margin: 4px 0 6px; }
   @media (max-width: 560px) { th.opt, td.opt { display: none; } }
 
+  /* Spielerkarte */
+  .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
+  .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  #player-dialog {
+    width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
+    border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
+  }
+  #player-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+  .pc { padding: 20px; }
+  .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .pc-head h2 { margin: 0; font-size: 1.7rem; }
+  .pc-head .sub { margin: 2px 0 0; font-size: 0.9rem; }
+  .btn.close { padding: 4px 10px; }
+  .pc h3 { margin: 18px 0 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 480px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile { background: var(--surface-2); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .tile-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tile b { font-family: var(--display); font-size: 1.5rem; font-weight: 500; color: var(--accent); line-height: 1.2; }
+  .tile-sub { font-size: 0.78rem; color: var(--muted); }
+  .facts { list-style: none; padding: 0; margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .facts li { background: var(--accent-soft); color: var(--text); border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; }
+  .spark { width: 100%; height: auto; display: block; }
+  .spark .grid { stroke: var(--line); stroke-width: 1; }
+  .spark .axis { fill: var(--muted); font-size: 10px; }
+  .spark .line { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .spark .dot { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+  .spark .dot.gold { fill: var(--gold); stroke: var(--gold); }
+  .spark .val { fill: var(--text); font-size: 10px; font-weight: 600; }
+  table.opp { width: 100%; }
+  table.opp th { padding: 6px 10px; }
+  td.good { color: var(--accent); font-weight: 600; }
+  td.bad { color: var(--warn-text); font-weight: 600; }
+
   /* Stil „Flutlicht“ */
   h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
     font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;
@@ -261,6 +295,7 @@
 
   <div id="editbar" class="editbar" hidden></div>
   <datalist id="known-names"></datalist>
+  <dialog id="player-dialog" aria-label="Spielerstatistik"></dialog>
   <footer id="footer"></footer>
 </div>
 
@@ -281,7 +316,6 @@
   document.querySelectorAll(".pdf-link").forEach(function (a) { a.setAttribute("href", encodeURI(REGELWERK_PDF)); });
 
   const DATA_FILE = "ergebnisse.js";
-  const DEFAULT_PUNKTE = [15, 12, 10, 8, 7, 6, 5, 4];
   const loadError = typeof SPIELTAGE === "undefined";
   let LIGA_DATA = clone(typeof LIGA !== "undefined" && LIGA ? LIGA : { name: "Liga", punkte: DEFAULT_PUNKTE });
   let DAYS = clone(!loadError && Array.isArray(SPIELTAGE) ? SPIELTAGE : []);
@@ -291,6 +325,8 @@
 
   // Zustand des Bearbeiten-Modus
   let editing = false;
+  let lastResolved = [];
+  let lastRows = [];
   let dirty = false;
   let currentIdx = null;
   let statusText = "";
@@ -519,11 +555,180 @@
   }
 
   // ===================================================================
+  //  Spielerkarte
+  // ===================================================================
+  const PLAY_ORDER = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2", "P7", "P5", "P3", "Finale",
+    "G1", "V1", "G2", "V2", "G3", "V3"];
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function svg(tag, attrs, children) {
+    const e = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    (children || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+  function nameBtn(name) {
+    return el("button", { type: "button", class: "player-link", text: name, title: "Statistik von " + name,
+      onclick: function () { openPlayer(name); } });
+  }
+  function pct(a, b) { return b ? Math.round((a / b) * 100) + " %" : "–"; }
+
+  function playerStats(name) {
+    const st = {
+      name: name, days: 0, doneDays: 0, points: 0, best: null, bestCount: 0,
+      w: 0, l: 0, lw: 0, ll: 0, legGames: 0, dec: 0, decW: 0, nil: 0,
+      history: [], results: [], opp: {},
+    };
+    lastResolved.forEach(function (d, idx) {
+      if (d.players.indexOf(name) < 0) return;
+      st.days++;
+      const pl = d.places.filter(function (p) { return p.name === name; })[0];
+      st.history.push({ nr: d.nr != null ? d.nr : idx + 1, place: pl ? pl.place : null });
+      if (pl) {
+        st.doneDays++;
+        st.points += pl.points;
+        if (st.best === null || pl.place < st.best) { st.best = pl.place; st.bestCount = 1; }
+        else if (pl.place === st.best) st.bestCount++;
+      }
+      PLAY_ORDER.forEach(function (id) {
+        const mt = d.matches[id];
+        if (!mt || mt.state !== "gespielt") return;
+        const an = mt.a.name, bn = mt.b.name;
+        if (an !== name && bn !== name) return;
+        const opp = an === name ? bn : an;
+        const won = mt.winner === name;
+        st.results.push(won);
+        if (won) st.w++; else st.l++;
+        const o = st.opp[opp] || (st.opp[opp] = { name: opp, w: 0, l: 0, lw: 0, ll: 0, legs: false });
+        if (won) o.w++; else o.l++;
+        if (mt.score) {
+          const mine = an === name ? mt.score.a : mt.score.b;
+          const theirs = an === name ? mt.score.b : mt.score.a;
+          st.lw += mine; st.ll += theirs; st.legGames++;
+          o.lw += mine; o.ll += theirs; o.legs = true;
+          if (Math.abs(mine - theirs) === 1 && Math.min(mine, theirs) > 0) { st.dec++; if (mine > theirs) st.decW++; }
+          if (won && theirs === 0) st.nil++;
+        }
+      });
+    });
+    // aktuelle Serie
+    let streak = 0, streakWin = null;
+    for (let i = st.results.length - 1; i >= 0; i--) {
+      if (streakWin === null) streakWin = st.results[i];
+      if (st.results[i] !== streakWin) break;
+      streak++;
+    }
+    st.streak = streak; st.streakWin = streakWin;
+    // Lieblings- und Angstgegner
+    const opps = Object.keys(st.opp).map(function (k) { return st.opp[k]; });
+    opps.sort(function (a, b) { return (b.w - b.l) - (a.w - a.l) || (b.w + b.l) - (a.w + a.l) || a.name.localeCompare(b.name, "de"); });
+    st.opps = opps;
+    const fav = opps.filter(function (o) { return o.w > o.l; })[0];
+    const nem = opps.slice().reverse().filter(function (o) { return o.l > o.w; })
+      .sort(function (a, b) { return (a.w - a.l) - (b.w - b.l) || (b.w + b.l) - (a.w + a.l); })[0];
+    st.fav = fav || null; st.nem = nem || null;
+    return st;
+  }
+
+  function sparkline(history) {
+    const pts = history.filter(function (h) { return h.place !== null; });
+    if (pts.length === 0) return el("p", { class: "note", text: "Noch keine abgeschlossene Platzierung." });
+    const W = 320, H = 130, padL = 30, padR = 22, padT = 18, padB = 22, inset = 18;
+    const maxPlace = Math.max(8, Math.max.apply(null, pts.map(function (p) { return p.place; })));
+    const n = history.length;
+    const x = function (i) { return n === 1 ? (padL + W - padR) / 2 : padL + inset + i * (W - padL - inset - padR) / (n - 1); };
+    const y = function (pl) { return padT + (pl - 1) * (H - padT - padB) / (maxPlace - 1); };
+    const g = [];
+    [1, 4, 8].forEach(function (pl) {
+      g.push(svg("line", { x1: padL, x2: W - padR, y1: y(pl), y2: y(pl), class: "grid" }));
+      const t = svg("text", { x: padL - 8, y: y(pl) + 4, class: "axis", "text-anchor": "end" }); t.textContent = pl + "."; g.push(t);
+    });
+    let path = "";
+    history.forEach(function (h, i) {
+      if (h.place === null) return;
+      path += (path ? " L" : "M") + x(i).toFixed(1) + " " + y(h.place).toFixed(1);
+    });
+    if (pts.length > 1) g.push(svg("path", { d: path, class: "line" }));
+    history.forEach(function (h, i) {
+      const lab = svg("text", { x: x(i), y: H - 4, class: "axis", "text-anchor": "middle" }); lab.textContent = "ST " + h.nr; g.push(lab);
+      if (h.place === null) return;
+      g.push(svg("circle", { cx: x(i), cy: y(h.place), r: 4.5, class: "dot" + (h.place === 1 ? " gold" : "") }));
+      const t = svg("text", { x: x(i), y: y(h.place) - 9, class: "val", "text-anchor": "middle" }); t.textContent = h.place + "."; g.push(t);
+    });
+    const s = svg("svg", { viewBox: "0 0 " + W + " " + H, class: "spark", role: "img",
+      "aria-label": "Platzierungen: " + history.map(function (h) { return "Spieltag " + h.nr + " Platz " + (h.place || "offen"); }).join(", ") }, g);
+    return s;
+  }
+
+  function tile(label, value, sub) {
+    return el("div", { class: "tile" }, [
+      el("span", { class: "tile-label", text: label }),
+      el("b", { text: value }),
+      sub ? el("span", { class: "tile-sub", text: sub }) : null,
+    ]);
+  }
+
+  function openPlayer(name) {
+    const st = playerStats(name);
+    const row = lastRows.filter(function (r) { return r.name === name; })[0];
+    const dlg = document.getElementById("player-dialog");
+    dlg.innerHTML = "";
+    const avg = st.doneDays ? (st.points / st.doneDays).toFixed(1).replace(".", ",") : "–";
+    const diff = st.lw - st.ll;
+
+    const tiles = el("div", { class: "tiles" }, [
+      tile("Punkte", String(st.points), st.days + (st.days === 1 ? " Spieltag" : " Spieltage")),
+      tile("Ø Punkte", avg, "pro Spieltag"),
+      tile("Beste Platzierung", st.best ? st.best + "." : "–", st.best ? st.bestCount + "×" : null),
+      tile("Spiele", st.w + "–" + st.l, "Siegquote " + pct(st.w, st.w + st.l)),
+      tile("Legs", st.legGames ? st.lw + ":" + st.ll : "–", st.legGames ? (diff > 0 ? "+" : "") + diff + " · " + pct(st.lw, st.lw + st.ll) : "noch keine Legs"),
+      tile("Entscheidungslegs", st.dec ? st.decW + " von " + st.dec : "–", st.dec ? "gewonnen (" + pct(st.decW, st.dec) + ")" : "z. B. 3:2"),
+    ]);
+
+    const facts = [];
+    if (st.streak >= 2) facts.push((st.streakWin ? "🔥 " : "") + st.streak + (st.streakWin ? " Siege" : " Niederlagen") + " in Folge");
+    if (st.nil) facts.push(st.nil + (st.nil === 1 ? " Sieg" : " Siege") + " zu null");
+    if (st.fav) facts.push("Lieblingsgegner: " + st.fav.name + " (" + st.fav.w + "–" + st.fav.l + ")");
+    if (st.nem) facts.push("Angstgegner: " + st.nem.name + " (" + st.nem.w + "–" + st.nem.l + ")");
+
+    const oppRows = st.opps.map(function (o) {
+      return el("tr", null, [
+        el("td", null, [nameBtn(o.name)]),
+        el("td", { class: "num" + (o.w > o.l ? " good" : o.l > o.w ? " bad" : ""), text: o.w + "–" + o.l }),
+        el("td", { class: "num dash", text: o.legs ? o.lw + ":" + o.ll : "" }),
+      ]);
+    });
+
+    dlg.appendChild(el("div", { class: "pc" }, [
+      el("div", { class: "pc-head" }, [
+        el("div", null, [
+          el("h2", { text: name }),
+          el("p", { class: "sub", text: row ? row.rank + ". Platz in der Gesamttabelle" : "" }),
+        ]),
+        el("button", { type: "button", class: "btn close", text: "✕", "aria-label": "Schließen", onclick: function () { dlg.close(); } }),
+      ]),
+      tiles,
+      facts.length ? el("ul", { class: "facts" }, facts.map(function (f) { return el("li", { text: f }); })) : null,
+      el("h3", { text: "Platzierungen" }),
+      sparkline(st.history),
+      el("h3", { text: "Bilanz gegen Gegner" }),
+      oppRows.length
+        ? el("table", { class: "mini opp" }, [
+            el("thead", null, [el("tr", null, [el("th", { text: "Gegner" }), el("th", { class: "num", text: "Spiele" }), el("th", { class: "num", text: "Legs" })])]),
+            el("tbody", null, oppRows),
+          ])
+        : el("p", { class: "note", text: "Noch keine Spiele." }),
+    ]));
+    if (!dlg.open) dlg.showModal();
+    dlg.scrollTop = 0;
+  }
+
+  // ===================================================================
   //  Rendern
   // ===================================================================
   function render() {
     const warnings = [];
     const resolved = DAYS.map(function (d) { return resolveDay(d, warnings); });
+    lastResolved = resolved;
     document.body.classList.toggle("editing", editing);
 
     if (currentIdx === null || currentIdx >= DAYS.length) currentIdx = DAYS.length - 1;
@@ -636,6 +841,7 @@
       gi = gj + 1;
     }
 
+    lastRows = rows;
     function signed(n) { return n > 0 ? "+" + n : String(n); }
     const standings = document.getElementById("standings");
     standings.innerHTML = "";
@@ -656,7 +862,7 @@
         const rank = r.rank;
         tbody.appendChild(el("tr", { class: r.points > 0 && rank <= 3 ? "r" + rank + (rank === 1 ? " top1" : "") : "" }, [
           el("td", { class: "rank", text: rank + "." }),
-          el("td", { text: r.name }),
+          el("td", null, [nameBtn(r.name)]),
           el("td", { class: "num opt", text: String(r.days) }),
           el("td", { class: "num", text: String(r.wins) }),
           el("td", { class: "num opt", text: String(r.seconds) }),
@@ -759,7 +965,7 @@
     const placeRows = d.places.filter(function (p) { return p.name !== null; }).map(function (p) {
       return el("tr", null, [
         el("td", { class: "rank", text: p.place + "." }),
-        el("td", { class: p.name === undefined ? "dash" : "", text: p.name === undefined ? "–" : p.name }),
+        p.name === undefined ? el("td", { class: "dash", text: "–" }) : el("td", null, [nameBtn(p.name)]),
         el("td", { class: "num" + (p.name ? " pts" : " dash"), text: p.name ? p.points + " P." : "" }),
       ]);
     });
@@ -1493,6 +1699,10 @@
     out.push("");
     return out.join("\n");
   }
+
+  document.getElementById("player-dialog").addEventListener("click", function (e) {
+    if (e.target === e.currentTarget) e.currentTarget.close();
+  });
 
   window.addEventListener("beforeunload", function (e) {
     if (editing && dirty) { e.preventDefault(); e.returnValue = ""; }
