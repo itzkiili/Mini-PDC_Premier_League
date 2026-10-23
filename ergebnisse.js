@@ -15,6 +15,9 @@
 //          (V1–V3 genauso mit den Verlierern)
 //  - ergebnisse: Legs je Spiel, z. B. VF1: { "Anna": 3, "Ben": 1 }
 //        (optional; der Sieger ergibt sich dann aus den Legs)
+//  - statistik: optional je Spiel und Spieler Average (avg) und Missed
+//        Doubles (miss), z. B. VF1: { "Anna": { avg: 54.3, miss: 4 } }
+//        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)
 //  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1
 //
 //  Namen immer genau gleich schreiben (z. B. immer "Max", nie "max").
@@ -47,6 +50,10 @@ const SPIELTAGE = [
       G2: { "Andres": 0, "Kilian": 3 },
       G3: { "Johannes": 2, "Kilian": 3 },
       V1: { "Tom": 0, "Ben": 3 },
+    },
+    statistik: {
+      G2: { "Andres": { avg: 45.6, miss: 5 }, "Kilian": { avg: 50.66, miss: 8 } },
+      G3: { "Johannes": { avg: 41.05, miss: 24 }, "Kilian": { avg: 43.18, miss: 29 } },
     },
   },
 ];
