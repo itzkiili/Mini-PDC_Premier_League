@@ -93,6 +93,13 @@ const SPIELTAGE = [
       P3: { "Johannes": 0, "Leon": 3 },
       Finale: { "Tom": 4, "Philipp": 1 },
     },
+    bonus: {
+      "Johannes": { co: 50 },
+      "Ben": { leg: 22 },
+      "Andres": { n180: 1 },
+      "Leon": { n180: 1 },
+      "Jonas": { n180: 1 },
+    },
     statistik: {
       VF3: { "Philipp": { avg: 44, miss: 1 }, "Andres": { avg: 33, miss: 2 } },
     },
