@@ -206,13 +206,13 @@ function renderSeasonFinal(rows, playedDays) {
   box.appendChild(el("div", { class: "bracket" }, [
     el("div", { class: "rounds" }, [
       round("Viertelfinale", [
-        bye(at(1)),
-        match("VF1", at(2), at(7)),
-        match("VF2", at(3), at(6)),
-        match("VF3", at(4), at(5)),
+        match("VF1",at(1), at(8)),
+        match("VF2", at(4), at(5)),
+        match("VF3", at(2), at(7)),
+        match("VF4", at(3), at(6)),
       ]),
       round("Halbfinale", [
-        match("HF1", at(1), ref("Sieger VF3 (4–5)")),
+        match("HF1", ref("Sieger VF1 (1-8)"), ref("Sieger VF3 (4–5)")),
         match("HF2", ref("Sieger VF1 (2–7)"), ref("Sieger VF2 (3–6)")),
       ]),
       round("Finale", [
