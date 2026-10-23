@@ -204,7 +204,7 @@
   .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
   .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   #player-dialog {
-    width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
+    width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
     border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
   }
   #player-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
@@ -214,8 +214,8 @@
   .pc-head .sub { margin: 2px 0 0; font-size: 0.9rem; }
   .btn.close { padding: 4px 10px; }
   .pc h3 { margin: 18px 0 8px; }
-  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  @media (max-width: 480px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  @media (max-width: 600px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
   .tile { background: var(--surface-2); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
   .tile-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
   .tile b { font-family: var(--display); font-size: 1.5rem; font-weight: 500; color: var(--accent); line-height: 1.2; }
@@ -233,6 +233,24 @@
   table.opp th { padding: 6px 10px; }
   td.good { color: var(--accent); font-weight: 600; }
   td.bad { color: var(--warn-text); font-weight: 600; }
+
+  /* Average & Doppel */
+  .slot .tag { white-space: nowrap; }
+  .slot .avg { font-size: 0.75rem; color: var(--muted); font-weight: 400; white-space: nowrap; }
+  .stats-toggle {
+    display: block; width: 100%; font: inherit; font-size: 0.75rem; text-align: left; cursor: pointer;
+    padding: 4px 10px; border: none; border-top: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
+  }
+  .stats-toggle:hover, .stats-toggle.has { color: var(--accent); }
+  .stats-panel { padding: 6px 10px 8px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+  .stats-row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: 0.82rem; }
+  .stats-row .nm { flex: 1 0 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .stats-row label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 0.75rem; }
+  .st-in {
+    width: 3.6rem; font: inherit; font-size: 0.85rem; text-align: center; padding: 2px 4px;
+    border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text);
+  }
+  .st-in.small { width: 2.4rem; }
 
   /* Stil „Flutlicht“ */
   h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
@@ -286,7 +304,7 @@
     <div class="card rules">
       <p>Jeder Spieltag ist ein eigenes Turnier mit bis zu 8 Spielern. Die Sieger der Viertelfinals spielen um die Plätze 1 bis 4, die Verlierer unter sich um die Plätze 5 bis 8. So wird jeder Platz ausgespielt.</p>
       <p>Bei 5 oder 6 Spielern gibt es nur drei Viertelfinals. Die Sieger spielen danach in einer Dreiergruppe jeder gegen jeden um die Plätze 1 bis 3, die Verlierer ebenso um die Plätze 4 bis 6. Gewinnt in einer Gruppe jeder genau ein Spiel, entscheidet ein Stechen.</p>
-      <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Ergebnisse werden in Legs eingetragen.</p>
+      <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Ergebnisse werden in Legs eingetragen. Optional können je Spiel der Average und die Missed Doubles erfasst werden; daraus ergibt sich die Checkout-Quote (gewonnene Legs geteilt durch alle Darts auf ein Doppel).</p>
       <p>Bei Punktgleichheit in der Gesamttabelle entscheiden nacheinander: 1. der direkte Vergleich, sofern jeder der Punktgleichen gegen jeden gespielt hat, 2. die bessere Legdifferenz über die Saison, 3. mehr gewonnene Spieltage, 4. ein Entscheidungsleg oder Stechen.</p>
       <div class="pts-grid" id="pts-grid"></div>
       <p class="rules-link"><a class="btn pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Vollständiges Regelwerk öffnen (PDF)</a></p>
@@ -371,6 +389,8 @@
     const m = {};
     const invalid = [];
     const invalidScore = [];
+    const invalidStats = [];
+    const stx = (day.statistik && typeof day.statistik === "object") ? day.statistik : {};
     const erg = (day.ergebnisse && typeof day.ergebnisse === "object") ? day.ergebnisse : {};
     function scoreFor(id, an, bn) {
       const e = erg[id];
@@ -389,18 +409,26 @@
         match.w = waiting("Sieger " + id); match.l = waiting("Verlierer " + id);
         if (clean(sieger[id])) invalid.push(id);
         if (erg[id]) invalidScore.push(id);
+        if (stx[id]) invalidStats.push(id);
       } else if (a.name === null && b.name === null) {
         if (erg[id]) invalidScore.push(id);
+        if (stx[id]) invalidStats.push(id);
         match.state = "leer";
         match.w = known(null); match.l = known(null);
       } else if (a.name === null || b.name === null) {
         const real = a.name !== null ? a.name : b.name;
         if (erg[id]) invalidScore.push(id);
+        if (stx[id]) invalidStats.push(id);
         match.state = "freilos"; match.winner = real;
         match.w = known(real); match.l = known(null);
       } else {
         let w = clean(sieger[id]);
         const sc = scoreFor(id, a.name, b.name);
+        const sx = stx[id];
+        if (sx && typeof sx === "object") {
+          if (Object.keys(sx).every(function (k) { return k === a.name || k === b.name; })) match.stats = sx;
+          else invalidStats.push(id);
+        }
         if (sc) {
           match.score = sc;
           // Bei Gleichstand (z. B. während der Eingabe) bleibt der bisherige Sieger
@@ -482,7 +510,7 @@
       });
       return {
         mode: "gruppe", count: count, nr: day.nr, datum: day.datum, players: players, matches: m,
-        groups: groups, places: gPlaces, invalid: invalid, invalidScore: invalidScore,
+        groups: groups, places: gPlaces, invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats,
         complete: groups.every(function (g) { return g.order; }),
       };
     }
@@ -506,7 +534,7 @@
     places.forEach(function (p) { p.points = p.name ? (punkte()[p.place - 1] || 0) : 0; });
 
     const complete = ["Finale", "P3", "P5", "P7"].every(function (id) { return !m[id].w.pending; });
-    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, invalid: invalid, invalidScore: invalidScore, complete: complete };
+    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats, complete: complete };
   }
 
   // Entfernt Sieger-Einträge, die nach einer Änderung nicht mehr passen
@@ -518,6 +546,7 @@
       let changed = false;
       r.invalid.forEach(function (id) { delete day.sieger[id]; changed = true; });
       r.invalidScore.forEach(function (id) { if (day.ergebnisse) { delete day.ergebnisse[id]; changed = true; } });
+      r.invalidStats.forEach(function (id) { if (day.statistik) { delete day.statistik[id]; changed = true; } });
       if (r.groups) r.groups.forEach(function (g) {
         if (day.stechen && day.stechen[g.key] && day.stechen[g.key].length && (!g.tie || g.badStechen)) {
           delete day.stechen[g.key]; changed = true;
@@ -527,6 +556,7 @@
     }
     Object.keys(day.sieger).forEach(function (k) { if (!clean(day.sieger[k])) delete day.sieger[k]; });
     if (day.ergebnisse && !Object.keys(day.ergebnisse).length) delete day.ergebnisse;
+    if (day.statistik && !Object.keys(day.statistik).length) delete day.statistik;
   }
 
   // ===================================================================
@@ -571,11 +601,34 @@
       onclick: function () { openPlayer(name); } });
   }
   function pct(a, b) { return b ? Math.round((a / b) * 100) + " %" : "–"; }
+  function toNum(v) {
+    if (v === null || v === undefined || String(v).trim() === "") return null;
+    const n = Number(String(v).trim().replace(",", "."));
+    return isFinite(n) ? n : null;
+  }
+  function fmtAvg(n) { return n === null || n === undefined ? "–" : n.toFixed(2).replace(".", ","); }
+
+  // Average / Missed Doubles eines Spielers aus einem Spiel sammeln
+  function addMatchStats(acc, mt, name) {
+    if (!mt.stats || !mt.stats[name]) return;
+    const ps = mt.stats[name];
+    const avg = toNum(ps.avg), miss = toNum(ps.miss);
+    if (avg !== null) {
+      acc.avgSum += avg; acc.avgN++;
+      if (acc.bestAvg === null || avg > acc.bestAvg) acc.bestAvg = avg;
+    }
+    if (miss !== null && mt.score) {
+      const mine = mt.a.name === name ? mt.score.a : mt.score.b;
+      acc.coHit += mine; acc.coMiss += miss;
+    }
+  }
+  function newAcc(o) { o.avgSum = 0; o.avgN = 0; o.bestAvg = null; o.coHit = 0; o.coMiss = 0; return o; }
 
   function playerStats(name) {
     const st = {
       name: name, days: 0, doneDays: 0, points: 0, best: null, bestCount: 0,
       w: 0, l: 0, lw: 0, ll: 0, legGames: 0, dec: 0, decW: 0, nil: 0,
+      avgSum: 0, avgN: 0, bestAvg: null, coHit: 0, coMiss: 0,
       history: [], results: [], opp: {},
     };
     lastResolved.forEach(function (d, idx) {
@@ -591,6 +644,7 @@
       }
       PLAY_ORDER.forEach(function (id) {
         const mt = d.matches[id];
+        if (mt && mt.stats && (mt.a.name === name || mt.b.name === name)) addMatchStats(st, mt, name);
         if (!mt || mt.state !== "gespielt") return;
         const an = mt.a.name, bn = mt.b.name;
         if (an !== name && bn !== name) return;
@@ -682,6 +736,9 @@
       tile("Spiele", st.w + "–" + st.l, "Siegquote " + pct(st.w, st.w + st.l)),
       tile("Legs", st.legGames ? st.lw + ":" + st.ll : "–", st.legGames ? (diff > 0 ? "+" : "") + diff + " · " + pct(st.lw, st.lw + st.ll) : "noch keine Legs"),
       tile("Entscheidungslegs", st.dec ? st.decW + " von " + st.dec : "–", st.dec ? "gewonnen (" + pct(st.decW, st.dec) + ")" : "z. B. 3:2"),
+      tile("Average", st.avgN ? fmtAvg(st.avgSum / st.avgN) : "–", st.avgN ? "Bester: " + fmtAvg(st.bestAvg) : "noch nicht erfasst"),
+      tile("Checkout-Quote", (st.coHit + st.coMiss) ? pct(st.coHit, st.coHit + st.coMiss) : "–",
+        (st.coHit + st.coMiss) ? st.coHit + " von " + (st.coHit + st.coMiss) + " Doppeln" : "noch nicht erfasst"),
     ]);
 
     const facts = [];
@@ -737,7 +794,7 @@
     const stats = {};
     const h2h = {};
     function stat(name) {
-      if (!stats[name]) stats[name] = { name: name, days: 0, wins: 0, seconds: 0, points: 0, lw: 0, ll: 0, legs: false };
+      if (!stats[name]) stats[name] = newAcc({ name: name, days: 0, wins: 0, seconds: 0, points: 0, lw: 0, ll: 0, legs: false });
       return stats[name];
     }
     resolved.forEach(function (d) {
@@ -751,6 +808,7 @@
       });
       Object.keys(d.matches).forEach(function (id) {
         const mt = d.matches[id];
+        if (mt.stats) [mt.a.name, mt.b.name].forEach(function (n) { if (n) addMatchStats(stat(n), mt, n); });
         if (mt.state !== "gespielt") return;
         const an = mt.a.name, bn = mt.b.name;
         if (mt.score) {
@@ -855,6 +913,8 @@
         el("th", { class: "num opt", text: "2. Pl.", title: "Zweite Plätze" }),
         el("th", { class: "num opt", text: "Legs" }),
         el("th", { class: "num", text: "Diff." }),
+        el("th", { class: "num opt", text: "Ø", title: "3-Dart-Average (Mittelwert der Spiele)" }),
+        el("th", { class: "num opt", text: "CO %", title: "Checkout-Quote" }),
         el("th", { class: "num", text: "Punkte" }),
       ])]);
       const tbody = el("tbody");
@@ -868,6 +928,8 @@
           el("td", { class: "num opt", text: String(r.seconds) }),
           el("td", { class: "num opt" + (r.legs ? "" : " dash"), text: r.legs ? r.lw + ":" + r.ll : "–" }),
           el("td", { class: "num diff" + (r.legs ? "" : " dash"), text: r.legs ? signed(r.lw - r.ll) : "–" }),
+          el("td", { class: "num opt" + (r.avgN ? "" : " dash"), text: r.avgN ? fmtAvg(r.avgSum / r.avgN) : "–" }),
+          el("td", { class: "num opt" + ((r.coHit + r.coMiss) ? "" : " dash"), text: (r.coHit + r.coMiss) ? pct(r.coHit, r.coHit + r.coMiss) : "–" }),
           el("td", { class: "num pts", text: String(r.points) }),
         ]));
       });
@@ -1133,7 +1195,11 @@
     const right = el("span", { class: "right" });
     if (tagText) right.appendChild(el("span", { class: "tag", text: tagText }));
     if (pickable) right.appendChild(scoreInput(day, match, side));
-    else if (match.score) right.appendChild(el("span", { class: "score", text: String(side === "a" ? match.score.a : match.score.b) }));
+    else {
+      const ps = match.stats && match.stats[s.name];
+      if (ps && toNum(ps.avg) !== null) right.appendChild(el("span", { class: "avg", text: "Ø " + fmtAvg(toNum(ps.avg)) }));
+      if (match.score) right.appendChild(el("span", { class: "score", text: String(side === "a" ? match.score.a : match.score.b) }));
+    }
     kids.push(right);
     return el("div", {
       class: cls,
@@ -1163,6 +1229,62 @@
     changed();
   }
 
+  const openStats = new Set();
+  function statsPanel(day, match) {
+    const key = currentIdx + ":" + match.id;
+    const isOpen = openStats.has(key);
+    const has = match.stats && Object.keys(match.stats).length;
+    const toggle = el("button", {
+      type: "button", class: "stats-toggle" + (has ? " has" : ""),
+      text: (isOpen ? "▴ " : "▾ ") + "Average & Doppel" + (has && !isOpen ? " ✓" : ""),
+      "aria-expanded": isOpen ? "true" : "false",
+      onclick: function (e) { e.stopPropagation(); if (isOpen) openStats.delete(key); else openStats.add(key); render(); },
+    });
+    if (!isOpen) return [toggle];
+
+    function onStat(e) {
+      const n = e.target.getAttribute("data-name"), f = e.target.getAttribute("data-f");
+      let v = toNum(e.target.value);
+      if (v !== null) {
+        if (f === "avg") {
+          if (v < 0 || v > 180) {
+            const prev = match.stats && match.stats[n] ? toNum(match.stats[n].avg) : null;
+            e.target.value = prev !== null ? String(prev).replace(".", ",") : "";
+            statusText = "Ein Average muss zwischen 0 und 180 liegen."; statusKind = "err"; renderEditBar(); return;
+          }
+          v = Math.round(v * 100) / 100;
+        } else {
+          v = Math.max(0, Math.min(999, Math.round(v)));
+        }
+      }
+      day.statistik = day.statistik || {};
+      const mm = day.statistik[match.id] = day.statistik[match.id] || {};
+      const p = mm[n] = mm[n] || {};
+      if (v === null) delete p[f]; else p[f] = v;
+      if (!Object.keys(p).length) delete mm[n];
+      if (!Object.keys(mm).length) delete day.statistik[match.id];
+      cleanupDay(day);
+      changed();
+    }
+    const rows = [match.a.name, match.b.name].map(function (n) {
+      const cur = (match.stats && match.stats[n]) || {};
+      return el("div", { class: "stats-row" }, [
+        el("span", { class: "nm", text: n }),
+        el("label", null, [document.createTextNode("Ø"), el("input", {
+          class: "st-in", type: "text", inputmode: "decimal", placeholder: "–", "data-name": n, "data-f": "avg",
+          value: toNum(cur.avg) !== null ? String(toNum(cur.avg)).replace(".", ",") : "",
+          "aria-label": "Average " + n, onchange: onStat,
+        })]),
+        el("label", null, [document.createTextNode("Missed"), el("input", {
+          class: "st-in small", type: "text", inputmode: "numeric", placeholder: "–", "data-name": n, "data-f": "miss",
+          value: toNum(cur.miss) !== null ? String(toNum(cur.miss)) : "",
+          "aria-label": "Missed Doubles " + n, onchange: onStat,
+        })]),
+      ]);
+    });
+    return [toggle, el("div", { class: "stats-panel", onclick: function (e) { e.stopPropagation(); } }, rows)];
+  }
+
   function matchEl(day, match, isFinal) {
     const pl = PLACE_OF[match.id];
     function tagFor(side) {
@@ -1178,7 +1300,7 @@
       el("div", { class: "match-head" }, [el("span", { text: LABELS[match.id] }), el("span", { text: state })]),
       slotEl(day, match, "a", tagFor("a")),
       slotEl(day, match, "b", tagFor("b")),
-    ]);
+    ].concat(editing && (match.state === "offen" || match.state === "gespielt") ? statsPanel(day, match) : []));
   }
 
   function roundEl(day, title, matches, finalId) {
@@ -1634,6 +1756,9 @@
     "//          (V1–V3 genauso mit den Verlierern)",
     "//  - ergebnisse: Legs je Spiel, z. B. VF1: { \"Anna\": 3, \"Ben\": 1 }",
     "//        (optional; der Sieger ergibt sich dann aus den Legs)",
+    "//  - statistik: optional je Spiel und Spieler Average (avg) und Missed",
+    "//        Doubles (miss), z. B. VF1: { \"Anna\": { avg: 54.3, miss: 4 } }",
+    "//        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)",
     "//  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1",
     "//",
     "//  Namen immer genau gleich schreiben (z. B. immer \"Max\", nie \"max\").",
@@ -1681,6 +1806,22 @@
         egKeys.forEach(function (k) {
           const pair = Object.keys(eg[k]).map(function (n) { return q(n) + ": " + (Number(eg[k][n]) || 0); }).join(", ");
           out.push("      " + k + ": { " + pair + " },");
+        });
+        out.push("    },");
+      }
+      const sxAll = day.statistik || {};
+      const sxKeys = KEY_ORDER.filter(function (k) { return sxAll[k] && typeof sxAll[k] === "object" && Object.keys(sxAll[k]).length; });
+      if (sxKeys.length) {
+        out.push("    statistik: {");
+        sxKeys.forEach(function (k) {
+          const parts = Object.keys(sxAll[k]).map(function (n) {
+            const ps = sxAll[k][n] || {};
+            const f = [];
+            if (toNum(ps.avg) !== null) f.push("avg: " + toNum(ps.avg));
+            if (toNum(ps.miss) !== null) f.push("miss: " + toNum(ps.miss));
+            return f.length ? q(n) + ": { " + f.join(", ") + " }" : null;
+          }).filter(Boolean);
+          if (parts.length) out.push("      " + k + ": { " + parts.join(", ") + " },");
         });
         out.push("    },");
       }
