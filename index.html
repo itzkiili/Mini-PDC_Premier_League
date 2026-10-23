@@ -116,9 +116,8 @@
 
   /* Dreiergruppen */
   .group-grid { display: grid; grid-template-columns: 220px 1fr; gap: 14px; align-items: start; }
-  .games { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .games { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
   @media (max-width: 760px) { .group-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 560px) { .games { grid-template-columns: 1fr; } }
   table.mini { border: 1px solid var(--line); border-radius: 8px; border-collapse: separate; border-spacing: 0; }
   table.mini td { padding: 6px 10px; font-size: 0.9rem; }
   .note { font-size: 0.85rem; color: var(--muted); margin: 10px 0 0; }
@@ -180,7 +179,9 @@
   .admin .status.ok { color: var(--accent); }
 
   /* Leg-Ergebnisse */
-  .slot .right { display: inline-flex; align-items: center; gap: 8px; }
+  .slot { align-items: center; }
+  .slot .nm { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .slot .right { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
   .slot .score { font-family: var(--display); font-size: 1rem; min-width: 1.2em; text-align: right; }
   .slot.win .score { color: var(--accent); }
   .score-ctl { display: inline-flex; align-items: stretch; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--bg); }
@@ -252,6 +253,13 @@
   }
   .st-in.small { width: 2.4rem; }
 
+  /* Bonus */
+  .bonus-box { margin-top: 20px; }
+  .bonus-box table td { padding: 8px 14px; }
+  .bonus-tag { display: block; font-family: system-ui, sans-serif; font-size: 0.7rem; font-weight: 400; color: var(--muted); }
+  table.bonus-edit td, table.bonus-edit th { padding: 6px 10px; }
+  table.bonus-edit .st-in { width: 3.6rem; }
+
   /* Stil „Flutlicht“ */
   h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
     font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;
@@ -305,6 +313,7 @@
       <p>Jeder Spieltag ist ein eigenes Turnier mit bis zu 8 Spielern. Die Sieger der Viertelfinals spielen um die Plätze 1 bis 4, die Verlierer unter sich um die Plätze 5 bis 8. So wird jeder Platz ausgespielt.</p>
       <p>Bei 5 oder 6 Spielern gibt es nur drei Viertelfinals. Die Sieger spielen danach in einer Dreiergruppe jeder gegen jeden um die Plätze 1 bis 3, die Verlierer ebenso um die Plätze 4 bis 6. Gewinnt in einer Gruppe jeder genau ein Spiel, entscheidet ein Stechen.</p>
       <p>Für die Platzierung gibt es an jedem Spieltag Punkte. Wer nicht teilnimmt, bekommt für diesen Spieltag keine Punkte. Ergebnisse werden in Legs eingetragen. Optional können je Spiel der Average und die Missed Doubles erfasst werden; daraus ergibt sich die Checkout-Quote (gewonnene Legs geteilt durch alle Darts auf ein Doppel).</p>
+      <p>Bonuspunkte gibt es an jedem Spieltag für das höchste Checkout und das kürzeste Leg (je 1 Punkt) sowie für jede geworfene 180 (je 1 Punkt). Bei gleichem Bestwert bekommen alle Betroffenen den Bonus. Bonuspunkte zählen zu den Punkten in der Gesamttabelle.</p>
       <p>Bei Punktgleichheit in der Gesamttabelle entscheiden nacheinander: 1. der direkte Vergleich, sofern jeder der Punktgleichen gegen jeden gespielt hat, 2. die bessere Legdifferenz über die Saison, 3. mehr gewonnene Spieltage, 4. ein Entscheidungsleg oder Stechen.</p>
       <div class="pts-grid" id="pts-grid"></div>
       <p class="rules-link"><a class="btn pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Vollständiges Regelwerk öffnen (PDF)</a></p>
@@ -513,6 +522,7 @@
         mode: "gruppe", count: count, nr: day.nr, datum: day.datum, players: players, matches: m,
         groups: groups, places: gPlaces, invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats,
         complete: groups.every(function (g) { return g.order; }),
+        bonus: dayBonus(day, players),
       };
     }
 
@@ -535,7 +545,40 @@
     places.forEach(function (p) { p.points = p.name ? (punkte()[p.place - 1] || 0) : 0; });
 
     const complete = ["Finale", "P3", "P5", "P7"].every(function (id) { return !m[id].w.pending; });
-    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats, complete: complete };
+    return { mode: "ko", count: count, nr: day.nr, datum: day.datum, players: players, matches: m, places: places, invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats, complete: complete, bonus: dayBonus(day, players) };
+  }
+
+  // Bonuspunkte eines Spieltags aus den eingetragenen Werten
+  function bonusCfg() {
+    const b = LIGA_DATA.bonus || {};
+    const n = function (v, d) { const x = Number(v); return isFinite(x) ? x : d; };
+    return { checkout: n(b.checkout, 1), leg: n(b.leg, 1), je180: n(b.je180, 1) };
+  }
+  function dayBonus(day, players) {
+    const raw = (day.bonus && typeof day.bonus === "object") ? day.bonus : {};
+    const cfg = bonusCfg();
+    const res = { per: {}, bestCo: null, coNames: [], bestLeg: null, legNames: [], n180: 0, invalid: [], any: false };
+    const num = function (v) { if (v === null || v === undefined || v === "") return null; const x = Number(v); return isFinite(x) ? x : null; };
+    Object.keys(raw).forEach(function (name) {
+      if (players.indexOf(name) < 0) { res.invalid.push(name); return; }
+      const v = raw[name] || {};
+      const co = num(v.co), leg = num(v.leg), n = num(v.n180);
+      const p = res.per[name] = { co: co, leg: leg, n180: n || 0, pts: 0, gotCo: false, gotLeg: false };
+      if (co !== null || leg !== null || n) res.any = true;
+      if (co !== null && co > 0) {
+        if (res.bestCo === null || co > res.bestCo) { res.bestCo = co; res.coNames = [name]; }
+        else if (co === res.bestCo) res.coNames.push(name);
+      }
+      if (leg !== null && leg > 0) {
+        if (res.bestLeg === null || leg < res.bestLeg) { res.bestLeg = leg; res.legNames = [name]; }
+        else if (leg === res.bestLeg) res.legNames.push(name);
+      }
+      if (n) { p.pts += n * cfg.je180; res.n180 += n; }
+    });
+    res.coNames.forEach(function (n) { res.per[n].pts += cfg.checkout; res.per[n].gotCo = true; });
+    res.legNames.forEach(function (n) { res.per[n].pts += cfg.leg; res.per[n].gotLeg = true; });
+    res.pointsOf = function (name) { return res.per[name] ? res.per[name].pts : 0; };
+    return res;
   }
 
   // Entfernt Sieger-Einträge, die nach einer Änderung nicht mehr passen
@@ -548,6 +591,7 @@
       r.invalid.forEach(function (id) { delete day.sieger[id]; changed = true; });
       r.invalidScore.forEach(function (id) { if (day.ergebnisse) { delete day.ergebnisse[id]; changed = true; } });
       r.invalidStats.forEach(function (id) { if (day.statistik) { delete day.statistik[id]; changed = true; } });
+      r.bonus.invalid.forEach(function (n) { if (day.bonus) { delete day.bonus[n]; changed = true; } });
       if (r.groups) r.groups.forEach(function (g) {
         if (day.stechen && day.stechen[g.key] && day.stechen[g.key].length && (!g.tie || g.badStechen)) {
           delete day.stechen[g.key]; changed = true;
@@ -558,6 +602,7 @@
     Object.keys(day.sieger).forEach(function (k) { if (!clean(day.sieger[k])) delete day.sieger[k]; });
     if (day.ergebnisse && !Object.keys(day.ergebnisse).length) delete day.ergebnisse;
     if (day.statistik && !Object.keys(day.statistik).length) delete day.statistik;
+    if (day.bonus && !Object.keys(day.bonus).length) delete day.bonus;
   }
 
   // ===================================================================
@@ -630,6 +675,7 @@
       name: name, days: 0, doneDays: 0, points: 0, best: null, bestCount: 0,
       w: 0, l: 0, lw: 0, ll: 0, legGames: 0, dec: 0, decW: 0, nil: 0,
       avgSum: 0, avgN: 0, bestAvg: null, coHit: 0, coMiss: 0,
+      bonus: 0, donePoints: 0, n180: 0, hiCo: null, bestLeg: null,
       history: [], results: [], opp: {},
     };
     lastResolved.forEach(function (d, idx) {
@@ -637,9 +683,18 @@
       st.days++;
       const pl = d.places.filter(function (p) { return p.name === name; })[0];
       st.history.push({ nr: d.nr != null ? d.nr : idx + 1, place: pl ? pl.place : null });
+      const bp = d.bonus.per[name];
+      const bpts = d.bonus.pointsOf(name);
+      st.bonus += bpts; st.points += bpts;
+      if (bp) {
+        st.n180 += bp.n180 || 0;
+        if (bp.co && (st.hiCo === null || bp.co > st.hiCo)) st.hiCo = bp.co;
+        if (bp.leg && (st.bestLeg === null || bp.leg < st.bestLeg)) st.bestLeg = bp.leg;
+      }
       if (pl) {
         st.doneDays++;
         st.points += pl.points;
+        st.donePoints += pl.points + bpts;
         if (st.best === null || pl.place < st.best) { st.best = pl.place; st.bestCount = 1; }
         else if (pl.place === st.best) st.bestCount++;
       }
@@ -727,7 +782,7 @@
     const row = lastRows.filter(function (r) { return r.name === name; })[0];
     const dlg = document.getElementById("player-dialog");
     dlg.innerHTML = "";
-    const avg = st.doneDays ? (st.points / st.doneDays).toFixed(1).replace(".", ",") : "–";
+    const avg = st.doneDays ? (st.donePoints / st.doneDays).toFixed(1).replace(".", ",") : "–";
     const diff = st.lw - st.ll;
 
     const tiles = el("div", { class: "tiles" }, [
@@ -740,6 +795,8 @@
       tile("Average", st.avgN ? fmtAvg(st.avgSum / st.avgN) : "–", st.avgN ? "Bester: " + fmtAvg(st.bestAvg) : "noch nicht erfasst"),
       tile("Checkout-Quote", (st.coHit + st.coMiss) ? pct(st.coHit, st.coHit + st.coMiss) : "–",
         (st.coHit + st.coMiss) ? st.coHit + " von " + (st.coHit + st.coMiss) + " Doppeln" : "noch nicht erfasst"),
+      tile("Bonuspunkte", st.bonus ? "+" + st.bonus : "–", "in den Punkten enthalten"),
+      tile("180er", String(st.n180), [st.hiCo ? "High Finish " + st.hiCo : null, st.bestLeg ? "Bestes Leg " + st.bestLeg + " Darts" : null].filter(Boolean).join(" · ") || "noch nichts erfasst"),
     ]);
 
     const facts = [];
@@ -795,11 +852,17 @@
     const stats = {};
     const h2h = {};
     function stat(name) {
-      if (!stats[name]) stats[name] = newAcc({ name: name, days: 0, wins: 0, seconds: 0, points: 0, lw: 0, ll: 0, legs: false });
+      if (!stats[name]) stats[name] = newAcc({ name: name, days: 0, wins: 0, seconds: 0, points: 0, bonus: 0, lw: 0, ll: 0, legs: false });
       return stats[name];
     }
     resolved.forEach(function (d) {
-      d.players.forEach(function (p) { if (p) stat(p).days++; });
+      d.players.forEach(function (p) {
+        if (!p) return;
+        const s = stat(p);
+        s.days++;
+        const b = d.bonus.pointsOf(p);
+        s.bonus += b; s.points += b;
+      });
       d.places.forEach(function (pl) {
         if (!pl.name) return;
         const s = stat(pl.name);
@@ -916,6 +979,7 @@
         el("th", { class: "num", text: "Diff." }),
         el("th", { class: "num opt", text: "Ø", title: "3-Dart-Average (Mittelwert der Spiele)" }),
         el("th", { class: "num opt", text: "CO %", title: "Checkout-Quote" }),
+        el("th", { class: "num opt", text: "Bonus", title: "Bonuspunkte (in den Punkten enthalten)" }),
         el("th", { class: "num", text: "Punkte" }),
       ])]);
       const tbody = el("tbody");
@@ -931,6 +995,7 @@
           el("td", { class: "num diff" + (r.legs ? "" : " dash"), text: r.legs ? signed(r.lw - r.ll) : "–" }),
           el("td", { class: "num opt" + (r.avgN ? "" : " dash"), text: r.avgN ? fmtAvg(r.avgSum / r.avgN) : "–" }),
           el("td", { class: "num opt" + ((r.coHit + r.coMiss) ? "" : " dash"), text: (r.coHit + r.coMiss) ? pct(r.coHit, r.coHit + r.coMiss) : "–" }),
+          el("td", { class: "num opt" + (r.bonus ? "" : " dash"), text: r.bonus ? "+" + r.bonus : "–" }),
           el("td", { class: "num pts", text: String(r.points) }),
         ]));
       });
@@ -1029,7 +1094,10 @@
       return el("tr", null, [
         el("td", { class: "rank", text: p.place + "." }),
         p.name === undefined ? el("td", { class: "dash", text: "–" }) : el("td", null, [nameBtn(p.name)]),
-        el("td", { class: "num" + (p.name ? " pts" : " dash"), text: p.name ? p.points + " P." : "" }),
+        el("td", { class: "num" + (p.name ? " pts" : " dash") }, p.name ? [
+          document.createTextNode((p.points + d.bonus.pointsOf(p.name)) + " P."),
+          d.bonus.pointsOf(p.name) ? el("span", { class: "bonus-tag", text: "inkl. +" + d.bonus.pointsOf(p.name) }) : null,
+        ] : []),
       ]);
     });
     const places = el("div", null, [
@@ -1071,7 +1139,76 @@
     const treeBox = el("div", null, [el("h3", { text: "Turnierbaum" }), el("div", { class: "card" }, tree)]);
     if (editing && d.count) treeBox.appendChild(el("p", { class: "hint", text: "Trag in die Felder die Legs ein, der Sieger ergibt sich dann automatisch. Ohne Legs kannst du auch einfach auf den Namen des Siegers klicken; ein zweiter Klick entfernt das Ergebnis wieder." }));
     wrap.appendChild(el("div", { class: "day-grid" }, [places, treeBox]));
+    if (editing && d.count) wrap.appendChild(bonusEditor(day, d));
+    else if (d.bonus.any) wrap.appendChild(bonusView(d));
     return wrap;
+  }
+
+  function bonusLines(d) {
+    const b = d.bonus, cfg = bonusCfg();
+    const lines = [];
+    if (b.bestCo !== null) lines.push(["Höchstes Checkout", b.coNames.join(", ") + " (" + b.bestCo + ")", "+" + cfg.checkout]);
+    if (b.bestLeg !== null) lines.push(["Kürzestes Leg", b.legNames.join(", ") + " (" + b.bestLeg + " Darts)", "+" + cfg.leg]);
+    Object.keys(b.per).filter(function (n) { return b.per[n].n180; }).forEach(function (n) {
+      lines.push(["180er", n + " (" + b.per[n].n180 + "×)", "+" + b.per[n].n180 * cfg.je180]);
+    });
+    return lines;
+  }
+  function bonusView(d) {
+    return el("div", { class: "bonus-box" }, [
+      el("h3", { text: "Bonuspunkte" }),
+      el("div", { class: "card" }, [el("table", null, [el("tbody", null, bonusLines(d).map(function (l) {
+        return el("tr", null, [el("td", { class: "dash", text: l[0] }), el("td", { text: l[1] }), el("td", { class: "num pts", text: l[2] })]);
+      }))])]),
+    ]);
+  }
+  function bonusEditor(day, d) {
+    const names = d.players.filter(Boolean);
+    function onBonus(e) {
+      const n = e.target.getAttribute("data-name"), f = e.target.getAttribute("data-f");
+      const raw = e.target.value.trim();
+      let v = raw === "" ? null : parseInt(raw, 10);
+      const lim = { co: [2, 170, "Ein Checkout liegt zwischen 2 und 170."], leg: [9, 99, "Ein Leg braucht mindestens 9 Darts."], n180: [0, 50, "Bitte eine Anzahl zwischen 0 und 50."] }[f];
+      if (v !== null && (!isFinite(v) || v < lim[0] || v > lim[1])) {
+        const prev = day.bonus && day.bonus[n] ? day.bonus[n][f] : null;
+        e.target.value = prev != null ? String(prev) : "";
+        statusText = lim[2]; statusKind = "err"; renderEditBar(); return;
+      }
+      if (f === "n180" && v === 0) v = null;
+      day.bonus = day.bonus || {};
+      const p = day.bonus[n] = day.bonus[n] || {};
+      if (v === null) delete p[f]; else p[f] = v;
+      if (!Object.keys(p).length) delete day.bonus[n];
+      cleanupDay(day);
+      changed();
+    }
+    function inp(n, f, ph) {
+      const cur = day.bonus && day.bonus[n] ? day.bonus[n][f] : null;
+      return el("input", { class: "st-in", type: "text", inputmode: "numeric", maxlength: "3", placeholder: ph,
+        value: cur != null ? String(cur) : "", "data-name": n, "data-f": f, onchange: onBonus,
+        oninput: function (e) { e.target.value = e.target.value.replace(/[^0-9]/g, ""); } });
+    }
+    const rows = names.map(function (n) {
+      const pts = d.bonus.pointsOf(n);
+      return el("tr", null, [
+        el("td", { text: n }),
+        el("td", { class: "num" }, [inp(n, "co", "–")]),
+        el("td", { class: "num" }, [inp(n, "leg", "–")]),
+        el("td", { class: "num" }, [inp(n, "n180", "0")]),
+        el("td", { class: "num pts" + (pts ? "" : " dash"), text: pts ? "+" + pts : "–" }),
+      ]);
+    });
+    return el("div", { class: "bonus-box" }, [
+      el("h3", { text: "Bonuspunkte an diesem Spieltag" }),
+      el("div", { class: "card table-wrap" }, [el("table", { class: "bonus-edit" }, [
+        el("thead", null, [el("tr", null, [
+          el("th", { text: "Spieler" }), el("th", { class: "num", text: "High Finish" }),
+          el("th", { class: "num", text: "Kürzestes Leg (Darts)" }), el("th", { class: "num", text: "180er" }), el("th", { class: "num", text: "Bonus" }),
+        ])]),
+        el("tbody", null, rows),
+      ])]),
+      el("p", { class: "hint", text: "Leer lassen, was nicht zählt. Höchstes Checkout und kürzestes Leg des Tages bekommen je " + bonusCfg().checkout + " Bonuspunkt, jede 180 zählt einzeln. Bei Gleichstand bekommen alle mit dem Bestwert den Bonus." }),
+    ]);
   }
 
   function playerEditor(day) {
@@ -1757,6 +1894,9 @@
     "//          (V1–V3 genauso mit den Verlierern)",
     "//  - ergebnisse: Legs je Spiel, z. B. VF1: { \"Anna\": 3, \"Ben\": 1 }",
     "//        (optional; der Sieger ergibt sich dann aus den Legs)",
+    "//  - bonus: optional je Spieler und Spieltag: höchstes Checkout (co),",
+    "//        kürzestes Leg in Darts (leg) und Anzahl 180er (n180),",
+    "//        z. B. bonus: { \"Anna\": { co: 121, n180: 2 }, \"Ben\": { leg: 15 } }",
     "//  - statistik: optional je Spiel und Spieler Average (avg) und Missed",
     "//        Doubles (miss), z. B. VF1: { \"Anna\": { avg: 54.3, miss: 4 } }",
     "//        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)",
@@ -1775,6 +1915,9 @@
     out.push("  name: " + JSON.stringify(LIGA_DATA.name || "Liga") + ",");
     out.push("  // Punkte für Platz 1 bis 8 an jedem Spieltag");
     out.push("  punkte: [" + punkte().map(Number).join(", ") + "],");
+    const bc = bonusCfg();
+    out.push("  // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180");
+    out.push("  bonus: { checkout: " + bc.checkout + ", leg: " + bc.leg + ", je180: " + bc.je180 + " },");
     const ts = (Array.isArray(LIGA_DATA.stechen) ? LIGA_DATA.stechen : []).map(clean).filter(Boolean);
     if (ts.length) {
       out.push("  // Entscheidungsleg/Stechen bei Gleichstand in der Gesamttabelle (bessere zuerst)");
@@ -1807,6 +1950,17 @@
         egKeys.forEach(function (k) {
           const pair = Object.keys(eg[k]).map(function (n) { return q(n) + ": " + (Number(eg[k][n]) || 0); }).join(", ");
           out.push("      " + k + ": { " + pair + " },");
+        });
+        out.push("    },");
+      }
+      const bo = day.bonus || {};
+      const boNames = Object.keys(bo).filter(function (n) { return bo[n] && Object.keys(bo[n]).length; });
+      if (boNames.length) {
+        out.push("    bonus: {");
+        boNames.forEach(function (n) {
+          const f = [];
+          ["co", "leg", "n180"].forEach(function (k) { if (bo[n][k] != null && bo[n][k] !== "") f.push(k + ": " + Number(bo[n][k])); });
+          if (f.length) out.push("      " + q(n) + ": { " + f.join(", ") + " },");
         });
         out.push("    },");
       }
