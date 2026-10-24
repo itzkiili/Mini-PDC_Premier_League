@@ -10,10 +10,10 @@
 //  Dateiname des Regelwerks im Repository (gleicher Ordner wie diese Seite).
 //  Bei einem anderen Namen nur hier ändern, z. B. "Regelwerk_Liga.pdf".
 // ------------------------------------------------------------------
-const REGELWERK_PDF = "Regelwerk.pdf";
+const REGELWERK_PDF = "dokumente/Regelwerk.pdf";
 document.querySelectorAll(".pdf-link").forEach(function (a) { a.setAttribute("href", encodeURI(REGELWERK_PDF)); });
 
-const DATA_FILE = "ergebnisse.js";
+const DATA_FILE = "daten/ergebnisse.js";
 const DEFAULT_PUNKTE = [15, 12, 10, 8, 7, 6, 5, 4];
 const loadError = typeof SPIELTAGE === "undefined";
 let LIGA_DATA = clone(typeof LIGA !== "undefined" && LIGA ? LIGA : { name: "Liga", punkte: DEFAULT_PUNKTE });

@@ -6,13 +6,13 @@
 //  aktuell sind); nur ohne Verbindung wird die gespeicherte Fassung gezeigt.
 //  Nach größeren Änderungen CACHE_VERSION hochzählen.
 // =====================================================================
-const CACHE_VERSION = "liga-v2";
+const CACHE_VERSION = "liga-v3";
 
 const CORE = [
   "./",
   "index.html",
-  "ergebnisse.js",
-  "zugang.js",
+  "daten/ergebnisse.js",
+  "daten/zugang.js",
   "css/style.css",
   "skripte/1-daten.js",
   "skripte/2-auswertung.js",

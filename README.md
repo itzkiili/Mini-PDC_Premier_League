@@ -69,10 +69,12 @@ Alle Daten stehen in `ergebnisse.js`. Oben in der Datei steht eine Anleitung zum
 
 ```
 index.html          Aufbau der Seite
-ergebnisse.js       alle Ergebnisse und Einstellungen der Liga (Daten)
-zugang.js           verschlüsselter Zugang für den Bearbeiten-Modus (nicht von Hand ändern)
-Regelwerk.pdf       Regelwerk
 service-worker.js   startet die App-Funktion (muss im Hauptordner liegen)
+daten/
+  ergebnisse.js       alle Ergebnisse und Einstellungen der Liga (Daten)
+  zugang.js           verschlüsselter Zugang für den Bearbeiten-Modus (nicht von Hand ändern)
+dokumente/
+  Regelwerk.pdf       Regelwerk
 app/
   manifest.webmanifest  App-Name, Farben, Icons
   service-worker.js     Offline-Speicher der App

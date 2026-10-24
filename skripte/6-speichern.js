@@ -62,7 +62,7 @@ function guessRepo() {
 }
 
 // ---------- Zugang mit Passwort ----------
-const ACCESS_FILE = "zugang.js";
+const ACCESS_FILE = "daten/zugang.js";
 const PBKDF2_ITER = 600000;
 
 function hasAccess() {
@@ -345,7 +345,7 @@ async function saveToGitHub() {
 
 function downloadFile() {
   const blob = new Blob([serialize()], { type: "text/javascript;charset=utf-8" });
-  const a = el("a", { href: URL.createObjectURL(blob), download: DATA_FILE });
+  const a = el("a", { href: URL.createObjectURL(blob), download: "ergebnisse.js" });  
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   statusText = "Datei heruntergeladen. Lade sie in GitHub hoch und ersetze damit die alte ergebnisse.js.";
