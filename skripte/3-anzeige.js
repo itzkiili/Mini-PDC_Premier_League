@@ -212,7 +212,7 @@ function renderSeasonFinal(rows, playedDays) {
         match("VF4", at(3), at(6)),
       ]),
       round("Halbfinale", [
-        match("HF1", ref("Sieger VF1 (1-8)"), ref("Sieger VF3 (4–5)")),
+        match("HF1", ref("Sieger VF1 (1-8)"), ref("Sieger VF2 (4–5)")),
         match("HF2", ref("Sieger VF3 (2–7)"), ref("Sieger VF4 (3–6)")),
       ]),
       round("Finale", [
