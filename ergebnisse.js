@@ -68,4 +68,10 @@ const SPIELTAGE = [
       G3: { "Johannes": { avg: 41.05, miss: 24 }, "Kilian": { avg: 43.18, miss: 29 } },
     },
   },
+  {
+    nr: 2,
+    datum: "26.10.2026",
+    spieler: ["Leon", "Philipp", "Andres", "Johannes", "Ben", "Tom", "Kilian"],
+    sieger: {},
+  },
 ];
