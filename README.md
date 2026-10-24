@@ -15,6 +15,7 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 - **Saisonfinale:** vorläufiges Bracket der Top 8 nach aktuellem Tabellenstand
 - **Bearbeiten-Modus:** Spieler, Legs, Average, Missed Doubles und Bonuswerte direkt auf der Seite eintragen, mit Passwort geschützt und automatisch auf GitHub gespeichert
 - **Regelwerk** als PDF verlinkt
+- **Als App** auf Android und iPhone installierbar, auch ohne Internet nutzbar
 
 ---
 
@@ -43,6 +44,7 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 
 Das vollständige Regelwerk steht im PDF im Repository.
 
+
 ---
 
 ## Ergebnisse eintragen
@@ -70,6 +72,11 @@ index.html          Aufbau der Seite
 ergebnisse.js       alle Ergebnisse und Einstellungen der Liga (Daten)
 zugang.js           verschlüsselter Zugang für den Bearbeiten-Modus (nicht von Hand ändern)
 Regelwerk.pdf       Regelwerk
+service-worker.js   startet die App-Funktion (muss im Hauptordner liegen)
+app/
+  manifest.webmanifest  App-Name, Farben, Icons
+  service-worker.js     Offline-Speicher der App
+  icons/                App-Icons und Favicon
 css/
   style.css         Aussehen (Farben, Schrift, Layout)
 skripte/
@@ -80,4 +87,5 @@ skripte/
   5-eingabe.js      Eingabefelder im Bearbeiten-Modus
   6-speichern.js    Anmeldung, Passwort, Speichern bei GitHub
   7-start.js        startet die Seite
+  8-app.js          „Als App installieren“
 ```
