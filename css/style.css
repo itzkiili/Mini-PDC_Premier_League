@@ -199,11 +199,11 @@ td.diff { font-weight: 600; }
 /* Spielerkarte */
 .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
 .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-#player-dialog, #compare-dialog {
+#player-dialog, #compare-dialog, #install-dialog {
   width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
 }
-#player-dialog::backdrop, #compare-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+#player-dialog::backdrop, #compare-dialog::backdrop, #install-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
 .pc { padding: 20px; }
 .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .pc-head h2 { margin: 0; font-size: 1.7rem; }
@@ -321,6 +321,13 @@ table.cmp-duels { width: 100%; }
 .cmp-legend .key::before { content: ""; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; }
 .cmp-legend .key.a::before { background: var(--accent); }
 .cmp-legend .key.b::before { background: var(--silver); }
+
+/* Als App */
+.footer-links { display: inline-flex; gap: 18px; flex-wrap: wrap; }
+#install-dialog { width: min(480px, calc(100vw - 24px)); }
+.install-steps { margin: 6px 0 14px; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.install-steps li { line-height: 1.45; }
+body { padding-bottom: env(safe-area-inset-bottom); }
 
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
