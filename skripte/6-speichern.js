@@ -37,7 +37,10 @@ function renderFooter() {
   const f = document.getElementById("footer");
   f.innerHTML = "";
   f.appendChild(el("span", { text: "Tabelle wird automatisch aus den Ergebnissen berechnet." }));
-  if (!editing) f.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false); } }));
+  const links = el("span", { class: "footer-links" });
+  if (typeof installButton === "function") { const ib = installButton(); if (ib) links.appendChild(ib); }
+  f.appendChild(links);
+  if (!editing) links.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false); } }));
 }
 
 function store(key, val) {
