@@ -26,19 +26,20 @@ function updateThemeButton() {
   const b = document.getElementById("theme-toggle");
   if (!b) return;
   const light = currentTheme() === "light";
-  b.textContent = light ? "☾ Dunkel" : "☀ Hell";
+  b.textContent = light ? "☾" : "☀";
   b.setAttribute("aria-label", light ? "Dunkles Design einschalten" : "Helles Design einschalten");
+  b.title = light ? "Dunkles Design" : "Helles Design";
 }
 
 (function () {
-  const nav = document.querySelector("header nav");
-  if (!nav || document.getElementById("theme-toggle")) return;
+  const header = document.querySelector("header");
+  if (!header || document.getElementById("theme-toggle")) return;
   const b = document.createElement("button");
   b.type = "button";
   b.id = "theme-toggle";
   b.className = "theme-toggle";
   b.addEventListener("click", function () { applyTheme(currentTheme() === "light" ? "dark" : "light"); });
-  nav.appendChild(b);
+  header.appendChild(b);
   updateThemeColor();
   updateThemeButton();
 })();

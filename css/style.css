@@ -30,7 +30,8 @@ body {
   font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
-header { padding: 32px 0 8px; }
+header { padding: 32px 0 8px; position: relative; }
+header h1, header .sub { padding-right: 52px; }
 h1 { font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; }
 .sub { color: var(--muted); margin: 4px 0 0; }
 nav { display: flex; gap: 8px; margin: 20px 0 8px; flex-wrap: wrap; }
@@ -41,8 +42,10 @@ nav a {
 }
 nav a:hover { border-color: var(--accent); color: var(--accent); }
 .theme-toggle {
-  font: inherit; font-size: 0.92rem; cursor: pointer; color: var(--text); padding: 6px 14px;
-  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); margin-left: auto;
+  position: absolute; top: 28px; right: 0;
+  width: 40px; height: 40px; padding: 0; display: grid; place-items: center;
+  font: inherit; font-size: 1.15rem; line-height: 1; cursor: pointer; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 50%; background: transparent;
 }
 .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 section { margin-top: 36px; }
