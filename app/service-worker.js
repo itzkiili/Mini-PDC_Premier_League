@@ -6,7 +6,7 @@
 //  aktuell sind); nur ohne Verbindung wird die gespeicherte Fassung gezeigt.
 //  Nach größeren Änderungen CACHE_VERSION hochzählen.
 // =====================================================================
-const CACHE_VERSION = "liga-v4";
+const CACHE_VERSION = "liga-v5";
 
 const CORE = [
   "./",
@@ -25,6 +25,7 @@ const CORE = [
   "skripte/8-app.js",
   "skripte/9-darstellung.js",
   "skripte/10-saisons.js",
+  "dokumente/Regelwerk.pdf",
   "app/manifest.webmanifest",
   "app/icons/icon-192.png",
   "app/icons/icon-512.png",
@@ -61,8 +62,7 @@ self.addEventListener("fetch", function (event) {
   if (url.hostname === "api.github.com") return;
 
   // Schriften von Google: einmal laden, dann aus dem Speicher
-  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
-    event.respondWith(
+     if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" || url.hostname === "cdnjs.cloudflare.com") {    event.respondWith(
       caches.match(req).then(function (hit) {
         return hit || fetch(req).then(function (res) {
           const copy = res.clone();

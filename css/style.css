@@ -347,6 +347,16 @@ table.cmp-duels { width: 100%; }
 /* Als App */
 .footer-links { display: inline-flex; gap: 18px; flex-wrap: wrap; }
 #install-dialog { width: min(480px, calc(100vw - 24px)); }
+/* Regelwerk in der App */
+#pdf-dialog { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0; background: var(--bg); color: var(--text); }
+#pdf-dialog[open] { display: flex; flex-direction: column; }
+.pdf-bar { display: flex; align-items: center; gap: 14px; padding: calc(env(safe-area-inset-top) + 10px) 16px 10px;
+  background: var(--surface); border-bottom: 1px solid var(--line); }
+.pdf-title { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em; }
+.pdf-share { margin-left: auto; }
+.pdf-pages { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 12px 12px calc(env(safe-area-inset-bottom) + 12px); }
+.pdf-page { display: block; width: 100%; max-width: 900px; height: auto; margin: 0 auto 12px; background: #fff; border-radius: 4px; }
 .install-steps { margin: 6px 0 14px; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
 .install-steps li { line-height: 1.45; }
 body { padding-bottom: env(safe-area-inset-bottom); }
