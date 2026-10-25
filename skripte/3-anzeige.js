@@ -235,7 +235,7 @@ function render() {
   const warnings = [];
   const resolved = DAYS.map(function (d) { return resolveDay(d, warnings); });
   lastResolved = resolved;
-  lastElo = computeElo(resolved);
+  lastElo = computeElo(resolved, typeof eloStartFor === "function" ? eloStartFor() : null);
   document.body.classList.toggle("editing", editing);
 
   if (currentIdx === null || currentIdx >= DAYS.length) currentIdx = DAYS.length - 1;

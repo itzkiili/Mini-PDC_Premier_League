@@ -234,12 +234,18 @@ function cleanupDay(day) {
 // ---------------------------------------------------------------------
 function eloExpected(ra, rb) { return 1 / (1 + Math.pow(10, (rb - ra) / 400)); }
 
-function computeElo(resolved) {
+// start (optional): Stand aus früheren Saisons { Name: { rating, games, peak } }
+function computeElo(resolved, start) {
   const order = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2", "P7", "P5", "P3", "Finale",
     "G1", "V1", "G2", "V2", "G3", "V3"];
   const elo = {};
+  Object.keys(start || {}).forEach(function (n) {
+    const s = start[n];
+    elo[n] = { rating: s.rating, games: s.games || 0, peak: s.peak || s.rating, prev: s.rating, history: [], seasons: s.seasons || 0, inSeason: false };
+  });
   function get(n) {
-    if (!elo[n]) elo[n] = { rating: ELO_START, games: 0, peak: ELO_START, prev: ELO_START, history: [] };
+    if (!elo[n]) elo[n] = { rating: ELO_START, games: 0, peak: ELO_START, prev: ELO_START, history: [], seasons: 0, inSeason: false };
+    if (!elo[n].inSeason) { elo[n].inSeason = true; elo[n].seasons++; }
     return elo[n];
   }
   resolved.forEach(function (d, idx) {

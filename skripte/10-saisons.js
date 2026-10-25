@@ -13,6 +13,8 @@ const ARCHIVE_FOLDER = "daten/archiv/";
 let SEASONS = (typeof SAISONS !== "undefined" && Array.isArray(SAISONS)) ? clone(SAISONS) : [];
 let currentSeason = null;   // laufende Saison, solange ein Archiv angezeigt wird
 let archiveView = null;     // { id, name } beim Anzeigen eines Archivs
+const ARCHIVES = {};        // geladene Spieltage der archivierten Saisons (für die Elo-Wertung)
+let eloChain = { bySeason: {}, current: null };   // Elo-Stand zu Beginn jeder Saison
 
 function viewingArchive() { return !!archiveView; }
 
@@ -190,8 +192,10 @@ async function closeSeason(oldName, id, newName, msg) {
     setMsg(msg, "Beginne „" + newName + "“ …");
     const newLiga = { name: newName, punkte: punkte().slice() };
     if (LIGA_DATA.bonus) newLiga.bonus = clone(LIGA_DATA.bonus);
+    ARCHIVES[id] = clone(DAYS);
     LIGA_DATA = newLiga;
     DAYS = [];
+    rebuildEloChain();
     const sha = await putFile(DATA_FILE, serialize(), "Neue Saison: " + newName);
     if (sha) gh.sha = sha;
     gitBase = snapshot();
@@ -213,8 +217,123 @@ getDialog("season-dialog").addEventListener("click", function (e) {
   if (e.target === e.currentTarget) e.currentTarget.close();
 });
 renderSeasonBar();
+renderWorldSection();
+loadArchivesForElo();
 (function () {
   let id = null;
   try { id = new URL(location.href).searchParams.get("saison"); } catch (e) { /* egal */ }
   if (id && SEASONS.some(function (s) { return s.id === id; })) showSeason(id);
 })();
+
+// =====================================================================
+//  Elo über alle Saisons
+// =====================================================================
+
+// Startwerte für die gerade angezeigte Saison (Stand am Ende der Saison davor)
+function eloStartFor() {
+  if (archiveView) return eloChain.bySeason[archiveView.id] || null;
+  return eloChain.current;
+}
+
+function plainElo(elo) {
+  const out = {};
+  Object.keys(elo).forEach(function (n) {
+    out[n] = { rating: elo[n].rating, games: elo[n].games, peak: elo[n].peak, seasons: elo[n].seasons };
+  });
+  return out;
+}
+
+// Archivierte Saisons der Reihe nach durchrechnen
+function rebuildEloChain() {
+  let running = {};
+  const bySeason = {};
+  SEASONS.forEach(function (s) {
+    bySeason[s.id] = running;
+    const days = ARCHIVES[s.id];
+    if (!days) return;   // nicht geladen: Saison wird übersprungen
+    const resolved = days.map(function (d) { return resolveDay(d, []); });
+    running = plainElo(computeElo(resolved, running));
+  });
+  eloChain = { bySeason: bySeason, current: running };
+}
+
+// Alle Archive laden (klein, einmalig), danach neu zeichnen
+async function loadArchivesForElo() {
+  if (!SEASONS.length) return;
+  for (let i = 0; i < SEASONS.length; i++) {
+    const s = SEASONS[i];
+    if (ARCHIVES[s.id]) continue;
+    try {
+      const r = await fetch(s.datei, { cache: "no-cache" });
+      if (!r.ok) throw new Error("Fehler " + r.status);
+      const parsed = parseDataFile(await r.text());
+      if (parsed.tage) ARCHIVES[s.id] = parsed.tage;
+    } catch (e) {
+      console.warn("Archiv „" + s.name + "“ konnte für die Elo-Wertung nicht geladen werden.", e);
+    }
+  }
+  rebuildEloChain();
+  if (!editing) render(); else renderWorldSection();
+}
+
+// ---------------------------------------------------------------------
+//  Weltrangliste
+// ---------------------------------------------------------------------
+function renderWorldSection() {
+  if (document.getElementById("weltrangliste")) return;
+  const sec = el("section", { id: "weltrangliste" }, [
+    el("h2", { text: "Weltrangliste" }),
+    el("p", { class: "note", text: "Die ewige Elo-Rangliste über alle Saisons. Jeder beginnt einmal mit " + ELO_START + ", danach wird die Wertung von Saison zu Saison weitergeführt." }),
+    el("button", { type: "button", class: "btn primary", text: "Weltrangliste öffnen", onclick: openWorldRanking }),
+  ]);
+  // direkt unter dem Saisonfinale einfügen
+  const after = document.getElementById("saisonfinale") || document.getElementById("regeln");
+  after.parentNode.insertBefore(sec, after.nextSibling);
+}
+
+function openWorldRanking() {
+  const dlg = getDialog("world-dialog");
+  dlg.innerHTML = "";
+  const names = Object.keys(lastElo);
+  names.sort(function (a, b) { return lastElo[b].rating - lastElo[a].rating; });
+  const inTable = {};
+  lastRows.forEach(function (r) { inTable[r.name] = true; });
+  const stand = archiveView ? "Stand: Ende der Saison „" + archiveView.name + "“" : "Stand: " + (LIGA_DATA.name || "aktuelle Saison");
+
+  const rows = names.map(function (n, i) {
+    const e = lastElo[n];
+    const d = Math.round(e.delta || 0);
+    return el("tr", { class: i < 3 ? "r" + (i + 1) : "" }, [
+      el("td", { class: "rank", text: (i + 1) + "." }),
+      el("td", null, [inTable[n]
+        ? el("button", { type: "button", class: "player-link", text: n, onclick: function () { dlg.close(); openPlayer(n); } })
+        : el("span", { text: n })]),
+      el("td", { class: "num pts", text: String(Math.round(e.rating)) }),
+      el("td", { class: "num trend-cell " + (d > 0 ? "up" : d < 0 ? "down" : "same"), text: d > 0 ? "▲" + d : d < 0 ? "▼" + (-d) : "–" }),
+      el("td", { class: "num opt", text: String(Math.round(e.peak)) }),
+      el("td", { class: "num opt", text: String(e.games) }),
+      el("td", { class: "num opt", text: String(e.seasons || 0) }),
+    ]);
+  });
+
+  dlg.appendChild(el("div", { class: "pc" }, [
+    el("div", { class: "pc-head" }, [
+      el("div", null, [el("h2", { text: "Weltrangliste" }), el("p", { class: "sub", text: stand })]),
+      el("button", { type: "button", class: "btn close", text: "✕", "aria-label": "Schließen", onclick: function () { dlg.close(); } }),
+    ]),
+    names.length ? el("div", { class: "table-wrap" }, [el("table", { class: "world" }, [
+      el("thead", null, [el("tr", null, [
+        el("th", { text: "Pl." }), el("th", { text: "Spieler" }), el("th", { class: "num", text: "Elo" }),
+        el("th", { class: "num", text: "±", title: "Veränderung am letzten Spieltag" }),
+        el("th", { class: "num opt", text: "Höchstwert" }), el("th", { class: "num opt", text: "Spiele" }), el("th", { class: "num opt", text: "Saisons" }),
+      ])]),
+      el("tbody", null, rows),
+    ])]) : el("p", { class: "note", text: "Noch keine Spiele gewertet." }),
+    el("p", { class: "note small-note", text: "Nach jedem Spiel gibt der Verlierer Elo-Punkte an den Sieger ab – umso mehr, je überraschender der Sieg. Wer länger nicht spielt, behält seinen Wert." }),
+  ]));
+  openDialog(dlg);
+}
+
+getDialog("world-dialog").addEventListener("click", function (e) {
+  if (e.target === e.currentTarget) e.currentTarget.close();
+});

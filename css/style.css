@@ -217,12 +217,12 @@ td.diff { font-weight: 600; }
 /* Spielerkarte */
 .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
 .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-#player-dialog, #compare-dialog, #install-dialog, #season-dialog {
+#player-dialog, #compare-dialog, #install-dialog, #season-dialog, #world-dialog {
   width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
 }
 dialog:focus { outline: none; }
-#player-dialog::backdrop, #compare-dialog::backdrop, #install-dialog::backdrop, #season-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+#player-dialog::backdrop, #compare-dialog::backdrop, #install-dialog::backdrop, #season-dialog::backdrop, #world-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
 .pc { padding: 20px; }
 .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .pc-head h2 { margin: 0; font-size: 1.7rem; }
@@ -379,6 +379,19 @@ td.elo { font-variant-numeric: tabular-nums; }
 }
 .archive-banner .linkbtn { color: var(--accent); font-weight: 600; }
 #season-dialog { width: min(520px, calc(100vw - 24px)); }
+
+/* Weltrangliste */
+#weltrangliste .note { margin: -4px 0 14px; }
+table.world td.trend-cell { font-size: 0.82rem; font-weight: 600; }
+table.world td.trend-cell.up { color: var(--accent); }
+table.world td.trend-cell.down { color: var(--warn-text); }
+table.world td.trend-cell.same { color: var(--muted); font-weight: 400; }
+table.world tr.r1 td.rank { color: var(--gold); }
+table.world tr.r2 td.rank { color: var(--silver); }
+table.world tr.r3 td.rank { color: var(--bronze); }
+.small-note { font-size: 0.8rem; margin-top: 12px; }
+:root[data-theme="light"] #season-dialog::backdrop,
+:root[data-theme="light"] #world-dialog::backdrop { background: rgba(20, 23, 28, 0.45); }
 
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn, .theme-toggle {
