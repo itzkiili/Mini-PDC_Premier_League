@@ -71,7 +71,7 @@ const SPIELTAGE = [
   {
     nr: 2,
     datum: "26.10.2026",
-    spieler: ["Leon", "Philipp", "Andres", "Johannes", "Ben", "Tom", "Kilian"],
+    spieler: ["Johannes", "Philipp", "Leon", "Ben", "Andres", "Tom", "Kilian"],
     sieger: {},
   },
 ];
