@@ -96,9 +96,22 @@ td.dash { color: var(--muted); }
 .round { display: flex; flex-direction: column; }
 .round-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; }
 .round-body { display: flex; flex-direction: column; justify-content: space-around; gap: 10px; flex: 1; }
+/* Handy: Runden nebeneinander lassen und seitlich wischen */
 @media (max-width: 560px) {
-  .rounds, .rounds.two { grid-template-columns: 1fr; }
+  .rounds, .rounds.two, .games {
+    display: grid; grid-auto-flow: column; grid-template-columns: none;
+    grid-auto-columns: minmax(200px, 76%); gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin: 0 -16px; padding: 0 16px 8px; scroll-padding: 0 16px;
+    scrollbar-width: none;
+  }
+  .rounds::-webkit-scrollbar, .games::-webkit-scrollbar { display: none; }
+  .round, .games > .match { scroll-snap-align: start; }
+  p.swipe-hint { display: block; }
 }
+.swipe-hint { display: none; font-size: 0.75rem; color: var(--muted); margin: -4px 0 8px; }
+/* Rasterspalten dürfen schmaler werden als ihr Inhalt (sonst würde die Seite am Handy zu breit) */
+.day-grid > *, .group-grid > * { min-width: 0; }
 .match { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
 .match.final { border-color: var(--accent); border-width: 2px; }
 .match-head { font-size: 0.72rem; color: var(--muted); padding: 4px 10px; background: var(--surface-2); display: flex; justify-content: space-between; }
@@ -251,7 +264,8 @@ td.bad { color: var(--warn-text); font-weight: 600; }
 
 /* Bonus */
 .bonus-box { margin-top: 20px; }
-.bonus-box table td { padding: 8px 14px; }
+.bonus-box table td { padding: 8px 14px; white-space: normal; }
+.bonus-box table td.num { white-space: nowrap; }
 .bonus-tag { display: block; font-family: system-ui, sans-serif; font-size: 0.7rem; font-weight: 400; color: var(--muted); }
 table.bonus-edit td, table.bonus-edit th { padding: 6px 10px; }
 table.bonus-edit .st-in { width: 3.6rem; }

@@ -209,6 +209,7 @@ function renderSeasonFinal(rows, playedDays) {
     return el("div", { class: "round" }, [el("div", { class: "round-title", text: title }), el("div", { class: "round-body" }, items)]);
   }
   box.appendChild(el("div", { class: "bracket" }, [
+    swipeHint(),
     el("div", { class: "rounds" }, [
       round("Viertelfinale", [
         match("VF1",at(1), at(8)),
@@ -412,6 +413,7 @@ function dayView(day, d) {
     tree = [
       el("div", { class: "bracket" }, [
         el("h3", { text: "Hauptrunde · Plätze 1–4" }),
+        swipeHint(),
         el("div", { class: "rounds" }, [
           roundEl(day, "Viertelfinale", [m.VF1, m.VF2, m.VF3, m.VF4]),
           roundEl(day, "Halbfinale", [m.HF1, m.HF2]),
@@ -420,6 +422,7 @@ function dayView(day, d) {
       ]),
       el("div", { class: "bracket" }, [
         el("h3", { text: "Platzierungsrunde · Plätze 5–8" }),
+        swipeHint(),
         el("div", { class: "rounds two" }, [
           roundEl(day, "Platzierungsrunde", [m.PR1, m.PR2]),
           roundEl(day, "Platzierung", [m.P5, m.P7]),
@@ -481,6 +484,11 @@ function slotEl(day, match, side, tagText) {
     onclick: pickable ? function () { pickWinner(day, match.id, s.name); } : null,
     onkeydown: pickable ? function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickWinner(day, match.id, s.name); } } : null,
   }, kids);
+}
+
+// Hinweis am Handy, dass man seitlich wischen kann (nur bei schmalem Bildschirm sichtbar)
+function swipeHint() {
+  return el("p", { class: "swipe-hint", text: "← Seitlich wischen für die nächste Runde →" });
 }
 
 function matchEl(day, match, isFinal) {
