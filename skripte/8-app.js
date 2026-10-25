@@ -67,7 +67,7 @@ function showInstallHelp(forceIos) {
     el("button", { type: "button", class: "linkbtn", text: ios ? "Anleitung für Android anzeigen" : "Anleitung für iPhone anzeigen",
       onclick: function () { showInstallHelp(!ios); } }),
   ]));
-  if (!dlg.open) dlg.showModal();
+  openDialog(dlg);
 }
 
 getDialog("install-dialog").addEventListener("click", function (e) {

@@ -161,7 +161,16 @@ function getDialog(id) {
     dlg.id = id;
     document.body.appendChild(dlg);
   }
+  if (!dlg.hasAttribute("tabindex")) dlg.setAttribute("tabindex", "-1");
   return dlg;
+}
+
+// Fenster öffnen und den Fokus auf das Fenster selbst legen
+// (sonst markiert der Browser das erste Element mit einem Rahmen)
+function openDialog(dlg) {
+  if (!dlg.open) dlg.showModal();
+  dlg.focus({ preventScroll: true });
+  dlg.scrollTop = 0;
 }
 
 // ---------------------------------------------------------------------
@@ -269,8 +278,7 @@ function openPlayer(name) {
       compareSelect(name, null, function (n) { openCompare(name, n); }, "Spieler wählen …"),
     ]) : null,
   ]));
-  if (!dlg.open) dlg.showModal();
-  dlg.scrollTop = 0;
+  openDialog(dlg);
 }
 
 // ---------------------------------------------------------------------
@@ -484,6 +492,5 @@ function openCompare(a, b) {
     compareChart(a, sa.history, b, sb.history),
     swap,
   ]));
-  if (!dlg.open) dlg.showModal();
-  dlg.scrollTop = 0;
+  openDialog(dlg);
 }
