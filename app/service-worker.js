@@ -77,9 +77,12 @@ self.addEventListener("fetch", function (event) {
 
   if (url.origin !== self.location.origin) return;
 
+  // Ergebnisse immer frisch beim Server nachfragen (nicht aus dem Browser-Zwischenspeicher)
+  const fresh = url.pathname.indexOf("/daten/") >= 0 ? new Request(req, { cache: "no-cache" }) : req;
+
   // Eigene Dateien: Netz zuerst, bei Erfolg Speicher aktualisieren, offline aus dem Speicher
   event.respondWith(
-    fetch(req).then(function (res) {
+    fetch(fresh).then(function (res) {
       if (res && res.ok) {
         const copy = res.clone();
         caches.open(CACHE_VERSION).then(function (c) { c.put(req, copy); });
