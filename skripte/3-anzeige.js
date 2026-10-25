@@ -178,7 +178,10 @@ function renderSeasonFinal(rows, playedDays) {
     return { label: "Platz " + place, name: r && r.points > 0 ? r.name : null };
   };
   const ref = function (text) { return { label: null, name: null, ref: text }; };
-  note.textContent = playedDays
+  const archived = typeof viewingArchive === "function" && viewingArchive();
+  note.textContent = archived
+    ? "Paarungen nach der Abschlusstabelle dieser Saison."
+    : playedDays
     ? "Provisorisch nach dem aktuellen Tabellenstand (" + playedDays + (playedDays === 1 ? " Spieltag" : " Spieltage") + "). Die endgültigen Paarungen stehen nach dem letzten Spieltag fest."
     : "Die Paarungen ergeben sich aus der Tabelle am Saisonende.";
 

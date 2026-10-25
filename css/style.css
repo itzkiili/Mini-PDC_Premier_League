@@ -217,12 +217,12 @@ td.diff { font-weight: 600; }
 /* Spielerkarte */
 .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
 .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-#player-dialog, #compare-dialog, #install-dialog {
+#player-dialog, #compare-dialog, #install-dialog, #season-dialog {
   width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
 }
 dialog:focus { outline: none; }
-#player-dialog::backdrop, #compare-dialog::backdrop, #install-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+#player-dialog::backdrop, #compare-dialog::backdrop, #install-dialog::backdrop, #season-dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
 .pc { padding: 20px; }
 .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .pc-head h2 { margin: 0; font-size: 1.7rem; }
@@ -368,6 +368,17 @@ td.elo { font-variant-numeric: tabular-nums; }
 .match.preview .match-head span:last-child, .head-link { color: var(--accent); }
 .head-link { font: inherit; font-size: inherit; background: none; border: none; padding: 0; cursor: pointer; }
 .head-link:hover { text-decoration: underline; }
+
+/* Saisonauswahl und Archiv */
+.season-bar { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.season-label { display: inline-flex; align-items: center; gap: 10px; }
+.season-label > span { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.85rem; color: var(--muted); }
+.archive-banner {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); color: var(--text); font-size: 0.9rem;
+}
+.archive-banner .linkbtn { color: var(--accent); font-weight: 600; }
+#season-dialog { width: min(520px, calc(100vw - 24px)); }
 
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn, .theme-toggle {

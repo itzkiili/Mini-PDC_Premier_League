@@ -65,6 +65,16 @@ Alle Daten stehen in `ergebnisse.js`. Oben in der Datei steht eine Anleitung zum
 
 ---
 
+### Saisonwechsel
+
+1. Im Bearbeiten-Modus (mit GitHub verbunden) auf **Saison abschließen** klicken.
+2. Namen der alten Saison, Kürzel (z. B. `2026-27`) und Namen der neuen Saison prüfen und bestätigen.
+3. Die Seite archiviert die Saison nach `daten/archiv/2026-27.js`, trägt sie in `daten/saisons.js` ein und beginnt eine leere neue Saison mit denselben Punkte- und Bonusregeln.
+
+Alte Saisons sind oben über die **Saisonauswahl** abrufbar, direkt verlinkbar mit `?saison=2026-27`, und lassen sich nicht mehr bearbeiten.
+
+---
+
 ## Dateien
 
 ```
@@ -72,6 +82,8 @@ index.html          Aufbau der Seite
 service-worker.js   startet die App-Funktion (muss im Hauptordner liegen)
 daten/
   ergebnisse.js       alle Ergebnisse und Einstellungen der Liga (Daten)
+  saisons.js          Liste der archivierten Saisons
+  archiv/             abgeschlossene Saisons (eine Datei pro Saison)
   zugang.js           verschlüsselter Zugang für den Bearbeiten-Modus (nicht von Hand ändern)
 dokumente/
   Regelwerk.pdf       Regelwerk
@@ -90,4 +102,6 @@ skripte/
   6-speichern.js    Anmeldung, Passwort, Speichern bei GitHub
   7-start.js        startet die Seite
   8-app.js          „Als App installieren“
+  9-darstellung.js    Hell-/Dunkel-Modus
+  10-saisons.js       Saisonarchiv und Saisonwechsel
 ```

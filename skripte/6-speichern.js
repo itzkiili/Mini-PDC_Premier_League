@@ -21,6 +21,9 @@ function renderEditBar() {
     btns.push(el("button", { class: "btn primary", type: "button", text: saving ? "Speichert …" : "Speichern", disabled: saving || !dirty ? "disabled" : null, onclick: saveToGitHub }));
   }
   btns.push(el("button", { class: "btn" + (gh.connected ? "" : " primary"), type: "button", text: "Datei herunterladen", onclick: downloadFile }));
+  if (gh.connected && typeof openSeasonEnd === "function") {
+    btns.push(el("button", { class: "btn", type: "button", text: "Saison abschließen", onclick: openSeasonEnd }));
+  }
   if (load("liga.token")) {
     btns.push(el("button", { class: "btn", type: "button", text: "Gerät abmelden", onclick: function () {
       store("liga.token", null);
@@ -40,7 +43,9 @@ function renderFooter() {
   const links = el("span", { class: "footer-links" });
   if (typeof installButton === "function") { const ib = installButton(); if (ib) links.appendChild(ib); }
   f.appendChild(links);
-  if (!editing) links.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false); } }));
+  const archive = typeof viewingArchive === "function" && viewingArchive();
+  if (!editing && !archive) links.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false); } }));
+  if (typeof renderSeasonBar === "function") renderSeasonBar();
 }
 
 function store(key, val) {
@@ -133,6 +138,8 @@ async function putFile(path, text, message) {
   if (r.status === 401) throw new Error("Der Token ist ungültig oder abgelaufen.");
   if (r.status === 403 || r.status === 404) throw new Error("Der Token darf in dieses Repository nicht schreiben (Berechtigung „Contents: Read and write“ nötig).");
   if (!r.ok) throw new Error("GitHub antwortet mit Fehler " + r.status + ".");
+  const j = await r.json().catch(function () { return null; });
+  return j && j.content ? j.content.sha : null;
 }
 
 function setMsg(msg, text, kind) {
