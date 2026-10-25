@@ -29,7 +29,7 @@ let lastRows = [];
 let lastElo = {};
 // Elo-Wertung: Startwert und K-Faktor (wie stark ein einzelnes Spiel zählt)
 const ELO_START = 1000;
-const ELO_K = 32;
+const ELO_K = 40;
 
 let dirty = false;
 let currentIdx = null;
