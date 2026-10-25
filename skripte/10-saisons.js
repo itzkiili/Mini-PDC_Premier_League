@@ -289,6 +289,8 @@ function renderWorldSection() {
   // direkt unter dem Saisonfinale einfügen
   const after = document.getElementById("saisonfinale") || document.getElementById("regeln");
   after.parentNode.insertBefore(sec, after.nextSibling);
+    // Aufruf mit …#weltrangliste: nach dem Anlegen dorthin springen
+  if (location.hash === "#weltrangliste") sec.scrollIntoView();
 }
 
 function openWorldRanking() {
