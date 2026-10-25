@@ -39,13 +39,23 @@ function renderEditBar() {
 function renderFooter() {
   const f = document.getElementById("footer");
   f.innerHTML = "";
-  f.appendChild(el("span", { text: "Tabelle wird automatisch aus den Ergebnissen berechnet." }));
+  const stand = fmtStand(LIGA_DATA.stand);
+  f.appendChild(el("span", { text: (stand ? "Stand: " + stand + " · " : "") + "Tabelle wird automatisch aus den Ergebnissen berechnet." }));
   const links = el("span", { class: "footer-links" });
   if (typeof installButton === "function") { const ib = installButton(); if (ib) links.appendChild(ib); }
   f.appendChild(links);
   const archive = typeof viewingArchive === "function" && viewingArchive();
   if (!editing && !archive) links.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false); } }));
   if (typeof renderSeasonBar === "function") renderSeasonBar();
+}
+
+// Zeitpunkt der letzten Speicherung, z. B. „24.10.2026, 22:14 Uhr“
+function fmtStand(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) + ", " +
+    d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr";
 }
 
 function store(key, val) {
@@ -329,6 +339,7 @@ async function saveToGitHub() {
   try {
     for (let attempt = 0; attempt < 4; attempt++) {
       const now = new Date();
+      LIGA_DATA.stand = now.toISOString();
       const body = {
         message: "Ergebnisse aktualisiert (" + now.toLocaleDateString("de-DE") + " " + now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + ")",
         content: b64encode(serialize()),
@@ -427,6 +438,14 @@ function serialize() {
     out.push("  // Entscheidungsleg/Stechen bei Gleichstand in der Gesamttabelle (bessere zuerst)");
     out.push("  stechen: [" + ts.map(q).join(", ") + "],");
   }
+  if (LIGA_DATA.aktuell != null && dayIdxByNr(LIGA_DATA.aktuell) >= 0) {
+    out.push("  // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)");
+    out.push("  aktuell: " + Number(LIGA_DATA.aktuell) + ",");
+  }
+  if (LIGA_DATA.stand) {
+    out.push("  // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)");
+    out.push("  stand: " + JSON.stringify(String(LIGA_DATA.stand)) + ",");
+  }
   out.push("};");
   out.push("");
   out.push("const SPIELTAGE = [");
@@ -517,7 +536,8 @@ function flattenData(data) {
   const out = {};
   const put = function (k, v) { if (v !== undefined) out[k] = JSON.stringify(v); };
   const liga = data.liga || {};
-  Object.keys(liga).forEach(function (k) { put("liga|" + k, liga[k]); });
+    // „stand“ wird bei jedem Speichern neu gesetzt und nicht zusammengeführt
+  Object.keys(liga).forEach(function (k) { if (k !== "stand") put("liga|" + k, liga[k]); });
   (data.days || []).forEach(function (d) {
     const p = "tag|" + d.nr + "|";
     put(p + "da", true);

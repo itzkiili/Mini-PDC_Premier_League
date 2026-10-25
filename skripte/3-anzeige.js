@@ -231,6 +231,45 @@ function renderSeasonFinal(rows, playedDays) {
   ]));
 }
 
+// ---------- Welcher Spieltag wird geöffnet? ----------
+// 1. Link mit #spieltag-3  2. festgelegter aktueller Spieltag (LIGA.aktuell)  3. neuester Spieltag
+function dayIdxByNr(nr) {
+  for (let i = 0; i < DAYS.length; i++) if (Number(DAYS[i].nr) === Number(nr)) return i;
+  return -1;
+}
+function hashDayNr() {
+  const m = /^#spieltag-(\d+)$/i.exec(location.hash);
+  return m ? Number(m[1]) : null;
+}
+function startDayIdx() {
+  const h = hashDayNr();
+  if (h !== null && dayIdxByNr(h) >= 0) return dayIdxByNr(h);
+  if (LIGA_DATA.aktuell != null && dayIdxByNr(LIGA_DATA.aktuell) >= 0) return dayIdxByNr(LIGA_DATA.aktuell);
+  return DAYS.length - 1;
+}
+function setDayHash(nr) {
+  try { history.replaceState(null, "", "#spieltag-" + nr); } catch (e) { /* egal */ }
+}
+function dayLink(nr) {
+  return location.origin + location.pathname + location.search + "#spieltag-" + nr;
+}
+function shareDayLink(nr, btn) {
+  const url = dayLink(nr);
+  if (navigator.share) {
+    navigator.share({ title: (LIGA_DATA.name || "Liga") + " – Spieltag " + nr, url: url }).catch(function () {});
+    return;
+  }
+  const done = function () {
+    btn.textContent = "Link kopiert ✓";
+    setTimeout(function () { btn.textContent = "🔗 Link"; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done, function () { prompt("Link zum Kopieren:", url); });
+  } else {
+    prompt("Link zum Kopieren:", url);
+  }
+}
+
 function render() {
   const warnings = [];
   const resolved = DAYS.map(function (d) { return resolveDay(d, warnings); });
@@ -238,7 +277,7 @@ function render() {
   lastElo = computeElo(resolved, typeof eloStartFor === "function" ? eloStartFor() : null);
   document.body.classList.toggle("editing", editing);
 
-  if (currentIdx === null || currentIdx >= DAYS.length) currentIdx = DAYS.length - 1;
+  if (currentIdx === null || currentIdx >= DAYS.length) currentIdx = startDayIdx();
 
   // Gesamttabelle
   const standingsData = computeStandings(resolved);
@@ -311,8 +350,8 @@ function render() {
   resolved.forEach(function (d, i) {
     tabs.appendChild(el("button", {
       type: "button", "aria-pressed": i === currentIdx ? "true" : "false",
-      text: "Spieltag " + (d.nr != null ? d.nr : i + 1),
-      onclick: function () { currentIdx = i; render(); },
+      text: "Spieltag " + (d.nr != null ? d.nr : i + 1) + (editing && LIGA_DATA.aktuell != null && Number(LIGA_DATA.aktuell) === Number(d.nr) ? " ★" : ""),
+      onclick: function () { currentIdx = i; render(); setDayHash(d.nr != null ? d.nr : i + 1); },
     }));
   });
   if (editing) {
@@ -374,6 +413,20 @@ function dayView(day, d) {
   }
   headKids.push(el("span", { class: "badge" + (d.complete ? " done" : ""), text: d.complete ? "abgeschlossen" : "läuft" }));
   if (d.count) headKids.push(el("span", { class: "badge", text: d.count + " Spieler · " + (d.mode === "gruppe" ? "Dreiergruppen" : "Turnierbaum") }));
+  if (!editing) {
+    const linkBtn = el("button", { class: "linkbtn day-share", type: "button", text: "🔗 Link", title: "Link zu diesem Spieltag teilen",
+      onclick: function () { shareDayLink(d.nr != null ? d.nr : currentIdx + 1, linkBtn); } });
+    headKids.push(linkBtn);
+  } else {
+    const pinned = LIGA_DATA.aktuell != null && Number(LIGA_DATA.aktuell) === Number(day.nr);
+    headKids.push(el("button", { class: "btn pin-day" + (pinned ? " on" : ""), type: "button",
+      text: pinned ? "★ Aktueller Spieltag" : "☆ Als aktuell festlegen",
+      title: pinned ? "Wird beim Öffnen der Seite angezeigt. Klick: wieder automatisch den neuesten Spieltag zeigen." : "Diesen Spieltag beim Öffnen der Seite anzeigen",
+      onclick: function () {
+        if (pinned) delete LIGA_DATA.aktuell; else LIGA_DATA.aktuell = Number(day.nr);
+        changed();
+      } }));
+  }
   if (editing) {
     headKids.push(el("button", { class: "btn danger", type: "button", text: "Spieltag löschen", onclick: function () {
       if (!confirm("Spieltag " + (day.nr != null ? day.nr : "") + " wirklich löschen?")) return;

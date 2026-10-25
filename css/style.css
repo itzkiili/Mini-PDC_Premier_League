@@ -86,6 +86,8 @@ td.dash { color: var(--muted); }
 .day-head h3 { margin: 0; color: var(--text); font-size: 1.1rem; }
 .badge { font-size: 0.78rem; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
 .badge.done { background: var(--accent-soft); color: var(--accent); }
+.day-share { margin-left: auto; font-size: 0.85rem; }
+.pin-day.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 
 .day-grid { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }
 @media (max-width: 760px) { .day-grid { grid-template-columns: 1fr; } }
