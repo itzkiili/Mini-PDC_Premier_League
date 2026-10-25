@@ -288,6 +288,7 @@ async function connect(repo, branch, token, remember, msg) {
     gh.connected = true;
     if (parsed.liga) LIGA_DATA = clone(parsed.liga);
     DAYS = clone(parsed.tage);
+    gitBase = snapshot();
     store("liga.repo", repo); store("liga.branch", branch);
     store("liga.token", remember ? token : null);
     currentIdx = DAYS.length - 1;
@@ -317,24 +318,40 @@ function leaveEdit() {
 async function saveToGitHub() {
   if (!gh.connected || saving) return;
   saving = true; statusText = "Speichert …"; statusKind = ""; renderEditBar();
+  let mergedInfo = null;
   try {
-    const now = new Date();
-    const body = {
-      message: "Ergebnisse aktualisiert (" + now.toLocaleDateString("de-DE") + " " + now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + ")",
-      content: b64encode(serialize()),
-      branch: gh.branch,
-    };
-    if (gh.sha) body.sha = gh.sha;
-    const r = await fetch(apiUrl(), { method: "PUT", headers: apiHeaders(), body: JSON.stringify(body) });
-    if (r.status === 409 || r.status === 422) throw new Error("Die Datei wurde inzwischen an anderer Stelle geändert. Lade die Seite neu, verbinde dich erneut und trag die Änderung noch einmal ein.");
-    if (r.status === 401) throw new Error("Der Token ist ungültig oder abgelaufen.");
-    if (r.status === 403 || r.status === 404) throw new Error("Der Token darf in dieses Repository nicht schreiben (Berechtigung „Contents: Read and write“ nötig).");
-    if (!r.ok) throw new Error("GitHub antwortet mit Fehler " + r.status + ".");
-    const j = await r.json();
-    gh.sha = j.content && j.content.sha ? j.content.sha : gh.sha;
-    dirty = false;
-    statusText = "Gespeichert. In etwa einer Minute sehen alle den neuen Stand.";
-    statusKind = "ok";
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const now = new Date();
+      const body = {
+        message: "Ergebnisse aktualisiert (" + now.toLocaleDateString("de-DE") + " " + now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + ")",
+        content: b64encode(serialize()),
+        branch: gh.branch,
+      };
+      if (gh.sha) body.sha = gh.sha;
+      const r = await fetch(apiUrl(), { method: "PUT", headers: apiHeaders(), body: JSON.stringify(body) });
+      if (r.status === 409 || r.status === 422) {
+        // Jemand anderes hat inzwischen gespeichert: zusammenführen und erneut versuchen
+        statusText = "Jemand anderes hat gerade gespeichert – führe die Änderungen zusammen …"; renderEditBar();
+        mergedInfo = await pullAndMerge();
+        render();
+        continue;
+      }
+      if (r.status === 401) throw new Error("Der Token ist ungültig oder abgelaufen.");
+      if (r.status === 403 || r.status === 404) throw new Error("Der Token darf in dieses Repository nicht schreiben (Berechtigung „Contents: Read and write“ nötig).");
+      if (!r.ok) throw new Error("GitHub antwortet mit Fehler " + r.status + ".");
+      const j = await r.json();
+      gh.sha = j.content && j.content.sha ? j.content.sha : gh.sha;
+      gitBase = snapshot();
+      dirty = false;
+      statusText = mergedInfo
+        ? "Gespeichert. Die gleichzeitigen Änderungen einer anderen Person wurden übernommen" + (mergedInfo.conflicts ? " (" + mergedInfo.conflicts + " Konflikt" + (mergedInfo.conflicts === 1 ? "" : "e") + " entschieden)." : ".")
+        : "Gespeichert. In etwa einer Minute sehen alle den neuen Stand.";
+      statusKind = "ok";
+      saving = false;
+      render();
+      return;
+    }
+    throw new Error("Speichern ist mehrmals mit anderen Änderungen zusammengestoßen. Bitte gleich noch einmal auf Speichern drücken.");
   } catch (e) {
     statusText = (e && e.message) ? e.message : "Speichern fehlgeschlagen.";
     statusKind = "err";
@@ -345,7 +362,7 @@ async function saveToGitHub() {
 
 function downloadFile() {
   const blob = new Blob([serialize()], { type: "text/javascript;charset=utf-8" });
-  const a = el("a", { href: URL.createObjectURL(blob), download: "ergebnisse.js" });  
+  const a = el("a", { href: URL.createObjectURL(blob), download: "ergebnisse.js" });
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   statusText = "Datei heruntergeladen. Lade sie in GitHub hoch und ersetze damit die alte ergebnisse.js.";
@@ -474,4 +491,131 @@ function serialize() {
   out.push("];");
   out.push("");
   return out.join("\n");
+}
+
+// =====================================================================
+//  Gleichzeitiges Bearbeiten: Änderungen zusammenführen
+//  Hat jemand anderes inzwischen gespeichert, wird dessen Stand geladen
+//  und mit den eigenen Änderungen zusammengeführt. Nur wenn beide denselben
+//  Eintrag unterschiedlich geändert haben, wird nachgefragt.
+// =====================================================================
+let gitBase = null;   // Stand beim letzten Laden bzw. Speichern
+
+function snapshot() { return { liga: clone(LIGA_DATA), days: clone(DAYS) }; }
+
+const MERGE_GROUPS = ["sieger", "ergebnisse", "statistik", "bonus", "stechen"];
+
+// Daten in einzelne Einträge zerlegen: "tag|4|ergebnisse|VF1" -> Wert
+function flattenData(data) {
+  const out = {};
+  const put = function (k, v) { if (v !== undefined) out[k] = JSON.stringify(v); };
+  const liga = data.liga || {};
+  Object.keys(liga).forEach(function (k) { put("liga|" + k, liga[k]); });
+  (data.days || []).forEach(function (d) {
+    const p = "tag|" + d.nr + "|";
+    put(p + "da", true);
+    Object.keys(d).forEach(function (k) {
+      if (k === "nr") return;
+      const v = d[k];
+      if (MERGE_GROUPS.indexOf(k) >= 0 && v && typeof v === "object" && !Array.isArray(v)) {
+        Object.keys(v).forEach(function (sub) { put(p + k + "|" + sub, v[sub]); });
+      } else {
+        put(p + k, v);
+      }
+    });
+  });
+  return out;
+}
+
+function unflattenData(flat) {
+  const liga = {}, days = {};
+  Object.keys(flat).forEach(function (key) {
+    const v = JSON.parse(flat[key]);
+    const parts = key.split("|");
+    if (parts[0] === "liga") { liga[parts[1]] = v; return; }
+    const nr = parts[1];
+    const d = days[nr] || (days[nr] = {});
+    if (parts.length === 3) d[parts[2]] = v;
+    else { d[parts[2]] = d[parts[2]] || {}; d[parts[2]][parts.slice(3).join("|")] = v; }
+  });
+  const list = Object.keys(days).filter(function (nr) { return days[nr].da; }).map(function (nr) {
+    const d = days[nr];
+    const o = { nr: Number(nr) };
+    ["datum", "spieler", "sieger"].concat(Object.keys(d)).forEach(function (k) {
+      if (k !== "da" && d[k] !== undefined && !(k in o)) o[k] = d[k];
+    });
+    if (!o.sieger) o.sieger = {};
+    return o;
+  }).sort(function (a, b) { return a.nr - b.nr; });
+  return { liga: liga, days: list };
+}
+
+function conflictLabel(key) {
+  const parts = key.split("|");
+  if (parts[0] === "liga") return parts[1] === "stechen" ? "Entscheidungsleg der Gesamttabelle" : "Liga-Einstellung „" + parts[1] + "“";
+  const names = { da: "Spieltag angelegt/gelöscht", datum: "Datum", spieler: "Spielerliste", sieger: "Sieger",
+    ergebnisse: "Legs", statistik: "Average/Doppel", bonus: "Bonuswerte", stechen: "Stechen" };
+  let t = "Spieltag " + parts[1] + " · " + (names[parts[2]] || parts[2]);
+  if (parts[3]) t += " · " + (LABELS[parts[3]] || parts[3]);
+  return t;
+}
+
+// Drei-Wege-Zusammenführung: Basis (zuletzt geladen), eigene Version, Version auf GitHub
+function mergeData(base, local, remote) {
+  // Beide haben gleichzeitig einen neuen Spieltag mit derselben Nummer angelegt:
+  // die eigene Fassung bekommt die nächste freie Nummer.
+  local = clone(local);
+  const baseNrs = (base.days || []).map(function (d) { return d.nr; });
+  const remoteNrs = (remote.days || []).map(function (d) { return d.nr; });
+  local.days.forEach(function (d) {
+    if (baseNrs.indexOf(d.nr) < 0 && remoteNrs.indexOf(d.nr) >= 0) {
+      const r = remote.days.filter(function (x) { return x.nr === d.nr; })[0];
+      if (JSON.stringify(r) !== JSON.stringify(d)) {
+        const all = remoteNrs.concat(local.days.map(function (x) { return x.nr; }));
+        d.nr = Math.max.apply(null, all) + 1;
+      }
+    }
+  });
+  const B = flattenData(base), L = flattenData(local), R = flattenData(remote);
+  const keys = {};
+  [B, L, R].forEach(function (o) { Object.keys(o).forEach(function (k) { keys[k] = true; }); });
+  const merged = {}, conflicts = [];
+  Object.keys(keys).forEach(function (k) {
+    const b = B[k], l = L[k], r = R[k];
+    let v;
+    if (l === r) v = l;
+    else if (l === b) v = r;           // nur die andere Person hat geändert
+    else if (r === b) v = l;           // nur ich habe geändert
+    else { conflicts.push({ key: k, local: l, remote: r }); v = l; }
+    if (v !== undefined) merged[k] = v;
+  });
+  return { merged: merged, conflicts: conflicts, R: R };
+}
+
+// Aktuellen Stand von GitHub holen und mit den eigenen Änderungen zusammenführen
+async function pullAndMerge() {
+  const r = await fetch(apiUrl() + "?ref=" + encodeURIComponent(gh.branch), { headers: apiHeaders(), cache: "no-store" });
+  if (!r.ok) throw new Error("Der aktuelle Stand konnte nicht von GitHub geladen werden (Fehler " + r.status + ").");
+  const j = await r.json();
+  const parsed = parseDataFile(b64decode(j.content));
+  const remote = { liga: parsed.liga || {}, days: parsed.tage || [] };
+  const base = gitBase || remote;
+  const res = mergeData(base, snapshot(), remote);
+  let useMine = true;
+  if (res.conflicts.length) {
+    const list = res.conflicts.slice(0, 12).map(function (c) { return "• " + conflictLabel(c.key); }).join("\n") +
+      (res.conflicts.length > 12 ? "\n• … und " + (res.conflicts.length - 12) + " weitere" : "");
+    useMine = confirm("Jemand hat gleichzeitig dieselben Einträge anders gespeichert:\n\n" + list +
+      "\n\nOK = deine Eingaben übernehmen\nAbbrechen = die Eingaben der anderen Person behalten");
+    if (!useMine) res.conflicts.forEach(function (c) {
+      if (c.remote === undefined) delete res.merged[c.key]; else res.merged[c.key] = c.remote;
+    });
+  }
+  const data = unflattenData(res.merged);
+  LIGA_DATA = data.liga;
+  DAYS = data.days;
+  DAYS.forEach(cleanupDay);
+  gh.sha = j.sha;
+  gitBase = remote;
+  return { conflicts: res.conflicts.length, changedByOthers: JSON.stringify(flattenData(base)) !== JSON.stringify(res.R) };
 }
