@@ -187,9 +187,14 @@ function renderSeasonFinal(rows, playedDays) {
     if (!s.name) return el("div", { class: "slot tbd" }, [el("span", { class: "nm", text: s.label })]);
     return el("div", { class: "slot" }, [nameBtn(s.name), el("span", { class: "right" }, [el("span", { class: "tag", text: s.label })])]);
   }
-  function match(title, a, b, isFinal) {
+    function match(title, a, b, isFinal) {
+    const preview = a.name && b.name;
     return el("div", { class: "match" + (isFinal ? " final" : "") }, [
-      el("div", { class: "match-head" }, [el("span", { text: title })]),
+      el("div", { class: "match-head" }, [
+        el("span", { text: title }),
+        preview ? el("button", { type: "button", class: "head-link", text: "Vorschau ›", title: a.name + " und " + b.name + " vergleichen",
+          onclick: function () { openCompare(a.name, b.name); } }) : null,
+      ]),
       slot(a), slot(b),
     ]);
   }
@@ -491,7 +496,17 @@ function matchEl(day, match, isFinal) {
   let state = "";
   if (match.state === "freilos") state = "kampflos";
   else if (match.state === "offen") state = "offen";
-  return el("div", { class: "match" + (isFinal ? " final" : "") }, [
+  // Noch nicht gespielt und beide Spieler bekannt: Klick öffnet den Vergleich
+  const preview = !editing && match.state === "offen" && match.a.name && match.b.name;
+  if (preview) state = "Vorschau ›";
+  return el("div", {
+    class: "match" + (isFinal ? " final" : "") + (preview ? " preview" : ""),
+    role: preview ? "button" : null,
+    tabindex: preview ? "0" : null,
+    title: preview ? match.a.name + " und " + match.b.name + " vergleichen" : null,
+    onclick: preview ? function () { openCompare(match.a.name, match.b.name); } : null,
+    onkeydown: preview ? function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCompare(match.a.name, match.b.name); } } : null,
+  }, [
     el("div", { class: "match-head" }, [el("span", { text: LABELS[match.id] }), el("span", { text: state })]),
     slotEl(day, match, "a", tagFor("a")),
     slotEl(day, match, "b", tagFor("b")),
