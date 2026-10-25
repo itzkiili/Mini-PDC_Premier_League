@@ -164,6 +164,18 @@ function getDialog(id) {
   return dlg;
 }
 
+// Elo-Wert im Kopf der Spielerkarte, z. B. "Elo 1101 ▲37"
+function eloBadge(name) {
+  const e = lastElo[name];
+  if (!e) return null;
+  const d = Math.round(e.delta);
+  const ranked = Object.keys(lastElo).sort(function (x, y) { return lastElo[y].rating - lastElo[x].rating; });
+  return el("span", { class: "elo-badge", title: (ranked.indexOf(name) + 1) + ". der Elo-Wertung · Höchstwert " + Math.round(e.peak) + " · Veränderung seit dem letzten Spieltag" }, [
+    document.createTextNode("Elo " + Math.round(e.rating)),
+    d ? el("span", { class: d > 0 ? "up" : "down", text: (d > 0 ? " ▲" : " ▼") + Math.abs(d) }) : null,
+  ]);
+}
+
 function openPlayer(name) {
   const cd = document.getElementById("compare-dialog");
   if (cd && cd.open) cd.close();
@@ -210,7 +222,10 @@ function openPlayer(name) {
     el("div", { class: "pc-head" }, [
       el("div", null, [
         el("h2", { text: name }),
-        el("p", { class: "sub", text: row ? row.rank + ". Platz in der Gesamttabelle" : "" }),
+                el("p", { class: "sub" }, [
+          document.createTextNode(row ? row.rank + ". Platz in der Gesamttabelle" : ""),
+          eloBadge(name),
+        ]),
       ]),
       el("button", { type: "button", class: "btn close", text: "✕", "aria-label": "Schließen", onclick: function () { dlg.close(); } }),
     ]),
@@ -382,7 +397,9 @@ function openCompare(a, b) {
   // Saisonwerte als gegenläufige Balken
   function quote(w, l) { return (w + l) ? w / (w + l) : null; }
   const avgA = sa.avgN ? sa.avgSum / sa.avgN : null, avgB = sb.avgN ? sb.avgSum / sb.avgN : null;
+  const ea = lastElo[a], eb = lastElo[b];
   const metrics = [
+    ["Elo", ea ? ea.rating : null, eb ? eb.rating : null, function (v) { return String(Math.round(v)); }, true],
     ["Ø Punkte", sa.doneDays ? sa.donePoints / sa.doneDays : null, sb.doneDays ? sb.donePoints / sb.doneDays : null, function (v) { return v.toFixed(1).replace(".", ","); }, true],
     ["Spieltagsiege", sa.history.filter(function (h) { return h.place === 1; }).length, sb.history.filter(function (h) { return h.place === 1; }).length, String, true],
     ["Siegquote", quote(sa.w, sa.l), quote(sb.w, sb.l), function (v) { return Math.round(v * 100) + " %"; }, true],
@@ -420,6 +437,16 @@ function openCompare(a, b) {
 
   dlg.appendChild(el("div", { class: "pc" }, [
     head,
+    ea && eb ? el("div", { class: "cmp-chance" }, [
+      el("span", { class: "note", text: "Siegchance im direkten Duell laut Elo" }),
+      (function () {
+        const pa = Math.round(eloExpected(ea.rating, eb.rating) * 100);
+        return el("div", { class: "chance-bar" }, [
+          el("span", { class: "chance a", style: "width:" + pa + "%", text: pa + " %" }),
+          el("span", { class: "chance b", style: "width:" + (100 - pa) + "%", text: (100 - pa) + " %" }),
+        ]);
+      })(),
+    ]) : null,
     el("h3", { text: "Direkte Duelle" }),
     duelBox,
     el("h3", { text: "Saisonwerte" }),

@@ -26,6 +26,11 @@ function punkte() { return Array.isArray(LIGA_DATA.punkte) ? LIGA_DATA.punkte : 
 let editing = false;
 let lastResolved = [];
 let lastRows = [];
+let lastElo = {};
+// Elo-Wertung: Startwert und K-Faktor (wie stark ein einzelnes Spiel zählt)
+const ELO_START = 1000;
+const ELO_K = 32;
+
 let dirty = false;
 let currentIdx = null;
 let statusText = "";

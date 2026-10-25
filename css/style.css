@@ -329,6 +329,18 @@ table.cmp-duels { width: 100%; }
 .install-steps li { line-height: 1.45; }
 body { padding-bottom: env(safe-area-inset-bottom); }
 
+/* Elo */
+td.elo { font-variant-numeric: tabular-nums; }
+.elo-badge { display: inline-block; margin-left: 10px; padding: 1px 10px; border-radius: 999px; background: var(--surface-2); color: var(--text); font-size: 0.82rem; font-weight: 600; }
+.elo-badge .up { color: var(--accent); }
+.elo-badge .down { color: var(--warn-text); }
+.cmp-chance { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.cmp-chance .note { margin: 0; text-align: center; }
+.chance-bar { display: flex; height: 26px; border-radius: 4px; overflow: hidden; font-family: var(--display); font-size: 0.9rem; }
+.chance { display: flex; align-items: center; padding: 0 10px; min-width: 3.2rem; white-space: nowrap; }
+.chance.a { background: var(--accent); color: var(--bg); justify-content: flex-start; }
+.chance.b { background: var(--surface-2); color: var(--text); justify-content: flex-end; }
+
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
   font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;

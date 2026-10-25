@@ -226,3 +226,37 @@ function cleanupDay(day) {
   if (day.statistik && !Object.keys(day.statistik).length) delete day.statistik;
   if (day.bonus && !Object.keys(day.bonus).length) delete day.bonus;
 }
+
+// ---------------------------------------------------------------------
+//  Elo-Wertung über alle Spiele der Saison (in der Reihenfolge der Spieltage)
+//  Erwartung = 1 / (1 + 10^((Gegner - eigene Wertung) / 400))
+//  Neue Wertung = alte Wertung + K * (Ergebnis - Erwartung)
+// ---------------------------------------------------------------------
+function eloExpected(ra, rb) { return 1 / (1 + Math.pow(10, (rb - ra) / 400)); }
+
+function computeElo(resolved) {
+  const order = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2", "P7", "P5", "P3", "Finale",
+    "G1", "V1", "G2", "V2", "G3", "V3"];
+  const elo = {};
+  function get(n) {
+    if (!elo[n]) elo[n] = { rating: ELO_START, games: 0, peak: ELO_START, prev: ELO_START, history: [] };
+    return elo[n];
+  }
+  resolved.forEach(function (d, idx) {
+    const played = order.filter(function (id) { return d.matches[id] && d.matches[id].state === "gespielt"; });
+    if (!played.length) return;
+    Object.keys(elo).forEach(function (n) { elo[n].prev = elo[n].rating; });
+    played.forEach(function (id) {
+      const mt = d.matches[id];
+      const w = get(mt.winner), l = get(mt.loser);
+      const delta = ELO_K * (1 - eloExpected(w.rating, l.rating));
+      w.rating += delta; l.rating -= delta;
+      w.games++; l.games++;
+      if (w.rating > w.peak) w.peak = w.rating;
+    });
+    const nr = d.nr != null ? d.nr : idx + 1;
+    d.players.forEach(function (p) { if (p && elo[p]) elo[p].history.push({ nr: nr, rating: elo[p].rating }); });
+  });
+  Object.keys(elo).forEach(function (n) { elo[n].delta = elo[n].rating - elo[n].prev; });
+  return elo;
+}
