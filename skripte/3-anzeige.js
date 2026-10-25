@@ -270,7 +270,6 @@ function render() {
       el("th", { class: "num opt", text: "CO %", title: "Checkout-Quote" }),
       el("th", { class: "num opt", text: "Bonus", title: "Bonuspunkte (in den Punkten enthalten)" }),
       el("th", { class: "num", text: "Punkte" }),
-      el("th", { class: "num opt", text: "Elo", title: "Spielstärke nach Elo (Start 1000)" }),
     ])]);
     const tbody = el("tbody");
     rows.forEach(function (r) {
@@ -288,7 +287,6 @@ function render() {
         el("td", { class: "num opt" + ((r.coHit + r.coMiss) ? "" : " dash"), text: (r.coHit + r.coMiss) ? pct(r.coHit, r.coHit + r.coMiss) : "–" }),
         el("td", { class: "num opt" + (r.bonus ? "" : " dash"), text: r.bonus ? "+" + r.bonus : "–" }),
         el("td", { class: "num pts", text: String(r.points) }),
-        el("td", { class: "num opt elo" + (lastElo[r.name] ? "" : " dash"), text: lastElo[r.name] ? String(Math.round(lastElo[r.name].rating)) : "–" }),
       ]));
     });
     standings.appendChild(el("table", null, [thead, tbody]));
