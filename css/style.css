@@ -92,25 +92,25 @@ td.dash { color: var(--muted); }
 .day-share { margin-left: auto; font-size: 0.85rem; }
 
 /* Erfolge */
-.ach-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.ach { position: relative; width: 44px; height: 44px; padding: 0; border-radius: 50%; cursor: default;
-  display: grid; place-items: center; font: inherit; background: var(--surface-2); border: 2px solid var(--line); }
+.ach-row { position: relative; display: flex; flex-wrap: wrap; gap: 8px; }
+.ach { width: 44px; height: 44px; padding: 0; border-radius: 50%; cursor: default;
+  display: grid; place-items: center; font: inherit; background: var(--surface-2); border: 3px solid var(--line); }
 .ach-icon { font-size: 1.3rem; line-height: 1; }
-.ach.got { border-color: var(--accent); background: var(--accent-soft); }
-.ach:not(.got) .ach-icon { filter: grayscale(1); opacity: 0.3; }
+.ach.lvl0 .ach-icon { filter: grayscale(1); opacity: 0.3; }
+.ach.lvl1 { border-color: var(--bronze); }
+.ach.lvl2 { border-color: var(--silver); }
+.ach.lvl3 { border-color: var(--gold); box-shadow: 0 0 10px rgba(245, 197, 66, 0.35); }
+/* kein transform hier, sonst hängt die Erklärung am Abzeichen statt an der Reihe */
 .ach:focus { outline: none; }
-.ach:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
-/* Erklärung beim Darüberfahren / Antippen */
-.ach-tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 5;
-  width: max-content; max-width: 220px; padding: 8px 10px; border-radius: 6px; text-align: left;
+.ach:hover, .ach:focus { background: var(--surface); outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Erklärung beim Darüberfahren / Antippen: über der ganzen Reihe */
+.ach-tip { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; z-index: 5; max-width: 420px;
+  padding: 10px 12px; border-radius: 6px; text-align: left;
   background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  display: none; flex-direction: column; gap: 2px; font-size: 0.78rem; line-height: 1.35; color: var(--muted); pointer-events: none; }
-.ach-tip b { color: var(--text); font-size: 0.85rem; }
-.ach-status { color: var(--muted); font-style: italic; }
-.ach.got .ach-status { color: var(--accent); font-style: normal; }
+  display: none; flex-direction: column; gap: 3px; font-size: 0.8rem; line-height: 1.35; color: var(--muted); pointer-events: none; }
+.ach-tip b { color: var(--text); font-size: 0.9rem; margin-bottom: 2px; }
+.ach-line.done { color: var(--text); }
 .ach:hover .ach-tip, .ach:focus .ach-tip { display: flex; }
-.ach:first-child .ach-tip, .ach:nth-child(2) .ach-tip { left: 0; transform: none; }
-.ach:last-child .ach-tip, .ach:nth-last-child(2) .ach-tip { left: auto; right: 0; transform: none; }
 .ach-day { margin: -4px 0 16px; padding: 8px 12px; border-radius: 6px; background: var(--accent-soft); font-size: 0.9rem; }
 .ach-day-title { font-weight: 600; color: var(--accent); margin-right: 6px; }
 .ach-day ul { display: inline; margin: 0; padding: 0; list-style: none; }
