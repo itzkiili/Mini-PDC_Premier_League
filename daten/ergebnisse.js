@@ -32,6 +32,10 @@ const LIGA = {
   punkte: [15, 12, 10, 8, 7, 6, 5, 4],
   // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180
   bonus: { checkout: 1, leg: 1, je180: 1 },
+  // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
+  aktuell: 2,
+  // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
+  stand: "2026-10-25T16:01:13.398Z",
 };
 
 const SPIELTAGE = [
