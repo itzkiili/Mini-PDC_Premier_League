@@ -393,6 +393,13 @@ table.world tr.r3 td.rank { color: var(--bronze); }
 :root[data-theme="light"] #season-dialog::backdrop,
 :root[data-theme="light"] #world-dialog::backdrop { background: rgba(20, 23, 28, 0.45); }
 
+/* Umschalter Alle Saisons / Diese Saison */
+.scope-toggle { display: flex; justify-content: center; gap: 0; margin: 0 auto 12px; width: fit-content; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.scope-toggle button { font: inherit; font-size: 0.82rem; padding: 5px 12px; border: none; background: var(--surface); color: var(--muted); cursor: pointer; }
+.scope-toggle button + button { border-left: 1px solid var(--line); }
+.scope-toggle button.on { background: var(--accent); color: var(--bg); font-weight: 600; }
+.more-duels { display: block; margin: 10px auto 0; font-size: 0.85rem; }
+
 /* Stil „Flutlicht“ */
 h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn, .theme-toggle {
   font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;

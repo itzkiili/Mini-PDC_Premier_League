@@ -255,7 +255,7 @@ function openPlayer(name) {
     el("div", { class: "pc-head" }, [
       el("div", null, [
         el("h2", { text: name }),
-                el("p", { class: "sub" }, [
+        el("p", { class: "sub" }, [
           document.createTextNode(row ? row.rank + ". Platz in der Gesamttabelle" : ""),
           eloBadge(name),
         ]),
@@ -299,9 +299,10 @@ function compareSelect(exclude, selected, onPick, placeholder) {
 }
 
 // Alle direkten Duelle zwischen a und b, aus Sicht von a
-function headToHead(a, b) {
+// Alle direkten Duelle zwischen a und b in einer Saison, aus Sicht von a
+function headToHead(a, b, resolvedList, season) {
   const list = [];
-  lastResolved.forEach(function (d, idx) {
+  (resolvedList || lastResolved).forEach(function (d, idx) {
     PLAY_ORDER.forEach(function (id) {
       const mt = d.matches[id];
       if (!mt || mt.state !== "gespielt") return;
@@ -312,13 +313,46 @@ function headToHead(a, b) {
       const sb = mt.score ? (aFirst ? mt.score.b : mt.score.a) : null;
       const avgOf = function (n) { const ps = mt.stats && mt.stats[n]; return ps ? toNum(ps.avg) : null; };
       list.push({
-        nr: d.nr != null ? d.nr : idx + 1, label: LABELS[id], aWon: mt.winner === a,
+        nr: d.nr != null ? d.nr : idx + 1, label: LABELS[id], aWon: mt.winner === a, season: season || null,
         sa: sa, sb: sb, avgA: avgOf(a), avgB: avgOf(b),
       });
     });
   });
   return list;
 }
+
+// Name der angezeigten Saison
+function currentSeasonLabel() {
+  return (typeof viewingArchive === "function" && viewingArchive() && archiveView) ? archiveView.name : (LIGA_DATA.name || "Aktuelle Saison");
+}
+
+// "Liga 2025/26" -> "25/26"
+function shortSeason(name) {
+  const m = String(name || "").match(/(\d{4})\s*[\/\-–]\s*(\d{2,4})/);
+  return m ? m[1].slice(-2) + "/" + m[2].slice(-2) : String(name || "");
+}
+
+// Direkte Duelle über alle Saisons bis zur angezeigten (Archive aus 10-saisons.js)
+function headToHeadAll(a, b) {
+  const list = [];
+  if (typeof SEASONS !== "undefined" && typeof ARCHIVES !== "undefined") {
+    for (let i = 0; i < SEASONS.length; i++) {
+      const s = SEASONS[i];
+      if (typeof archiveView !== "undefined" && archiveView && archiveView.id === s.id) break;
+      const days = ARCHIVES[s.id];
+      if (!days) continue;
+      const resolved = days.map(function (d) { return resolveDay(d, []); });
+      Array.prototype.push.apply(list, headToHead(a, b, resolved, s.name));
+    }
+  }
+  return list.concat(headToHead(a, b, lastResolved, currentSeasonLabel()));
+}
+
+let compareScope = "alle";   // "alle" Saisons oder nur "saison"
+
+const DUELS_SHOWN = 5;       // so viele Duelle werden zunächst angezeigt
+let compareAllDuels = false; // alle Duelle aufgeklappt?
+let comparePair = "";
 
 function compareChart(a, histA, b, histB) {
   const days = [];
@@ -377,7 +411,16 @@ function openCompare(a, b) {
   const sa = playerStats(a), sb = playerStats(b);
   const ra = lastRows.filter(function (r) { return r.name === a; })[0];
   const rb = lastRows.filter(function (r) { return r.name === b; })[0];
-  const duels = headToHead(a, b);
+  const duelsSeason = headToHead(a, b, lastResolved, currentSeasonLabel());
+  const duelsAll = headToHeadAll(a, b);
+  const multiSeason = duelsAll.length > duelsSeason.length;
+  const showAll = multiSeason && compareScope === "alle";
+  const duels = showAll ? duelsAll : duelsSeason;
+    // Anderes Spielerpaar: wieder nur die letzten Duelle zeigen
+  if (comparePair !== a + "|" + b) { comparePair = a + "|" + b; compareAllDuels = false; }
+  // Neueste zuerst, standardmäßig nur die letzten DUELS_SHOWN
+  const newestFirst = duels.slice().reverse();
+  const shownDuels = compareAllDuels ? newestFirst : newestFirst.slice(0, DUELS_SHOWN);
 
   // Kopf
   function side(name, row, cls) {
@@ -403,26 +446,36 @@ function openCompare(a, b) {
   const withLegs = duels.filter(function (x) { return x.sa !== null; });
   const la = withLegs.reduce(function (s, x) { return s + x.sa; }, 0), lb = withLegs.reduce(function (s, x) { return s + x.sb; }, 0);
   let duelBox;
+  const scopeToggle = multiSeason ? el("div", { class: "scope-toggle", role: "group", "aria-label": "Zeitraum der Duelle" }, [
+    el("button", { type: "button", class: showAll ? "on" : "", "aria-pressed": showAll ? "true" : "false",
+      text: "Alle Saisons (" + duelsAll.length + ")", onclick: function () { compareScope = "alle"; openCompare(a, b); } }),
+    el("button", { type: "button", class: showAll ? "" : "on", "aria-pressed": showAll ? "false" : "true",
+      text: "Diese Saison (" + duelsSeason.length + ")", onclick: function () { compareScope = "saison"; openCompare(a, b); } }),
+  ]) : null;
   if (!duels.length) {
-    duelBox = el("p", { class: "note", text: "Noch kein direktes Duell." });
+    duelBox = el("div", null, [scopeToggle, el("p", { class: "note", text: showAll || !multiSeason ? "Noch kein direktes Duell." : "In dieser Saison noch kein direktes Duell." })]);
   } else {
     duelBox = el("div", null, [
+      scopeToggle,
       el("div", { class: "cmp-score" }, [
         el("b", { class: wa > wb ? "lead" : "", text: String(wa) }),
         el("span", { text: ":" }),
         el("b", { class: wb > wa ? "lead" : "", text: String(wb) }),
         withLegs.length ? el("span", { class: "note", text: "Legs " + la + ":" + lb }) : null,
       ]),
-      el("table", { class: "mini cmp-duels" }, [el("tbody", null, duels.map(function (x) {
+      el("table", { class: "mini cmp-duels" }, [el("tbody", null, shownDuels.map(function (x) {
         const res = x.sa !== null ? x.sa + ":" + x.sb : (x.aWon ? "Sieg" : "Niederlage");
         const avgs = (x.avgA !== null || x.avgB !== null) ? "Ø " + fmtAvg(x.avgA) + " / " + fmtAvg(x.avgB) : "";
         return el("tr", null, [
-          el("td", { class: "dash", text: "ST " + x.nr }),
+          el("td", { class: "dash", text: (showAll ? shortSeason(x.season) + " · " : "") + "ST " + x.nr }),
           el("td", { text: x.label }),
           el("td", { class: "num " + (x.aWon ? "good" : "bad"), text: res }),
           el("td", { class: "num dash opt-avg", text: avgs }),
         ]);
       }))]),
+            duels.length > DUELS_SHOWN ? el("button", { type: "button", class: "linkbtn more-duels",
+        text: compareAllDuels ? "Nur die letzten " + DUELS_SHOWN + " anzeigen" : "Alle " + duels.length + " Duelle anzeigen",
+        onclick: function () { compareAllDuels = !compareAllDuels; openCompare(a, b); } }) : null,
     ]);
   }
 
@@ -470,10 +523,10 @@ function openCompare(a, b) {
   dlg.appendChild(el("div", { class: "pc" }, [
     head,
     ea && eb ? (function () {
-      const ch = duelChance(ea, eb, duels);
+      const ch = duelChance(ea, eb, duelsAll);
       const pa = Math.round(ch.p * 100);
       const detail = "Elo " + Math.round(ch.pElo * 100) + " %" +
-        (ch.n ? " · direkte Duelle " + ch.wins + ":" + (ch.n - ch.wins) + (ch.legs ? " (Legs " + ch.lw + ":" + ch.ll + ")" : "") +
+        (ch.n ? " · direkte Duelle" + (multiSeason ? " (alle Saisons) " : " ") + ch.wins + ":" + (ch.n - ch.wins) + (ch.legs ? " (Legs " + ch.lw + ":" + ch.ll + ")" : "") +
           " · Duelle zählen zu " + Math.round(ch.weight * 100) + " %" : " · noch kein direktes Duell");
       return el("div", { class: "cmp-chance" }, [
         el("span", { class: "note", text: "Siegchance im direkten Duell" }),
