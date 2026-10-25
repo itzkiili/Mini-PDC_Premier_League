@@ -436,6 +436,10 @@ function dayView(day, d) {
     } }));
   }
   wrap.appendChild(el("div", { class: "day-head" }, headKids));
+  if (!editing && typeof achievementsOfDay === "function") {
+    const newAch = achievementsOfDay(d);
+    if (newAch) wrap.appendChild(newAch);
+  }
 
   if (editing) wrap.appendChild(playerEditor(day));
 

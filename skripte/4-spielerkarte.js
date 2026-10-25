@@ -264,6 +264,7 @@ function openPlayer(name) {
     ]),
     tiles,
     facts.length ? el("ul", { class: "facts" }, facts.map(function (f) { return el("li", { text: f }); })) : null,
+    typeof achievementsSection === "function" ? achievementsSection(name) : null,
     el("h3", { text: "Platzierungen" }),
     sparkline(st.history),
     el("h3", { text: "Bilanz gegen Gegner" }),

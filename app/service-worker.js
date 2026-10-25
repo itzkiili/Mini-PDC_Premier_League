@@ -25,6 +25,7 @@ const CORE = [
   "skripte/8-app.js",
   "skripte/9-darstellung.js",
   "skripte/10-saisons.js",
+  "skripte/11-erfolge.js",
   "dokumente/Regelwerk.pdf",
   "app/manifest.webmanifest",
   "app/icons/icon-192.png",
