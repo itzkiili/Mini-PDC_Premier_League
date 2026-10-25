@@ -164,6 +164,30 @@ function getDialog(id) {
   return dlg;
 }
 
+// ---------------------------------------------------------------------
+//  Siegchance aus Elo und direkten Duellen
+//  Bilanz der Duelle = Mittel aus Spiel-Siegquote und Leg-Anteil (falls Legs da).
+//  Je mehr Duelle es gibt, desto stärker zählen sie:
+//  Gewicht = Duelle / (Duelle + DUELL_PRIOR), bei 2 Duellen also 50 %,
+//  bei 4 Duellen 67 %, bei 6 Duellen 75 %. Ergebnis zwischen 5 % und 95 %.
+// ---------------------------------------------------------------------
+const DUELL_PRIOR = 2;
+
+function duelChance(ea, eb, duels) {
+  const pElo = eloExpected(ea.rating, eb.rating);
+  const n = duels.length;
+  const wins = duels.filter(function (x) { return x.aWon; }).length;
+  const withLegs = duels.filter(function (x) { return x.sa !== null; });
+  const lw = withLegs.reduce(function (s, x) { return s + x.sa; }, 0);
+  const ll = withLegs.reduce(function (s, x) { return s + x.sb; }, 0);
+  if (!n) return { p: pElo, pElo: pElo, n: 0, wins: 0, weight: 0, legs: false, lw: 0, ll: 0 };
+  let h2h = wins / n;
+  if (lw + ll > 0) h2h = (h2h + lw / (lw + ll)) / 2;
+  const weight = n / (n + DUELL_PRIOR);
+  const p = Math.min(0.95, Math.max(0.05, weight * h2h + (1 - weight) * pElo));
+  return { p: p, pElo: pElo, n: n, wins: wins, weight: weight, legs: lw + ll > 0, lw: lw, ll: ll };
+}
+
 // Elo-Wert im Kopf der Spielerkarte, z. B. "Elo 1101 ▲37"
 function eloBadge(name) {
   const e = lastElo[name];
@@ -437,16 +461,21 @@ function openCompare(a, b) {
 
   dlg.appendChild(el("div", { class: "pc" }, [
     head,
-    ea && eb ? el("div", { class: "cmp-chance" }, [
-      el("span", { class: "note", text: "Siegchance im direkten Duell laut Elo" }),
-      (function () {
-        const pa = Math.round(eloExpected(ea.rating, eb.rating) * 100);
-        return el("div", { class: "chance-bar" }, [
+    ea && eb ? (function () {
+      const ch = duelChance(ea, eb, duels);
+      const pa = Math.round(ch.p * 100);
+      const detail = "Elo " + Math.round(ch.pElo * 100) + " %" +
+        (ch.n ? " · direkte Duelle " + ch.wins + ":" + (ch.n - ch.wins) + (ch.legs ? " (Legs " + ch.lw + ":" + ch.ll + ")" : "") +
+          " · Duelle zählen zu " + Math.round(ch.weight * 100) + " %" : " · noch kein direktes Duell");
+      return el("div", { class: "cmp-chance" }, [
+        el("span", { class: "note", text: "Siegchance im direkten Duell" }),
+        el("div", { class: "chance-bar" }, [
           el("span", { class: "chance a", style: "width:" + pa + "%", text: pa + " %" }),
           el("span", { class: "chance b", style: "width:" + (100 - pa) + "%", text: (100 - pa) + " %" }),
-        ]);
-      })(),
-    ]) : null,
+        ]),
+        el("span", { class: "note small", text: detail }),
+      ]);
+    })() : null,
     el("h3", { text: "Direkte Duelle" }),
     duelBox,
     el("h3", { text: "Saisonwerte" }),
