@@ -40,6 +40,11 @@ nav a {
   font-size: 0.92rem;
 }
 nav a:hover { border-color: var(--accent); color: var(--accent); }
+.theme-toggle {
+  font: inherit; font-size: 0.92rem; cursor: pointer; color: var(--text); padding: 6px 14px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); margin-left: auto;
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 section { margin-top: 36px; }
 h2 { font-size: 1.3rem; margin: 0 0 12px; }
 h3 { font-size: 1rem; margin: 0 0 10px; color: var(--muted); font-weight: 600; }
@@ -365,7 +370,7 @@ td.elo { font-variant-numeric: tabular-nums; }
 .head-link:hover { text-decoration: underline; }
 
 /* Stil „Flutlicht“ */
-h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn {
+h1, h2, .day-head h3, .round-title, th, .tabs button, nav a, .btn, .theme-toggle {
   font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em;
 }
 h1 { font-size: 2.6rem; font-weight: 700; }
@@ -383,3 +388,30 @@ tr.r1 td.pts, tr.r2 td.pts, tr.r3 td.pts { font-weight: 700; }
 .btn.primary { color: var(--bg); }
 .slot.win { color: var(--accent); }
 .editbar { box-shadow: 0 -6px 20px rgba(0,0,0,0.5); }
+
+/* =====================================================================
+   Heller Modus (Schalter oben in der Leiste)
+   ===================================================================== */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f5f0;
+  --surface: #ffffff;
+  --surface-2: #eceee6;
+  --text: #14171c;
+  --muted: #5d6470;
+  --line: #d9dcd2;
+  --accent: #4d7c0f;
+  --accent-soft: #e6f2d0;
+  --gold: #b7791f;
+  --silver: #7b8794;
+  --bronze: #a0522d;
+  --warn-bg: #fde8e4;
+  --warn-text: #b42318;
+}
+:root[data-theme="light"] .cmp-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%234d7c0f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+:root[data-theme="light"] .editbar { box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1); }
+:root[data-theme="light"] #player-dialog::backdrop,
+:root[data-theme="light"] #compare-dialog::backdrop,
+:root[data-theme="light"] #install-dialog::backdrop { background: rgba(20, 23, 28, 0.45); }

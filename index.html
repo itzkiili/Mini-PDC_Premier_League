@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<!-- Gespeichertes Design (hell/dunkel) sofort anwenden, damit nichts flackert -->
+<script>try { if (localStorage.getItem("liga.theme") === "light") document.documentElement.setAttribute("data-theme", "light"); } catch (e) {}</script>
 <title>Liga – Tabelle &amp; Spieltage</title>
 <!-- Als App auf dem Handy -->
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -83,5 +85,6 @@
 <script src="skripte/6-speichern.js?v=7"></script>
 <script src="skripte/7-start.js?v=7"></script>
 <script src="skripte/8-app.js?v=7"></script>
+<script src="skripte/9-darstellung.js?v=8"></script>
 </body>
 </html>
