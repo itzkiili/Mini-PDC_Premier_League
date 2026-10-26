@@ -102,6 +102,7 @@ const SPIELTAGE = [
       VF1: { "Johannes": { avg: 43.66, miss: 11 }, "Philipp": { avg: 43.22, miss: 7 } },
       VF2: { "Leon": { avg: 44.5, miss: 18 }, "Ben": { avg: 43.01, miss: 1 } },
       VF3: { "Andres": { avg: 39.11, miss: 7 }, "Moritz": { avg: 40.24, miss: 10 } },
+      VF4: { "Kilian": { avg: 39.55, miss: 6 }, "SchoeSchoe": { avg: 31.76, miss: 2 } },
       PR1: { "Philipp": { avg: 35.04, miss: 22 }, "Ben": { avg: 39.55, miss: 13 } },
     },
   },
