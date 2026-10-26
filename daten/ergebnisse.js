@@ -87,6 +87,7 @@ const SPIELTAGE = [
       VF1: { "Johannes": 2, "Philipp": 1 },
       VF2: { "Leon": 2, "Ben": 1 },
       VF3: { "Andres": 1, "Moritz": 2 },
+      VF4: { "Kilian": 2, "SchoeSchoe": 0 },
       PR1: { "Philipp": 0, "Ben": 2 },
     },
     bonus: {
