@@ -35,7 +35,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 2,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-10-26T19:22:28.989Z",
+  stand: "2026-10-26T19:22:53.633Z",
 };
 
 const SPIELTAGE = [
@@ -90,7 +90,7 @@ const SPIELTAGE = [
       PR1: { "Philipp": 0, "Ben": 2 },
     },
     bonus: {
-      "Ben": { co: 45, leg: 38 },
+      "Ben": { co: 59, leg: 33 },
       "Leon": { co: 9, leg: 29 },
       "Johannes": { co: 64, leg: 31 },
       "Philipp": { co: 16, leg: 35 },
