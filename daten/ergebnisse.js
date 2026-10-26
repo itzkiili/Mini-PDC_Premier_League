@@ -35,7 +35,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 2,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-10-26T21:39:46.998Z",
+  stand: "2026-10-26T21:52:30.330Z",
 };
 
 const SPIELTAGE = [
@@ -88,6 +88,7 @@ const SPIELTAGE = [
       P7: "Philipp",
       P5: "Ben",
       P3: "Johannes",
+      Finale: "Leon",
     },
     ergebnisse: {
       VF1: { "Johannes": 2, "Philipp": 1 },
@@ -101,10 +102,11 @@ const SPIELTAGE = [
       P7: { "Philipp": 2, "SchoeSchoe": 1 },
       P5: { "Ben": 2, "Andres": 1 },
       P3: { "Johannes": 2, "Moritz": 0 },
+      Finale: { "Leon": 3, "Kilian": 0 },
     },
     bonus: {
       "Ben": { co: 60, leg: 32 },
-      "Leon": { co: 9, leg: 29 },
+      "Leon": { co: 26, leg: 28 },
       "Johannes": { co: 78, leg: 30 },
       "Philipp": { co: 16, leg: 35 },
       "Andres": { co: 66, leg: 29 },
@@ -124,6 +126,7 @@ const SPIELTAGE = [
       P7: { "Philipp": { avg: 27.29, miss: 32 }, "SchoeSchoe": { avg: 27.6, miss: 17 } },
       P5: { "Ben": { avg: 37.18, miss: 14 }, "Andres": { avg: 35.62, miss: 21 } },
       P3: { "Johannes": { avg: 28.63, miss: 18 }, "Moritz": { avg: 28.29, miss: 19 } },
+      Finale: { "Leon": { avg: 49.55, miss: 8 }, "Kilian": { avg: 47.42, miss: 13 } },
     },
   },
 ];
