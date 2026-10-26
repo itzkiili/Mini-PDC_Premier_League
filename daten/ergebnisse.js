@@ -35,7 +35,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 2,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-10-26T18:27:04.801Z",
+  stand: "2026-10-26T18:48:29.408Z",
 };
 
 const SPIELTAGE = [
@@ -79,20 +79,25 @@ const SPIELTAGE = [
     sieger: {
       VF1: "Johannes",
       VF2: "Leon",
+      VF3: "Moritz",
     },
     ergebnisse: {
       VF1: { "Johannes": 2, "Philipp": 1 },
       VF2: { "Leon": 2, "Ben": 1 },
+      VF3: { "Andres": 1, "Moritz": 2 },
     },
     bonus: {
       "Ben": { co: 45, leg: 38 },
       "Leon": { co: 9, leg: 29 },
       "Johannes": { co: 64, leg: 31 },
       "Philipp": { co: 16, leg: 35 },
+      "Andres": { co: 12, leg: 40 },
+      "Moritz": { co: 30, leg: 31 },
     },
     statistik: {
       VF1: { "Johannes": { avg: 43.66, miss: 11 }, "Philipp": { avg: 43.22, miss: 7 } },
       VF2: { "Leon": { avg: 44.5, miss: 18 }, "Ben": { avg: 43.01, miss: 1 } },
+      VF3: { "Andres": { avg: 39.11, miss: 7 }, "Moritz": { avg: 40.24, miss: 10 } },
     },
   },
 ];
