@@ -191,6 +191,7 @@ async function closeSeason(oldName, id, newName, msg) {
     // 3. Neue, leere Saison beginnen (Punkte und Bonusregeln bleiben)
     setMsg(msg, "Beginne „" + newName + "“ …");
     const newLiga = { name: newName, punkte: punkte().slice() };
+    if (Array.isArray(LIGA_DATA.punkteKlein)) newLiga.punkteKlein = LIGA_DATA.punkteKlein.slice();
     if (LIGA_DATA.bonus) newLiga.bonus = clone(LIGA_DATA.bonus);
     ARCHIVES[id] = clone(DAYS);
     LIGA_DATA = newLiga;

@@ -428,8 +428,12 @@ function serialize() {
   const out = [HEADER];
   out.push("const LIGA = {");
   out.push("  name: " + JSON.stringify(LIGA_DATA.name || "Liga") + ",");
-  out.push("  // Punkte für Platz 1 bis 8 an jedem Spieltag");
+  out.push("  // Punkte für Platz 1 bis 8 bei 7–8 Spielern");
   out.push("  punkte: [" + punkte().map(Number).join(", ") + "],");
+  if (Array.isArray(LIGA_DATA.punkteKlein)) {
+    out.push("  // Punkte für Platz 1 bis 6 bei 5–6 Spielern");
+    out.push("  punkteKlein: [" + LIGA_DATA.punkteKlein.map(Number).join(", ") + "],");
+  }
   const bc = bonusCfg();
   out.push("  // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180");
   out.push("  bonus: { checkout: " + bc.checkout + ", leg: " + bc.leg + ", je180: " + bc.je180 + " },");

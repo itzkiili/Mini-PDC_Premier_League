@@ -28,8 +28,10 @@
 
 const LIGA = {
   name: "Liga 2026/27",
-  // Punkte für Platz 1 bis 8 an jedem Spieltag
-  punkte: [15, 12, 10, 8, 7, 6, 5, 4],
+  // Punkte für Platz 1 bis 8 bei 7–8 Spielern
+  punkte: [15, 13, 11, 9, 9, 7, 6, 5],
+  // Punkte für Platz 1 bis 6 bei 5–6 Spielern
+  punkteKlein: [15, 13, 11, 9, 7, 6],
   // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180
   bonus: { checkout: 1, leg: 1, je180: 1 },
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)

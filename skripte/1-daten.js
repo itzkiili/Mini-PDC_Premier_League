@@ -14,14 +14,20 @@ const REGELWERK_PDF = "dokumente/Regelwerk.pdf";
 document.querySelectorAll(".pdf-link").forEach(function (a) { a.setAttribute("href", encodeURI(REGELWERK_PDF)); });
 
 const DATA_FILE = "daten/ergebnisse.js";
-const DEFAULT_PUNKTE = [15, 13, 11, 9, 9, 7, 5, 4];
+const DEFAULT_PUNKTE = [15, 13, 11, 9, 9, 7, 6, 5];   // 7–8 Spieler (Turnierbaum)
+const DEFAULT_PUNKTE_KLEIN = [15, 13, 11, 9, 7, 6];    // 5–6 Spieler (Dreiergruppen) 
 const loadError = typeof SPIELTAGE === "undefined";
 let LIGA_DATA = clone(typeof LIGA !== "undefined" && LIGA ? LIGA : { name: "Liga", punkte: DEFAULT_PUNKTE });
 let DAYS = clone(!loadError && Array.isArray(SPIELTAGE) ? SPIELTAGE : []);
 
 function clone(x) { return JSON.parse(JSON.stringify(x)); }
-function punkte() { return Array.isArray(LIGA_DATA.punkte) ? LIGA_DATA.punkte : DEFAULT_PUNKTE; }
-
+// Punkte pro Platz; mode "gruppe" = Spieltag mit 5–6 Spielern.
+// Fehlt punkteKlein (z. B. in alten Saisons), gilt die normale Liste.
+function punkte(mode) {
+  const gross = Array.isArray(LIGA_DATA.punkte) ? LIGA_DATA.punkte : DEFAULT_PUNKTE;
+  if (mode === "gruppe") return Array.isArray(LIGA_DATA.punkteKlein) ? LIGA_DATA.punkteKlein : gross;
+  return gross;
+}
 // Zustand des Bearbeiten-Modus
 let editing = false;
 let lastResolved = [];

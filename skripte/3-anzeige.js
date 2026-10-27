@@ -376,8 +376,13 @@ function render() {
 
   const grid = document.getElementById("pts-grid");
   grid.innerHTML = "";
-  punkte().forEach(function (p, i) {
-    grid.appendChild(el("div", null, [el("b", { text: String(p) }), el("span", { text: "Platz " + (i + 1) })]));
+   [["7–8 Spieler", punkte()], ["5–6 Spieler", punkte("gruppe")]].forEach(function (row) {
+    grid.appendChild(el("div", null, [
+      el("span", { class: "pts-title", text: row[0] }),
+      el("div", { class: "pts-row" }, row[1].map(function (p, i) {
+        return el("div", null, [el("b", { text: String(p) }), el("span", { text: "Platz " + (i + 1) })]);
+      })),
+    ]));
   });
 
   // Hinweise

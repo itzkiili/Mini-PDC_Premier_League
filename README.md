@@ -30,7 +30,8 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 
 | Platz | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|---|
-| Punkte | 15 | 12 | 10 | 8 | 7 | 6 | 5 | 4 |
+| 7–8 Spieler | 15 | 13 | 11 | 9 | 9 | 7 | 6 | 5 |
+| 5–6 Spieler | 15 | 13 | 11 | 9 | 7 | 6 | | |
 
 **Bonuspunkte pro Spieltag:** höchstes Checkout +1, kürzestes Leg +1, jede 180 +1. Bei gleichem Bestwert bekommen alle den Bonus.
 

@@ -137,7 +137,7 @@ function resolveDay(day, warnings) {
         if (g.order) name = g.order[i] !== undefined ? g.order[i] : null;
         else if (!g.members.length) name = undefined;
         else name = i < g.members.length ? undefined : null;
-        gPlaces.push({ place: place, name: name, points: name ? (punkte()[place - 1] || 0) : 0 });
+        gPlaces.push({ place: place, name: name, points: name ? (punkte("gruppe")[place - 1] || 0) : 0 });      
       }
     });
     return {
