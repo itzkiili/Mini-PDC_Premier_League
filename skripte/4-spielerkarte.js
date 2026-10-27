@@ -106,11 +106,16 @@ function playerStats(name) {
   st.streak = streak; st.streakWin = streakWin;
   // Lieblings- und Angstgegner
   const opps = Object.keys(st.opp).map(function (k) { return st.opp[k]; });
-  opps.sort(function (a, b) { return (b.w - b.l) - (a.w - a.l) || (b.w + b.l) - (a.w + a.l) || a.name.localeCompare(b.name, "de"); });
+  // Reihenfolge: Spielbilanz, bei Gleichstand Legdifferenz, dann mehr Spiele
+  const legDiff = function (o) { return o.lw - o.ll; };
+  opps.sort(function (a, b) {
+    return (b.w - b.l) - (a.w - a.l) || legDiff(b) - legDiff(a) || (b.w + b.l) - (a.w + a.l) || a.name.localeCompare(b.name, "de");
+  });
   st.opps = opps;
-  const fav = opps.filter(function (o) { return o.w > o.l; })[0];
-  const nem = opps.slice().reverse().filter(function (o) { return o.l > o.w; })
-    .sort(function (a, b) { return (a.w - a.l) - (b.w - b.l) || (b.w + b.l) - (a.w + a.l); })[0];
+  // Ausgeglichene Spielbilanz (z. B. 1–1): die Legs entscheiden
+  const fav = opps.filter(function (o) { return o.w > o.l || (o.w === o.l && legDiff(o) > 0); })[0];
+  const nem = opps.filter(function (o) { return o.l > o.w || (o.w === o.l && legDiff(o) < 0); })
+    .sort(function (a, b) { return (a.w - a.l) - (b.w - b.l) || legDiff(a) - legDiff(b) || (b.w + b.l) - (a.w + a.l); })[0];
   st.fav = fav || null; st.nem = nem || null;
   return st;
 }
@@ -238,8 +243,9 @@ function openPlayer(name) {
   const facts = [];
   if (st.streak >= 2) facts.push((st.streakWin ? "🔥 " : "") + st.streak + (st.streakWin ? " Siege" : " Niederlagen") + " in Folge");
   if (st.nil) facts.push(st.nil + (st.nil === 1 ? " Sieg" : " Siege") + " zu null");
-  if (st.fav) facts.push("Lieblingsgegner: " + st.fav.name + " (" + st.fav.w + "–" + st.fav.l + ")");
-  if (st.nem) facts.push("Angstgegner: " + st.nem.name + " (" + st.nem.w + "–" + st.nem.l + ")");
+  const oppText = function (o) { return o.name + " (" + o.w + "–" + o.l + (o.legs ? ", Legs " + o.lw + ":" + o.ll : "") + ")"; };
+  if (st.fav) facts.push("Lieblingsgegner: " + oppText(st.fav));
+  if (st.nem) facts.push("Angstgegner: " + oppText(st.nem));
 
   const oppRows = st.opps.map(function (o) {
     return el("tr", null, [
