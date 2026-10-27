@@ -117,6 +117,7 @@ td.dash { color: var(--muted); }
 .ach-day ul { display: inline; margin: 0; padding: 0; list-style: none; }
 .ach-day li { display: inline; }
 .ach-day li + li::before { content: " · "; color: var(--muted); }
+.ach-day .ach-more { margin-left: 8px; color: var(--accent); }
 .pin-day.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 
 .day-grid { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }

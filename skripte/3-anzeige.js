@@ -270,7 +270,27 @@ function shareDayLink(nr, btn) {
   }
 }
 
+// ---------- Seitliche Wisch-Position (Handy) beim Neuzeichnen behalten ----------
+// Sonst springt der Turnierbaum nach jeder Eingabe wieder zur ersten Runde.
+let renderedDayIdx = null;
+function saveHScroll() {
+  return {
+    day: renderedDayIdx,
+    items: Array.prototype.map.call(document.querySelectorAll(".rounds, .games"), function (x) {
+      return { inDay: !!x.closest("#day-view"), left: x.scrollLeft };
+    }),
+  };
+}
+function restoreHScroll(keep) {
+  const list = document.querySelectorAll(".rounds, .games");
+  if (list.length !== keep.items.length) return;
+  keep.items.forEach(function (it, i) {
+    if (it.left && (!it.inDay || keep.day === currentIdx)) list[i].scrollLeft = it.left;
+  });
+}
+
 function render() {
+  const hScroll = saveHScroll();
   const warnings = [];
   const resolved = DAYS.map(function (d) { return resolveDay(d, warnings); });
   lastResolved = resolved;
@@ -400,6 +420,8 @@ function render() {
 
   renderEditBar();
   renderFooter();
+  restoreHScroll(hScroll);
+  renderedDayIdx = currentIdx;
 }
 
 // ---------- Spieltag ----------
@@ -458,7 +480,7 @@ function dayView(day, d) {
       ] : []),
     ]);
   });
-  
+
   // Platzierung erst zeigen, wenn alle Spiele gespielt sind (im Bearbeiten-Modus immer)
   const hidePlaces = !editing && !d.complete && placeRows.length;
   const places = el("div", null, [

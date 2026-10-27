@@ -36,6 +36,7 @@ const ERFOLGE = [
 
 let achCache = null;          // wird bei jedem render() neu berechnet
 let achCacheKey = null;
+let achDayOpen = null;       // Spieltag, dessen Erfolgsmeldungen aufgeklappt sind
 
 function erfolg(id) { return ERFOLGE.filter(function (e) { return e.id === id; })[0]; }
 
@@ -179,14 +180,22 @@ function achievementsOfDay(d) {
     });
   });
   if (!items.length) return null;
-  return el("div", { class: "ach-day" }, [
-    el("span", { class: "ach-day-title", text: "🎉 Neu freigeschaltet" }),
-    el("ul", null, items.map(function (it) {
+  // Höchste Stufe zuerst; standardmäßig nur die erste Meldung, der Rest auf Klick
+  items.sort(function (x, y) { return y.i - x.i; });
+  const open = achDayOpen === d.nr;
+  const shown = open ? items : items.slice(0, 1);
+  const box = el("div", { class: "ach-day" }, [
+    el("span", { class: "ach-day-title", text: "🎉 Neu" }),
+    el("ul", null, shown.map(function (it) {
       return el("li", null, [
         nameBtn(it.name),
         document.createTextNode(" " + it.e.icon + " " + it.e.name + " " + STUFEN[it.i] +
           (it.g.detail ? " (" + it.g.detail.replace(/ gegen .*$/, "") + ")" : "")),
       ]);
     })),
+    items.length > 1 ? el("button", { type: "button", class: "linkbtn ach-more",
+      text: open ? "weniger" : "+" + (items.length - 1) + " weitere",
+      onclick: function () { achDayOpen = open ? null : d.nr; render(); } }) : null,
   ]);
+  return box;
 }
