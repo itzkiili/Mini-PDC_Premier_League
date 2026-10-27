@@ -458,10 +458,15 @@ function dayView(day, d) {
       ] : []),
     ]);
   });
+  
+  // Platzierung erst zeigen, wenn alle Spiele gespielt sind (im Bearbeiten-Modus immer)
+  const hidePlaces = !editing && !d.complete && placeRows.length;
   const places = el("div", null, [
     el("h3", { text: "Platzierung" }),
-    el("div", { class: "card places" }, [el("table", null, [el("tbody", null,
-      placeRows.length ? placeRows : [el("tr", null, [el("td", { class: "dash", text: "Noch keine Spieler eingetragen." })])])])]),
+    hidePlaces
+      ? el("div", { class: "card places" }, [el("p", { class: "note places-wait", text: "Die Platzierung erscheint, sobald alle Spiele gespielt sind." })])
+      : el("div", { class: "card places" }, [el("table", null, [el("tbody", null,
+          placeRows.length ? placeRows : [el("tr", null, [el("td", { class: "dash", text: "Noch keine Spieler eingetragen." })])])])]),
   ]);
 
   let tree;
