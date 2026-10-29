@@ -6,7 +6,7 @@
 //  aktuell sind); nur ohne Verbindung wird die gespeicherte Fassung gezeigt.
 //  Nach größeren Änderungen CACHE_VERSION hochzählen.
 // =====================================================================
-const CACHE_VERSION = "liga-v5";
+const CACHE_VERSION = "liga-v6";
 
 const CORE = [
   "./",
@@ -28,6 +28,7 @@ const CORE = [
   "skripte/10-saisons.js",
   "skripte/11-erfolge.js",
   "skripte/12-profil.js",
+  "skripte/13-naechstes-spiel.js",
   "dokumente/Regelwerk.pdf",
   "app/manifest.webmanifest",
   "app/icons/icon-192.png",

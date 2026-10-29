@@ -7,7 +7,7 @@
 //  Spielerkarte
 // ===================================================================
 const PLAY_ORDER = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2", "P7", "P5", "P3", "Finale",
-  "G1", "V1", "G2", "V2", "G3", "V3"];
+  "V1", "G1", "V2", "G2", "V3", "G3"];
 const SVGNS = "http://www.w3.org/2000/svg";
 function svg(tag, attrs, children) {
   const e = document.createElementNS(SVGNS, tag);

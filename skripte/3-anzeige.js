@@ -420,6 +420,7 @@ function render() {
 
   renderEditBar();
   renderFooter();
+  if (typeof renderNextMatch === "function") renderNextMatch();
   restoreHScroll(hScroll);
   renderedDayIdx = currentIdx;
 }
