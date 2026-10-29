@@ -70,5 +70,5 @@ function renderNextMatch() {
     ]),
   ]);
   box.appendChild(card);
-render();
 }
+render();
