@@ -261,6 +261,29 @@ dialog:focus { outline: none; }
 .pc { padding: 20px; }
 .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .pc-head h2 { margin: 0; font-size: 1.7rem; }
+.pc-title { flex: 1; min-width: 0; }
+
+/* Spielerprofil: Bild, Spitzname, Walk-on-Song */
+.avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; flex: none;
+  border: 2px solid var(--accent); background: var(--surface-2); }
+.avatar.initials { display: grid; place-items: center; font-family: var(--display); font-size: 1.6rem; color: var(--accent); }
+.profile-info { margin: 2px 0 4px; }
+.profile-info p { margin: 0; }
+.nickname { color: var(--accent); font-style: italic; font-size: 1rem; }
+.walkon { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.85rem; color: var(--muted); }
+.walkon a, .walkon .song-btn { color: var(--accent); text-decoration: none; white-space: nowrap; font-size: inherit; }
+.song-player { margin: 4px 0 10px; }
+.song-player iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
+.song-player.spotify iframe { height: 152px; }
+.song-player.youtube iframe { aspect-ratio: 16 / 9; height: auto; max-height: 260px; }.profile-edit { display: grid; gap: 10px; margin: 8px 0 4px; padding: 12px; border-radius: 6px; background: var(--surface-2); }
+.profile-edit label { display: grid; gap: 4px; font-size: 0.8rem; color: var(--muted); }
+.profile-edit input[type="text"], .profile-edit input[type="url"] { font: inherit; font-size: 0.95rem; padding: 7px 10px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); width: 100%; }
+.profile-img-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.profile-img-row label.btn { position: relative; display: inline-block; cursor: pointer; color: var(--text); font-size: 0.9rem; }
+.profile-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.profile-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 480px) { .avatar { width: 56px; height: 56px; } }
 .pc-head .sub { margin: 2px 0 0; font-size: 0.9rem; }
 .btn.close { padding: 4px 10px; }
 .pc h3 { margin: 18px 0 8px; }

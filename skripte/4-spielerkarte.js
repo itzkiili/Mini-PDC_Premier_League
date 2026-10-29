@@ -215,6 +215,7 @@ function eloBadge(name) {
 }
 
 function openPlayer(name) {
+  
   const cd = document.getElementById("compare-dialog");
   if (cd && cd.open) cd.close();
   const st = playerStats(name);
@@ -259,8 +260,10 @@ function openPlayer(name) {
 
   dlg.appendChild(el("div", { class: "pc" }, [
     el("div", { class: "pc-head" }, [
-      el("div", null, [
+      typeof profileAvatar === "function" ? profileAvatar(name) : null,
+      el("div", { class: "pc-title" }, [
         el("h2", { text: name }),
+        typeof profileInfo === "function" ? profileInfo(name) : null,
         el("p", { class: "sub" }, [
           document.createTextNode(row ? row.rank + ". Platz in der Gesamttabelle" : ""),
           eloBadge(name),
