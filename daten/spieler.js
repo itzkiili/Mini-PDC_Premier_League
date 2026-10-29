@@ -10,7 +10,7 @@ const SPIELER = {
     "Kilian": {
     spitzname: "The Instinct",
     bild: "daten/bilder/kilian.png",
-    song: "Eye of the Tiger – Survivor",
-    songLink: "https://open.spotify.com/intl-de/track/3c3oUMxOr2cVFBY6V3v08C?si=0494030284fe4095",
+    song: "I Predict A Riot – Kaiser Chiefs",
+    songLink: "https://open.spotify.com/intl-de/track/75D3n6wnFQmu1HVmLAlWM4?si=12175707641d4d60",
   }
 };
