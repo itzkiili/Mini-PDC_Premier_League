@@ -12,5 +12,15 @@ const SPIELER = {
     bild: "daten/bilder/kilian.png",
     song: "I Predict A Riot – Kaiser Chiefs",
     songLink: "https://open.spotify.com/intl-de/track/75D3n6wnFQmu1HVmLAlWM4?si=12175707641d4d60",
+  },
+  "Philipp": {
+    spitzname: "Flying Phil",
+    song: "fly away  – Lenny Kravitz",
+    songLink: "https://open.spotify.com/intl-de/track/1OxcIUqVmVYxT6427tbhDW?si=fd7e27d1fcf440bf",
+  },
+  "Johannes": {
+    spitzname: "Madhouse Mundi",
+    song: "Hey,Wir Woll'n Die Eisbär'n Sehn – Puhdys",
+    songLink: "https://open.spotify.com/intl-de/track/2Epf5a8SVylcdU8NShYM4Z?si=4c56bb794a534c1b",
   }
 };
