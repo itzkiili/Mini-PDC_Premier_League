@@ -45,7 +45,7 @@
       <a href="#spieltage">Spieltage</a>
       <a href="#regeln">Modus und Punkte</a>
       <a href="#saisonfinale">Saisonfinale</a>
-      <a href="#weltrangliste">Weltrangliste </a>
+      <a href="#weltrangliste">Weltrangliste</a>
     </nav>
     <div id="warnings"></div>
     <div id="admin" hidden></div>
@@ -70,7 +70,7 @@
       <p><b>Gleichstand in der Tabelle:</b> direkter Vergleich → Legdifferenz → Spieltagsiege → Stechen.</p>
       <p><b>Elo:</b> zeigt die Spielstärke über alle Saisons und zählt nicht für die Tabelle.</p>
       <div class="pts-grid" id="pts-grid"></div>
-      <p class="rules-link"><a class="btn pdf-link" href="Regelwerk.pdf" target="_blank" rel="noopener">Vollständiges Regelwerk öffnen (PDF)</a></p>
+      <p class="rules-link"><a class="btn pdf-link" href="dokumente/Regelwerk.pdf" target="_blank" rel="noopener">Vollständiges Regelwerk öffnen (PDF)</a></p>
     </div>
   </section>
 
@@ -90,19 +90,7 @@
 <script src="daten/ergebnisse.js"></script>
 <script src="daten/saisons.js"></script>
 <script src="daten/spieler.js"></script>
-<!-- Programmlogik, in dieser Reihenfolge laden -->
-<script src="skripte/1-daten.js?v=13"></script>
-<script src="skripte/2-auswertung.js?v=13"></script>
-<script src="skripte/3-anzeige.js?v=13"></script>
-<script src="skripte/4-spielerkarte.js?v=13"></script>
-<script src="skripte/5-eingabe.js?v=13"></script>
-<script src="skripte/6-speichern.js?v=13"></script>
-<script src="skripte/7-start.js?v=13"></script>
-<script src="skripte/8-app.js?v=13"></script>
-<script src="skripte/9-darstellung.js?v=13"></script>
-<script src="skripte/10-saisons.js?v=13"></script>
-<script src="skripte/11-erfolge.js?v=13"></script>
-<script src="skripte/12-profile.js?v=13"></script>
-<script src="skripte/13-naechstes-spiel.js?v=13"></script>
+<!-- Programmlogik: startet in skripte/main.js, alles Weitere wird von dort geladen -->
+<script type="module" src="skripte/main.js"></script>
 </body>
 </html>
