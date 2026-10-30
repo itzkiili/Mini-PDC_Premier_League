@@ -67,7 +67,7 @@ export function openSeasonEnd() {
       el("h2", { text: "Saison abschließen" }),
       closeButton(dlg),
     ]),
-    el("p", { text: "Die laufende Saison (" + state.days.length + " Spieltage, davon " + played + " abgeschlossen) wird archiviert und bleibt über die Saisonauswahl abrufbar. Danach beginnt eine leere neue Saison mit denselben Punkte- und Bonusregeln." }),
+    el("p", { text: "Die laufende Saison (" + state.days.length + " Spieltage, davon " + played + " abgeschlossen) wird archiviert und bleibt über die Saisonauswahl abrufbar. Danach beginnt eine leere neue Saison mit denselben Punkte-, Bonus- und Modusregeln." }),
     el("label", { class: "field" }, [document.createTextNode("Name der abgeschlossenen Saison"), oldIn]),
     el("label", { class: "field" }, [document.createTextNode("Kürzel (wird Dateiname und Link, z. B. 2026-27)"), idIn]),
     el("label", { class: "field" }, [document.createTextNode("Name der neuen Saison"), newIn]),
@@ -107,11 +107,12 @@ async function closeSeason(oldName, id, newName, msg) {
     await putFile(SEASON_INDEX_FILE, seasonIndexText(list), "Archivliste ergänzt: " + oldName);
     state.seasons = list;
 
-    // 3. Neue, leere Saison beginnen (Punkte und Bonusregeln bleiben)
+    // 3. Neue, leere Saison beginnen (Punkte, Bonus und Spielmodus bleiben)
     setMsg(msg, "Beginne „" + newName + "“ …");
     const newLiga = { name: newName, punkte: punkte().slice() };
     if (Array.isArray(state.liga.punkteKlein)) newLiga.punkteKlein = state.liga.punkteKlein.slice();
     if (state.liga.bonus) newLiga.bonus = clone(state.liga.bonus);
+    if (state.liga.modus) newLiga.modus = clone(state.liga.modus);
     state.archives[id] = clone(state.days);
     state.liga = newLiga;
     state.days = [];

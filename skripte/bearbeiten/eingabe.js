@@ -5,6 +5,9 @@
 import { LABELS } from "../kern/konstanten.js";
 import { el } from "../kern/dom.js";
 import { clean, toNum } from "../kern/hilfen.js";
+import {
+  MODUS_VORLAGEN, AUS_NAMEN, cleanModus, seasonModus, dayModus, vorlageOf, modusText, bestOf, legsToWin,
+} from "../auswertung/modus.js";
 import { state, bonusCfg, changed, render } from "../kern/zustand.js";
 import { cleanupDay } from "../auswertung/spieltag.js";
 import { isPinnedDay } from "../anzeige/navigation.js";
@@ -85,6 +88,95 @@ export function playerEditor(day) {
     el("h3", { text: "Spieler an diesem Spieltag" }),
     el("div", { class: "players-grid" }, inputs),
     el("p", { class: "hint", text: "VF1: A gegen B, VF2: C gegen D, VF3: E gegen F, VF4: G gegen H. Bei 5 oder 6 Spielern nur die ersten Felder ausfüllen, dann wird in Dreiergruppen gespielt. Leere Felder bei 7 Spielern bedeuten ein Freilos." }),
+  ]);
+}
+
+// ---------------------------------------------------------------------
+//  Spielmodus des Spieltags: Normal, eine Vorlage oder eigener Modus
+//  Gespeichert werden nur Abweichungen vom Modus der Saison.
+// ---------------------------------------------------------------------
+const customOpen = new Set();   // Spieltage, bei denen „Eigener Modus“ gewählt ist
+
+// Modus des Spieltags als eigenen Modus ohne legsPlus (Legs direkt angegeben)
+function toCustom(day) {
+  const season = seasonModus(state.liga), eff = dayModus(day, state.liga);
+  const out = {};
+  if (eff.start !== season.start) out.start = eff.start;
+  if (eff.ein !== season.ein) out.ein = eff.ein;
+  if (eff.aus !== season.aus) out.aus = eff.aus;
+  const legs = eff.legs + eff.legsPlus, legsFinale = eff.legsFinale + eff.legsPlus;
+  if (legs !== season.legs + season.legsPlus) out.legs = legs;
+  if (legsFinale !== season.legsFinale + season.legsPlus) out.legsFinale = legsFinale;
+  return out;
+}
+
+export function modusEditor(day) {
+  const season = seasonModus(state.liga);
+  const own = cleanModus(day.modus);
+  const vorlage = vorlageOf(day.modus);
+  const custom = customOpen.has(day.nr) || (own && !vorlage);
+  const current = custom ? "eigen" : (vorlage ? vorlage.id : "");
+
+  const select = el("select", { "aria-label": "Spielmodus", onchange: function (e) {
+    const v = e.target.value;
+    customOpen.delete(day.nr);
+    if (v === "") delete day.modus;
+    else if (v === "eigen") { day.modus = toCustom(day); customOpen.add(day.nr); }
+    else day.modus = JSON.parse(JSON.stringify(MODUS_VORLAGEN.filter(function (x) { return x.id === v; })[0].modus));
+    if (day.modus && !cleanModus(day.modus) && v !== "eigen") delete day.modus;
+    changed();
+  } }, [el("option", { value: "", text: "Normal (" + modusText(season) + ")", selected: current === "" ? "selected" : null })]
+    .concat(MODUS_VORLAGEN.map(function (v) {
+      return el("option", { value: v.id, text: v.name, selected: current === v.id ? "selected" : null });
+    }))
+    .concat([el("option", { value: "eigen", text: "Eigener Modus …", selected: current === "eigen" ? "selected" : null })]));
+
+  const kids = [
+    el("h3", { text: "Spielmodus an diesem Spieltag" }),
+    el("div", { class: "modus-row" }, [select]),
+  ];
+  if (custom) kids.push(customModusFields(day, season));
+  const eff = dayModus(day, state.liga);
+  const groups = (day.spieler || []).filter(clean).length <= 6;   // Dreiergruppen: kein Finale
+  kids.push(el("p", { class: "hint", text: "Gilt für alle Spiele dieses Spieltags: " + modusText(eff) +
+    (groups ? "" : ", Finale " + bestOf(legsToWin(eff, "Finale"))) + "." }));
+  return el("div", { class: "card edit-card" }, kids);
+}
+
+// Felder für „Eigener Modus“
+function customModusFields(day, season) {
+  const eff = dayModus(day, state.liga);
+  // Wert setzen; gleich wie in der Saison -> wieder entfernen
+  function set(field, value, seasonValue) {
+    day.modus = day.modus || {};
+    delete day.modus.legsPlus;
+    if (value === seasonValue) delete day.modus[field]; else day.modus[field] = value;
+    changed();
+  }
+  function number(label, field, value, min, max, seasonValue, msg) {
+    return el("label", null, [document.createTextNode(label), el("input", {
+      type: "text", inputmode: "numeric", class: "st-in", value: String(value), "aria-label": label,
+      oninput: digitsOnly,
+      onchange: function (e) {
+        const v = parseInt(e.target.value, 10);
+        if (!isFinite(v) || v < min || v > max) { e.target.value = String(value); setStatus(msg, "err"); return; }
+        set(field, v, seasonValue);
+      },
+    })]);
+  }
+  function choice(label, field, value, options, seasonValue) {
+    return el("label", null, [document.createTextNode(label), el("select", {
+      "aria-label": label, onchange: function (e) { set(field, e.target.value, seasonValue); },
+    }, Object.keys(options).map(function (k) {
+      return el("option", { value: k, text: options[k], selected: k === value ? "selected" : null });
+    }))]);
+  }
+  return el("div", { class: "modus-grid" }, [
+    number("Startpunkte", "start", eff.start, 2, 1001, season.start, "Startpunkte zwischen 2 und 1001 eintragen."),
+    choice("Beginn", "ein", eff.ein, { single: "Normal", double: "Double In" }, season.ein),
+    choice("Checkout", "aus", eff.aus, AUS_NAMEN, season.aus),
+    number("Gewinnlegs", "legs", eff.legs + eff.legsPlus, 1, 9, season.legs + season.legsPlus, "Gewinnlegs zwischen 1 und 9 eintragen."),
+    number("Gewinnlegs Finale", "legsFinale", eff.legsFinale + eff.legsPlus, 1, 9, season.legsFinale + season.legsPlus, "Gewinnlegs zwischen 1 und 9 eintragen."),
   ]);
 }
 
