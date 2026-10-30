@@ -1,8 +1,10 @@
 // =====================================================================
-//  Liga-Seite – Hell-/Dunkel-Modus
+//  Hell-/Dunkel-Modus
 //  Die Wahl wird pro Gerät gespeichert. Standard ist dunkel.
+//  (Ein kleines Skript im <head> von index.html setzt sie schon vor dem
+//  ersten Zeichnen, damit nichts flackert.)
 // =====================================================================
-"use strict";
+import { store } from "../kern/hilfen.js";
 
 function currentTheme() {
   return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
@@ -11,7 +13,7 @@ function currentTheme() {
 function applyTheme(theme) {
   if (theme === "light") document.documentElement.setAttribute("data-theme", "light");
   else document.documentElement.removeAttribute("data-theme");
-  try { localStorage.setItem("liga.theme", theme); } catch (e) { /* nicht verfügbar */ }
+  store("liga.theme", theme);
   updateThemeColor();
   updateThemeButton();
 }
@@ -31,7 +33,8 @@ function updateThemeButton() {
   b.title = light ? "Dunkles Design" : "Helles Design";
 }
 
-(function () {
+// Knopf ☀/☾ oben rechts anlegen
+export function initThemeToggle() {
   const header = document.querySelector("header");
   if (!header || document.getElementById("theme-toggle")) return;
   const b = document.createElement("button");
@@ -42,4 +45,4 @@ function updateThemeButton() {
   header.appendChild(b);
   updateThemeColor();
   updateThemeButton();
-})();
+}

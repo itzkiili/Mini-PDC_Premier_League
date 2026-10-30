@@ -4,10 +4,12 @@
 //
 //  Strategie: immer zuerst aus dem Netz laden (damit Ergebnisse sofort
 //  aktuell sind); nur ohne Verbindung wird die gespeicherte Fassung gezeigt.
-//  Nach größeren Änderungen CACHE_VERSION hochzählen.
+//  Nach Änderungen an der Dateiliste CACHE_VERSION hochzählen.
 // =====================================================================
-const CACHE_VERSION = "liga-v6";
+const CACHE_VERSION = "liga-v7";
 
+// Für die Nutzung ohne Internet vorab gespeichert.
+// Neue Datei in skripte/? Hier eintragen (werkzeuge/pruefen.mjs meldet fehlende).
 const CORE = [
   "./",
   "index.html",
@@ -16,19 +18,44 @@ const CORE = [
   "daten/saisons.js",
   "daten/spieler.js",
   "css/style.css",
-  "skripte/1-daten.js",
-  "skripte/2-auswertung.js",
-  "skripte/3-anzeige.js",
-  "skripte/4-spielerkarte.js",
-  "skripte/5-eingabe.js",
-  "skripte/6-speichern.js",
-  "skripte/7-start.js",
-  "skripte/8-app.js",
-  "skripte/9-darstellung.js",
-  "skripte/10-saisons.js",
-  "skripte/11-erfolge.js",
-  "skripte/12-profil.js",
-  "skripte/13-naechstes-spiel.js",
+  "skripte/main.js",
+  "skripte/anzeige/erfolge.js",
+  "skripte/anzeige/fusszeile.js",
+  "skripte/anzeige/naechstes-spiel.js",
+  "skripte/anzeige/navigation.js",
+  "skripte/anzeige/profil.js",
+  "skripte/anzeige/saisonauswahl.js",
+  "skripte/anzeige/saisonfinale.js",
+  "skripte/anzeige/seite.js",
+  "skripte/anzeige/spielerkarte.js",
+  "skripte/anzeige/spieltag.js",
+  "skripte/anzeige/tabelle.js",
+  "skripte/anzeige/vergleich.js",
+  "skripte/anzeige/weltrangliste.js",
+  "skripte/app/aktualisieren.js",
+  "skripte/app/design.js",
+  "skripte/app/installieren.js",
+  "skripte/app/regelwerk.js",
+  "skripte/auswertung/elo.js",
+  "skripte/auswertung/erfolge.js",
+  "skripte/auswertung/spieltag.js",
+  "skripte/auswertung/statistik.js",
+  "skripte/auswertung/tabelle.js",
+  "skripte/bearbeiten/anmeldung.js",
+  "skripte/bearbeiten/datei.js",
+  "skripte/bearbeiten/eingabe.js",
+  "skripte/bearbeiten/github.js",
+  "skripte/bearbeiten/leiste.js",
+  "skripte/bearbeiten/profil-editor.js",
+  "skripte/bearbeiten/saisonwechsel.js",
+  "skripte/bearbeiten/speichern.js",
+  "skripte/bearbeiten/verschluesselung.js",
+  "skripte/bearbeiten/zusammenfuehren.js",
+  "skripte/kern/daten.js",
+  "skripte/kern/dom.js",
+  "skripte/kern/hilfen.js",
+  "skripte/kern/konstanten.js",
+  "skripte/kern/zustand.js",
   "dokumente/Regelwerk.pdf",
   "app/manifest.webmanifest",
   "app/icons/icon-192.png",
@@ -65,8 +92,9 @@ self.addEventListener("fetch", function (event) {
   // GitHub-Schnittstelle (Bearbeiten-Modus) nie zwischenspeichern
   if (url.hostname === "api.github.com") return;
 
-  // Schriften von Google: einmal laden, dann aus dem Speicher
-     if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" || url.hostname === "cdnjs.cloudflare.com") {    event.respondWith(
+  // Schriften von Google und pdf.js: einmal laden, dann aus dem Speicher
+  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" || url.hostname === "cdnjs.cloudflare.com") {
+    event.respondWith(
       caches.match(req).then(function (hit) {
         return hit || fetch(req).then(function (res) {
           const copy = res.clone();
@@ -80,8 +108,11 @@ self.addEventListener("fetch", function (event) {
 
   if (url.origin !== self.location.origin) return;
 
-  // Ergebnisse immer frisch beim Server nachfragen (nicht aus dem Browser-Zwischenspeicher)
-  const fresh = url.pathname.indexOf("/daten/") >= 0 ? new Request(req, { cache: "no-cache" }) : req;
+  // Eigene Dateien immer beim Server nachfragen, nicht aus dem Browser-Zwischenspeicher:
+  // Ergebnisse sind so sofort aktuell, und nach einem Update passen alle
+  // Programmdateien (skripte/) zusammen. Unveränderte Dateien kosten dabei
+  // nur eine kurze Rückfrage (304). Seitenaufrufe selbst bleiben unverändert.
+  const fresh = req.mode === "navigate" ? req : new Request(req, { cache: "no-cache" });
 
   // Eigene Dateien: Netz zuerst, bei Erfolg Speicher aktualisieren, offline aus dem Speicher
   event.respondWith(
