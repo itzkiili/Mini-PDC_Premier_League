@@ -85,24 +85,67 @@ daten/
   ergebnisse.js       alle Ergebnisse und Einstellungen der Liga (Daten)
   saisons.js          Liste der archivierten Saisons
   archiv/             abgeschlossene Saisons (eine Datei pro Saison)
+  spieler.js          Spielerprofile: Spitzname, Bild, Walk-on-Song
+  bilder/             Profilbilder
   zugang.js           verschlüsselter Zugang für den Bearbeiten-Modus (nicht von Hand ändern)
 dokumente/
   Regelwerk.pdf       Regelwerk
 app/
   manifest.webmanifest  App-Name, Farben, Icons
-  service-worker.js     Offline-Speicher der App
+  service-worker.js     Offline-Speicher der App (Liste aller Dateien)
   icons/                App-Icons und Favicon
 css/
   style.css         Aussehen (Farben, Schrift, Layout)
+werkzeuge/
+  pruefen.mjs       Prüfung vor dem Hochladen (siehe unten)
 skripte/
-  1-daten.js        Einstellungen und Zustand
-  2-auswertung.js   Turnierbaum, Gruppen, Platzierungen, Bonuspunkte
-  3-anzeige.js      Tabelle, Spieltage, Trendpfeile, Saisonfinale
-  4-spielerkarte.js Spielerstatistik und Direktvergleich
-  5-eingabe.js      Eingabefelder im Bearbeiten-Modus
-  6-speichern.js    Anmeldung, Passwort, Speichern bei GitHub
-  7-start.js        startet die Seite
-  8-app.js          „Als App installieren“
-  9-darstellung.js    Hell-/Dunkel-Modus
-  10-saisons.js       Saisonarchiv und Saisonwechsel
+  main.js           Start: einziger Einstiegspunkt, ruft alles in der richtigen Reihenfolge auf
+  kern/             Grundlagen, von allen genutzt
+    zustand.js        Zustand der Seite (state) und render()
+    konstanten.js     Dateipfade, Punkte, Elo-Einstellungen, Namen der Spiele
+    daten.js          liest die Dateien aus daten/
+    dom.js            Bausteine für Elemente und Fenster
+    hilfen.js         kleine Hilfsfunktionen (Zahlen, Base64, Gerätespeicher)
+  auswertung/       Berechnungen, ohne etwas anzuzeigen
+    spieltag.js       Turnierbaum, Dreiergruppen, Platzierungen, Bonuspunkte
+    tabelle.js        Gesamttabelle und Gleichstandsregeln
+    elo.js            Elo-Wertung über alle Saisons, Siegchance
+    statistik.js      Spielerstatistik, direkte Duelle
+    erfolge.js        Erfolge und ihre Stufen (Grenzwerte hier anpassen)
+  anzeige/          alles, was gezeichnet wird
+    seite.js          render(): baut die ganze Seite neu auf
+    tabelle.js        Gesamttabelle mit Trendpfeilen
+    spieltag.js       ein Spieltag mit Turnierbaum oder Gruppen
+    saisonfinale.js   vorläufiges Bracket der Top 8
+    spielerkarte.js   Spielerkarte
+    vergleich.js      Direktvergleich zweier Spieler
+    weltrangliste.js  ewige Elo-Rangliste
+    naechstes-spiel.js  „Nächstes Spiel“ oben auf der Seite
+    erfolge.js        Abzeichen in der Spielerkarte, „🎉 Neu“ am Spieltag
+    profil.js         Bild, Spitzname, Walk-on-Song
+    saisonauswahl.js  Saisonauswahl und Archiv
+    navigation.js     Links auf Spieltage (#spieltag-3)
+    fusszeile.js      Fußzeile
+  bearbeiten/       Bearbeiten-Modus
+    eingabe.js        Eingabefelder: Spieler, Legs, Average, Bonus, Stechen
+    leiste.js         Leiste unten: Status, Speichern, Fertig
+    anmeldung.js      Passwort, Zugang einrichten, Verbindung zu GitHub
+    verschluesselung.js  Token mit dem Passwort ver- und entschlüsseln
+    github.js         Dateien bei GitHub lesen und schreiben
+    datei.js          ergebnisse.js erzeugen
+    speichern.js      Speichern bei GitHub oder als Datei
+    zusammenfuehren.js  gleichzeitige Änderungen zusammenführen
+    saisonwechsel.js  Saison abschließen
+    profil-editor.js  Spielerprofil bearbeiten
+  app/              Installation als App
+    installieren.js   Service Worker, „Als App installieren“
+    regelwerk.js      PDF-Ansicht in der App
+    aktualisieren.js  Ziehen zum Aktualisieren
+    design.js         Hell-/Dunkel-Modus
 ```
+
+### Am Code arbeiten
+
+- Die Skripte sind **ES-Module** (`import`/`export`). Deshalb funktioniert die Seite nur über einen Webserver, nicht per Doppelklick auf `index.html`. Zum Testen auf dem eigenen Rechner im Ordner `python3 -m http.server` starten und `http://localhost:8000` öffnen.
+- Alles, was sich ändert (Daten, Bearbeiten-Modus, Saison), steht in `state` in `skripte/kern/zustand.js`. Nach einer Änderung `render()` aufrufen, im Bearbeiten-Modus `changed()`.
+- **Neue Datei in `skripte/`?** In `app/service-worker.js` in die Liste `CORE` eintragen und `CACHE_VERSION` hochzählen. `node werkzeuge/pruefen.mjs` meldet vergessene Einträge, falsche Importe und Tippfehler.
