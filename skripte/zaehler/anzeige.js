@@ -33,6 +33,10 @@ function matchLabel(c) { return LABELS[c.id] + " · Spieltag " + c.nr; }
 function fmtAvg(v) { return v === null ? "–" : v.toFixed(1).replace(".", ","); }
 function isFinish(rest, aus) { return rest <= 180 && minDarts(rest, aus) !== null; }
 
+function sameFormat(a, b) {
+  return a.start === b.start && a.ein === b.ein && a.aus === b.aus && a.legsToWin === b.legsToWin;
+}
+
 function formatText(f) {
   return f.start + (f.ein === "double" ? " Double In" : "") + " " + AUS_NAMEN[f.aus] + " · " + bestOf(f.legsToWin);
 }
@@ -58,7 +62,22 @@ export function openScorer(day, match) {
     if (!confirm("Es ist noch ein anderes Spiel gespeichert (" + matchLabel(saved) + ": " + saved.players.join(" gegen ") +
       "). Verwerfen und dieses Spiel zählen?")) return;
   }
-  cur = same ? saved : Object.assign(key, { match: null, format: matchFormat(day, state.liga, match.id) });
+  const format = matchFormat(day, state.liga, match.id);
+  cur = same ? saved : Object.assign(key, { match: null, format: format });
+  // Spielmodus seit dem letzten Öffnen geändert? (Ein von Hand geändertes Format bleibt.)
+  if (same && !cur.customFormat && !sameFormat(cur.format, format)) {
+    const started = cur.match && cur.match.events.length;
+    if (!started) {
+      cur.format = format;
+      if (cur.match) cur.match.format = Object.assign({}, format);
+    } else if (confirm("Der Spielmodus wurde geändert: jetzt " + formatText(format) + " statt " + formatText(cur.format) +
+        ".\n\nOK = Spiel mit dem neuen Modus von vorn beginnen\nAbbrechen = im bisherigen Modus weiterzählen")) {
+      cur.format = format;
+      cur.match = null;
+    } else {
+      cur.customFormat = true;   // nicht bei jedem Öffnen wieder fragen
+    }
+  }
   Object.assign(ui, { input: "", error: "", ask: null, editFormat: false, menu: false, msg: null });
   saveCur();
   const dlg = getDialog("zaehler-dialog");
@@ -134,6 +153,7 @@ function setupView() {
         if (!(st >= 2 && st <= 1001)) { msg.textContent = "Startpunkte zwischen 2 und 1001 eintragen."; return; }
         if (!(lg >= 1 && lg <= 9)) { msg.textContent = "Gewinnlegs zwischen 1 und 9 eintragen."; return; }
         cur.format = Object.assign({}, f, { start: st, legsToWin: lg });
+        cur.customFormat = true;
         ui.editFormat = false; saveCur(); draw();
       }),
     ]), msg);
@@ -361,9 +381,12 @@ function doneView(s) {
   const quote = function (p) { return p.doubles ? p.checkouts / p.doubles : null; };
   const stats = [
     ["Average", function (p) { return p.avg; }, function (v) { return v.toFixed(2).replace(".", ","); }, true],
+    ["First 9", function (p) { return p.f9; }, function (v) { return v.toFixed(2).replace(".", ","); }, true],
     ["Checkout", quote, function (v, p) { return Math.round(v * 100) + " %" + " (" + p.checkouts + "/" + p.doubles + ")"; }, true],
     ["High Finish", function (p) { return p.hiCo; }, String, true],
     ["Kürzestes Leg", function (p) { return p.bestLeg; }, function (v) { return v + " Darts"; }, false],
+    ["100+", function (p) { return p.t100; }, String, true],
+    ["140+", function (p) { return p.t140; }, String, true],
     ["180er", function (p) { return p.n180; }, String, true],
     ["Darts", function (p) { return p.darts; }, String, null],
   ];
@@ -383,7 +406,7 @@ function doneView(s) {
 
   // Hinweise
   const notes = [];
-  if (!isStandard(m.format)) notes.push("Spezial-Modus: Average und kürzestes Leg werden nicht in die Statistik übernommen.");
+  if (!isStandard(m.format)) notes.push("Spezial-Modus: Average, First 9 und kürzestes Leg werden nicht in die Statistik übernommen.");
   if (day && hasResult(day, cur.id)) notes.push("Für dieses Spiel ist schon ein Ergebnis eingetragen.");
   if (!state.editing) notes.push("Zum Übernehmen anmelden. Das Spiel bleibt so lange auf diesem Gerät gespeichert.");
 

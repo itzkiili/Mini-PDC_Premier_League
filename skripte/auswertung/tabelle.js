@@ -6,7 +6,12 @@ import { clean, toNum } from "../kern/hilfen.js";
 import { state } from "../kern/zustand.js";
 
 // Zähler für Average und Checkout-Quote an ein Objekt anhängen
-export function newAcc(o) { o.avgSum = 0; o.avgN = 0; o.bestAvg = null; o.coHit = 0; o.coMiss = 0; return o; }
+// f9Sum/f9N: First-9-Average je Spiel; t100/t140: Aufnahmen; tN: Spiele mit gezählten Aufnahmen (Live-Zähler)
+export function newAcc(o) {
+  o.avgSum = 0; o.avgN = 0; o.bestAvg = null; o.coHit = 0; o.coMiss = 0;
+  o.f9Sum = 0; o.f9N = 0; o.t100 = 0; o.t140 = 0; o.tN = 0;
+  return o;
+}
 
 // Average / Missed Doubles eines Spielers aus einem Spiel sammeln
 export function addMatchStats(acc, mt, name) {
@@ -21,6 +26,9 @@ export function addMatchStats(acc, mt, name) {
     const mine = mt.a.name === name ? mt.score.a : mt.score.b;
     acc.coHit += mine; acc.coMiss += miss;
   }
+  const f9 = toNum(ps.f9), t100 = toNum(ps.t100), t140 = toNum(ps.t140);
+  if (f9 !== null) { acc.f9Sum += f9; acc.f9N++; }
+  if (t100 !== null || t140 !== null) { acc.t100 += t100 || 0; acc.t140 += t140 || 0; acc.tN++; }
 }
 
 // ---------------------------------------------------------------------

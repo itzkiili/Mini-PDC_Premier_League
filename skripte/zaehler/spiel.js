@@ -33,7 +33,16 @@ export function isStandard(format) {
 }
 
 function emptyStats() {
-  return { points: 0, darts: 0, n180: 0, hiCo: null, bestLeg: null, doubles: 0, checkouts: 0, visits: [] };
+  return { points: 0, darts: 0, n180: 0, t100: 0, t140: 0, f9Points: 0, f9Darts: 0,
+    hiCo: null, bestLeg: null, doubles: 0, checkouts: 0, visits: [] };
+}
+
+// Aufnahmen zählen: 100+ = 100–139, 140+ = 140–179, 180 extra (wie im Fernsehen)
+export function visitClass(score) {
+  if (score === 180) return "t180";
+  if (score >= 140) return "t140";
+  if (score >= 100) return "t100";
+  return null;
 }
 
 // ---------------------------------------------------------------------
@@ -51,13 +60,21 @@ export function replay(m) {
   m.events.forEach(function (e) {
     const p = s.turn;
     const st = s.stats[p];
+    // First 9: Punkte und Darts der ersten neun Darts jedes Legs
+    const before = s.legDarts[p];
+    if (before < 9) {
+      st.f9Darts += Math.min(e.darts, 9 - before);
+      if (!e.bust) st.f9Points += e.score;
+    }
     st.darts += e.darts;
     s.legDarts[p] += e.darts;
     st.doubles += e.doubles || 0;
     if (!e.bust) {
       st.points += e.score;
       s.rest[p] -= e.score;
-      if (e.score === 180) st.n180++;
+      const cls = visitClass(e.score);
+      if (cls === "t180") st.n180++;
+      else if (cls) st[cls]++;
     }
     st.visits.push(e.bust ? "Bust" : String(e.score));
     if (!e.bust && s.rest[p] === 0) {
@@ -139,6 +156,9 @@ export function summary(m) {
       name: m.players[i],
       legs: s.legs[i],
       avg: st.darts ? st.points / st.darts * 3 : null,
+      f9: st.f9Darts ? st.f9Points / st.f9Darts * 3 : null,
+      t100: st.t100,
+      t140: st.t140,
       darts: st.darts,
       n180: st.n180,
       hiCo: st.hiCo,

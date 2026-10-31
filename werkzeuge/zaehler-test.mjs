@@ -4,6 +4,10 @@
 // =====================================================================
 import { minDarts, checkoutWeg, isPossibleVisit } from "../skripte/zaehler/checkout.js";
 import { applyToDay } from "../skripte/zaehler/uebernehmen.js";
+import { serialize } from "../skripte/bearbeiten/datei.js";
+import { parseDataFile } from "../skripte/kern/daten.js";
+import { resolveDay } from "../skripte/auswertung/spieltag.js";
+import { computeStandings } from "../skripte/auswertung/tabelle.js";
 import { asksDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
 
 let ok = 0;
@@ -104,6 +108,12 @@ eq("Anna Missed", sum[0].miss, (1 + 0 + 2) - 2);
 eq("Ben Legs/Darts", [sum[1].legs, sum[1].darts, sum[1].bestLeg], [1, 6 + 17 + 12, 17]);
 eq("Ben Missed", sum[1].miss, 2 - 1);
 
+// ---------- First 9, 100+, 140+ ----------
+eq("Anna First 9", Math.round(sum[0].f9 * 100) / 100, Math.round((501 + 300 + 420) / 27 * 3 * 100) / 100);
+eq("Ben First 9", sum[1].f9, (120 + 300 + 0) / 24 * 3);
+eq("Anna 100+/140+ (141 zählt als 140+, Bust nicht)", [sum[0].t100, sum[0].t140], [5, 2]);
+eq("Ben 100+/140+", [sum[1].t100, sum[1].t140], [4, 0]);
+
 // ---------- Doppel-Rückfrage nur bis 50 Rest (Master Out: 60) ----------
 eq("Grenze 50", [asksDoubles(50, "double"), asksDoubles(51, "double"), asksDoubles(41, "double"), asksDoubles(1, "double")], [true, false, true, false]);
 eq("Master bis 60", [asksDoubles(60, "master"), asksDoubles(61, "master")], [true, false]);
@@ -127,7 +137,19 @@ let day = dayWith({ bonus: { "Anna": { co: 150, n180: 1 }, "Ben": { leg: 12 } } 
 eq("Übernehmen 501", applyToDay(day, "VF1", m), null);
 eq("Legs", day.ergebnisse.VF1, { Anna: 2, Ben: 1 });
 eq("Sieger", day.sieger.VF1, "Anna");
-eq("Statistik", day.statistik.VF1, { Anna: { avg: 107.85, miss: 1 }, Ben: { avg: Math.round((120 + 501) / 35 * 3 * 100) / 100, miss: 1 } });
+eq("Statistik", day.statistik.VF1, {
+  Anna: { avg: 107.85, miss: 1, f9: 135.67, t100: 5, t140: 2 },
+  Ben: { avg: Math.round((120 + 501) / 35 * 3 * 100) / 100, miss: 1, f9: 52.5, t100: 4, t140: 0 },
+});
+{
+  // Speichern und wieder einlesen: neue Felder bleiben erhalten, Tabelle summiert sie
+  const text = serialize({ name: "Test" }, [day]);
+  const back = parseDataFile(text).tage[0];
+  eq("Gespeichert", back.statistik.VF1.Anna, { avg: 107.85, miss: 1, f9: 135.67, t100: 5, t140: 2 });
+  const rows = computeStandings([resolveDay(back, [])]).rows;
+  const anna = rows.filter(function (r) { return r.name === "Anna"; })[0];
+  eq("Summiert", [anna.f9N, anna.f9Sum, anna.t100, anna.t140, anna.tN], [1, 135.67, 5, 2, 1]);
+}
 eq("Bonus: höheres Finish bleibt, 180er addiert, kürzestes Leg", day.bonus.Anna, { co: 150, n180: 4, leg: 9 });
 eq("Bonus: kürzeres Leg bleibt", day.bonus.Ben, { leg: 12, co: 41 });
 eq("Zweimal übernehmen geht nicht", typeof applyToDay(day, "VF1", m), "string");
@@ -138,7 +160,7 @@ addVisit(sp, 60); addVisit(sp, 100); addVisit(sp, 110, false, 3, 2);
 day = dayWith();
 eq("Übernehmen Spezial", applyToDay(day, "VF1", sp), null);
 eq("Spezial: Legs", day.ergebnisse.VF1, { Anna: 1, Ben: 0 });
-eq("Spezial: kein Average", day.statistik.VF1, { Anna: { miss: 1 }, Ben: { miss: 0 } });
+eq("Spezial: kein Average/First 9, aber 100+", day.statistik.VF1, { Anna: { miss: 1, t100: 1, t140: 0 }, Ben: { miss: 0, t100: 1, t140: 0 } });
 eq("Spezial: High Finish ja, kürzestes Leg nein", day.bonus, { Anna: { co: 110 } });
 
 if (fails.length) {

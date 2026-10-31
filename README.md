@@ -71,7 +71,9 @@ Das vollständige Regelwerk steht im PDF im Repository.
 4. Steht ein Spieler auf **50 oder weniger** (Master Out: 60), fragt der Zähler kurz nach den **Darts aufs Doppel**. Beim Checkout fragt er, mit dem wievielten Dart gecheckt wurde; aus einem höheren Rest zählt automatisch ein Dart aufs Doppel.
 5. Am Ende im Bearbeiten-Modus **Ins Ergebnis übernehmen** und danach **Speichern**.
 
-Übernommen werden Legs, Sieger, Checkout-Quote, High Finish und 180er. Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. Das laufende Spiel bleibt auf dem Handy gespeichert, auch wenn die Seite neu lädt.
+Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Average, First-9-Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich.
+
+Wird der Spielmodus eines Spieltags geändert, übernimmt der Zähler ihn beim nächsten Öffnen. Läuft das Spiel schon, fragt er, ob es mit dem neuen Modus von vorn beginnen soll. Das laufende Spiel bleibt auf dem Handy gespeichert, auch wenn die Seite neu lädt.
 
 ### Von Hand
 

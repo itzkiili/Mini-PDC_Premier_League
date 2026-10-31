@@ -39,6 +39,8 @@ const HEADER = [
   "//        z. B. bonus: { \"Anna\": { co: 121, n180: 2 }, \"Ben\": { leg: 15 } }",
   "//  - statistik: optional je Spiel und Spieler Average (avg) und Missed",
   "//        Doubles (miss), z. B. VF1: { \"Anna\": { avg: 54.3, miss: 4 } }",
+  "//        vom Live-Zähler zusätzlich: First-9-Average (f9) und Anzahl der",
+  "//        Aufnahmen 100–139 (t100) und 140–179 (t140)",
   "//        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)",
   "//  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1",
   "//",
@@ -151,15 +153,16 @@ function dayLines(day) {
     return f.length ? q(n) + ": { " + f.join(", ") + " }," : null;
   }), boNames.length > 0);
 
-  // statistik: VF1: { "Anna": { avg: 54.3, miss: 4 } }
+  // statistik: VF1: { "Anna": { avg: 54.3, miss: 4, f9: 61.2, t100: 3, t140: 1 } }
   const sxAll = day.statistik || {};
   const sxKeys = KEY_ORDER.filter(function (k) { return sxAll[k] && typeof sxAll[k] === "object" && Object.keys(sxAll[k]).length; });
   block(out, "statistik", sxKeys.map(function (k) {
     const parts = Object.keys(sxAll[k]).map(function (n) {
       const ps = sxAll[k][n] || {};
       const f = [];
-      if (toNum(ps.avg) !== null) f.push("avg: " + toNum(ps.avg));
-      if (toNum(ps.miss) !== null) f.push("miss: " + toNum(ps.miss));
+      ["avg", "miss", "f9", "t100", "t140"].forEach(function (k) {
+        if (toNum(ps[k]) !== null) f.push(k + ": " + toNum(ps[k]));
+      });
       return f.length ? q(n) + ": { " + f.join(", ") + " }" : null;
     }).filter(Boolean);
     return parts.length ? k + ": { " + parts.join(", ") + " }," : null;

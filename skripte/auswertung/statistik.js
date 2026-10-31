@@ -4,7 +4,7 @@
 import { PLAY_ORDER, LABELS } from "../kern/konstanten.js";
 import { toNum } from "../kern/hilfen.js";
 import { state, currentSeasonLabel } from "../kern/zustand.js";
-import { addMatchStats } from "./tabelle.js";
+import { addMatchStats, newAcc } from "./tabelle.js";
 import { resolveAll } from "./spieltag.js";
 
 // Ausgewertete Spieltage aller archivierten Saisons vor der angezeigten, älteste zuerst
@@ -24,13 +24,12 @@ export function earlierSeasons() {
 //  Alles für die Spielerkarte aus der angezeigten Saison
 // ---------------------------------------------------------------------
 export function playerStats(name) {
-  const st = {
+  const st = newAcc({
     name: name, days: 0, doneDays: 0, points: 0, best: null, bestCount: 0,
     w: 0, l: 0, lw: 0, ll: 0, legGames: 0, dec: 0, decW: 0, nil: 0,
-    avgSum: 0, avgN: 0, bestAvg: null, coHit: 0, coMiss: 0,
     bonus: 0, donePoints: 0, n180: 0, hiCo: null, bestLeg: null, coTops: 0, legTops: 0, days180: 0,
     history: [], results: [], opp: {},
-  };
+  });
   state.resolved.forEach(function (d, idx) {
     if (d.players.indexOf(name) < 0) return;
     st.days++;
