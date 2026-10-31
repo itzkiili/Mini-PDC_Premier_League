@@ -4,7 +4,7 @@
 // =====================================================================
 import { minDarts, checkoutWeg, isPossibleVisit } from "../skripte/zaehler/checkout.js";
 import { applyToDay } from "../skripte/zaehler/uebernehmen.js";
-import { newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
+import { asksDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
 
 let ok = 0;
 const fails = [];
@@ -58,7 +58,7 @@ for (let i = 0; i < 4; i++) { addVisit(m, 100); addVisit(m, 100); }
 s = replay(m);
 eq("Rest Leg 2", s.rest, [101, 101]);
 c = checkVisit(m, s, 60);
-eq("101 -> 41: Doppel-Rückfrage 0–2 (101 = T17 Bull)", [c.bust, c.doubleOptions], [false, [0, 1, 2]]);
+eq("101 Rest: keine Doppel-Rückfrage (über 50)", [c.bust, c.doubleOptions], [false, null]);
 addVisit(m, 60, false, 3, 1);         // Ben: 41 Rest, ein Dart aufs Doppel daneben
 s = replay(m);
 c = checkVisit(m, s, 100);
@@ -103,6 +103,21 @@ eq("Anna kürzestes Leg", sum[0].bestLeg, 9);
 eq("Anna Missed", sum[0].miss, (1 + 0 + 2) - 2);
 eq("Ben Legs/Darts", [sum[1].legs, sum[1].darts, sum[1].bestLeg], [1, 6 + 17 + 12, 17]);
 eq("Ben Missed", sum[1].miss, 2 - 1);
+
+// ---------- Doppel-Rückfrage nur bis 50 Rest (Master Out: 60) ----------
+eq("Grenze 50", [asksDoubles(50, "double"), asksDoubles(51, "double"), asksDoubles(41, "double"), asksDoubles(1, "double")], [true, false, true, false]);
+eq("Master bis 60", [asksDoubles(60, "master"), asksDoubles(61, "master")], [true, false]);
+eq("Single Out nie", asksDoubles(20, "single"), false);
+{
+  const g = newMatch(["A", "B"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 });
+  const at = function (r) { return Object.assign(replay(g), { rest: [r, r] }); };
+  eq("Rest 60, 20 geworfen: keine Frage", checkVisit(g, at(60), 20).doubleOptions, null);
+  eq("Rest 40, 20 geworfen: 0–3", checkVisit(g, at(40), 20).doubleOptions, [0, 1, 2, 3]);
+  eq("Rest 41, Bust: 0–2 (zwei Darts nötig)", checkVisit(g, at(41), 60).doubleOptions, [0, 1, 2]);
+  eq("Checkout 100: ein Dart aufs Doppel", checkoutDoubles(checkVisit(g, at(100), 100), 3), [1]);
+  eq("Checkout 40 mit 2. Dart: 1–2", checkoutDoubles(checkVisit(g, at(40), 40), 2), [1, 2]);
+}
+eq("Legverlauf", replay(m).legList.map(function (l) { return [l.winner, l.starter, l.darts, l.checkout]; }), [[0, 0, 9, 141], [1, 1, 17, 41], [0, 0, 15, 40]]);
 
 // ---------- Übernehmen ----------
 function dayWith(extra) {

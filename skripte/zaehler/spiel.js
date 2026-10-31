@@ -13,6 +13,15 @@
 // =====================================================================
 import { isPossibleVisit, minDarts } from "./checkout.js";
 
+// Darts aufs Doppel werden nur abgefragt, wenn der Rest höchstens so groß ist
+// (der höchste Rest, den man mit einem Dart auschecken kann). Darüber zählt
+// beim Checkout genau ein Dart aufs Doppel, sonst keiner.
+export const DOPPEL_GRENZE = { double: 50, master: 60 };
+
+export function asksDoubles(rest, aus) {
+  return aus !== "single" && rest <= DOPPEL_GRENZE[aus] && minDarts(rest, aus) !== null;
+}
+
 // format: { start, ein, aus, legsToWin }; starter: 0 oder 1 (wer das erste Leg beginnt)
 export function newMatch(players, starter, format) {
   return { v: 1, players: players.slice(0, 2), starter: starter, format: Object.assign({}, format), events: [] };
@@ -37,6 +46,7 @@ export function replay(m) {
     rest: [f.start, f.start], legDarts: [0, 0],
     stats: [emptyStats(), emptyStats()],
     done: false, winner: null, lastLeg: null,
+    legList: [],   // gespielte Legs: { winner, starter, darts, checkout }
   };
   m.events.forEach(function (e) {
     const p = s.turn;
@@ -56,7 +66,8 @@ export function replay(m) {
       if (st.hiCo === null || e.score > st.hiCo) st.hiCo = e.score;
       if (st.bestLeg === null || s.legDarts[p] < st.bestLeg) st.bestLeg = s.legDarts[p];
       s.legs[p]++;
-      s.lastLeg = { winner: p, darts: s.legDarts[p], checkout: e.score };
+      s.lastLeg = { winner: p, starter: s.legStarter, darts: s.legDarts[p], checkout: e.score };
+      s.legList.push(s.lastLeg);
       if (s.legs[p] >= f.legsToWin) { s.done = true; s.winner = p; return; }
       s.leg++;
       s.legStarter = s.leg % 2 === 0 ? m.starter : 1 - m.starter;   // Anwurf wechselt jedes Leg
@@ -88,19 +99,22 @@ export function checkVisit(m, s, score) {
 
   if (after === 0) {
     if (needed === null) return { error: rest + " kann man nicht auschecken" + (aus === "double" ? " (Double Out)." : ".") };
-    return { bust: false, checkout: true, needed: needed, single: aus === "single", dartOptions: range(needed, 3), doubleOptions: null };
+    return { bust: false, checkout: true, needed: needed, single: aus === "single", ask: asksDoubles(rest, aus),
+      dartOptions: range(needed, 3), doubleOptions: null };
   }
   const bust = after < 0 || (after === 1 && aus !== "single");
-  // Darts aufs Doppel nur abfragen, wenn der Spieler auf einem Finish stand
-  const doubleOptions = needed !== null && aus !== "single" ? range(0, 4 - needed) : null;
+  // Darts aufs Doppel nur abfragen, wenn der Spieler auf einem kurzen Finish stand
+  const doubleOptions = asksDoubles(rest, aus) ? range(0, 4 - needed) : null;
   return { bust: bust, checkout: false, dartOptions: null, doubleOptions: doubleOptions };
 }
 
 // Beim Checkout mit `darts` Darts: mögliche Darts aufs Doppel (null = keine Rückfrage)
 // Wer z. B. 40 mit dem 3. Dart checkt, kann 1 bis 3 Darts aufs Doppel geworfen haben;
 // bei 100 (zwei Darts nötig) mit dem 3. Dart nur 1 oder 2.
+// Über DOPPEL_GRENZE: immer genau ein Dart (der Treffer).
 export function checkoutDoubles(c, darts) {
   if (c.single) return null;
+  if (!c.ask) return [1];
   const r = [];
   for (let i = 1; i <= darts - c.needed + 1; i++) r.push(i);
   return r;

@@ -67,8 +67,8 @@ Das vollständige Regelwerk steht im PDF im Repository.
 
 1. Im Turnierbaum bei einem offenen Spiel auf **▶ Live zählen** tippen. Das Format (z. B. Best of 3, 170er-Legs) kommt aus dem Spielmodus des Spieltags und lässt sich vor dem ersten Leg für dieses Spiel ändern.
 2. Auswählen, wer das Ausbullen gewonnen hat. Danach wechselt der Anwurf jedes Leg automatisch.
-3. Pro Aufnahme die Punkte eintippen (oder Schnellwahl, am Computer auch per Tastatur). **Bust** bei Überworfen, **⌫** löscht die letzte Ziffer oder macht die letzte Aufnahme rückgängig.
-4. Steht ein Spieler auf einem Finish, fragt der Zähler kurz nach den **Darts aufs Doppel**; beim Checkout, mit dem wievielten Dart gecheckt wurde.
+3. Pro Aufnahme die Punkte eintippen (oder Schnellwahl, am Computer auch per Tastatur). Rechts im Feld steht schon, was danach übrig bleibt. **Check** checkt den ganzen Rest aus, **Bust** bei Überworfen, **⌫** löscht eine Ziffer, **↶** macht die letzte Aufnahme rückgängig.
+4. Steht ein Spieler auf **50 oder weniger** (Master Out: 60), fragt der Zähler kurz nach den **Darts aufs Doppel**. Beim Checkout fragt er, mit dem wievielten Dart gecheckt wurde; aus einem höheren Rest zählt automatisch ein Dart aufs Doppel.
 5. Am Ende im Bearbeiten-Modus **Ins Ergebnis übernehmen** und danach **Speichern**.
 
 Übernommen werden Legs, Sieger, Checkout-Quote, High Finish und 180er. Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. Das laufende Spiel bleibt auf dem Handy gespeichert, auch wenn die Seite neu lädt.
