@@ -5,6 +5,13 @@
 //  Diese Datei kannst du auf der Seite über „Ergebnisse bearbeiten“
 //  ändern oder weiterhin hier von Hand bearbeiten.
 //
+//  Spielmodus (optional, bei LIGA für die Saison oder bei einem Spieltag):
+//  - modus: { start: 501, ein: "single", aus: "double", legs: 2, legsFinale: 3 }
+//        start: Startpunkte   ein: "double" = Double In
+//        aus: "double", "master" (Doppel oder Triple) oder "single"
+//        legs: Gewinnlegs (2 = Best of 3)   legsFinale: Gewinnlegs im Finale
+//        legsPlus: zusätzliche Gewinnlegs an einem Spieltag (170er-Legs: 1)
+//
 //  Aufbau eines Spieltags:
 //  - spieler: bis zu 8 Namen in der Reihenfolge A bis H, freie Plätze = null
 //        VF1: A gegen B   VF2: C gegen D   VF3: E gegen F   VF4: G gegen H
@@ -37,7 +44,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 3,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-10-29T16:46:24.858Z",
+  stand: "2026-10-31T00:19:10.273Z",
 };
 
 const SPIELTAGE = [
@@ -134,6 +141,7 @@ const SPIELTAGE = [
   {
     nr: 3,
     datum: "02.11.2026",
+    modus: { start: 170, legsPlus: 1 },
     spieler: ["Kilian", "Andres", "Philipp", "Tom", "Ben", "Johannes", "Leon"],
     sieger: {},
   },
