@@ -5,7 +5,8 @@
 import { PLACE_OF, LABELS } from "../kern/konstanten.js";
 import { el } from "../kern/dom.js";
 import { toNum, fmtAvg } from "../kern/hilfen.js";
-import { state, bonusCfg } from "../kern/zustand.js";
+import { state, bonusCfg, viewingArchive } from "../kern/zustand.js";
+import { scoreButton } from "../zaehler/anzeige.js";
 import { shareDayLink } from "./navigation.js";
 import { nameBtn } from "./spielerkarte.js";
 import { openCompare } from "./vergleich.js";
@@ -205,10 +206,13 @@ function matchEl(day, match, isFinal) {
     Object.assign(attrs, clickable(function () { openCompare(match.a.name, match.b.name); }));
     attrs.title = match.a.name + " und " + match.b.name + " vergleichen";
   }
+  // Offenes Spiel mit beiden Spielern: Live-Zähler
+  const scorable = match.state === "offen" && match.a.name && match.b.name && !viewingArchive();
   return el("div", attrs, [
     el("div", { class: "match-head" }, [el("span", { text: LABELS[match.id] }), el("span", { text: stateText })]),
     slotEl(day, match, "a", tagFor("a")),
     slotEl(day, match, "b", tagFor("b")),
+    scorable ? el("div", { class: "match-foot" }, [scoreButton(day, match)]) : null,
   ].concat(isPickable(match) ? statsPanel(day, match) : []));
 }
 
