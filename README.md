@@ -26,6 +26,8 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 | 7–8 Spieler | Viertelfinale → Halbfinale (Plätze 1–4) und Platzierungsrunde (Plätze 5–8); jeder Platz wird ausgespielt |
 | 5–6 Spieler | 3 Viertelfinals → Gewinnergruppe (Plätze 1–3) und Verlierergruppe (Plätze 4–6), jeweils jeder gegen jeden; bei Gleichstand Stechen |
 
+**Spielformat:** standardmäßig 501 Double Out, Best of 3, großes Finale Best of 5. Für die ganze Saison lässt sich das in `daten/ergebnisse.js` bei `LIGA` ändern, z. B. `modus: { legs: 3, legsFinale: 4 }` für Best of 5 und im Finale Best of 7. Für Spezial-Spieltage wählt man im Bearbeiten-Modus beim Spieltag einen eigenen Modus (siehe unten).
+
 **Punkte pro Spieltag:**
 
 | Platz | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
@@ -57,8 +59,9 @@ Das vollständige Regelwerk steht im PDF im Repository.
    - VF1: A gegen B · VF2: C gegen D · VF3: E gegen F · VF4: G gegen H
    - Bei 5 oder 6 Spielern nur die ersten Felder ausfüllen.
 3. Im Turnierbaum die **Legs** mit − / + eintragen. Der Sieger wird automatisch gesetzt. Alternativ einfach auf den Namen des Siegers klicken.
-4. Optional unter **▾ Average & Doppel** Average und Missed Doubles eintragen und unter **Bonuspunkte** High Finish, kürzestes Leg und 180er.
-5. Unten auf **Speichern** klicken. Nach etwa einer Minute sehen alle den neuen Stand.
+4. Bei einem Spezial-Spieltag unter **Spielmodus an diesem Spieltag** den Modus wählen: Double In, 170er-Legs, Master Out oder einen eigenen Modus mit Startpunkten, Checkout und Gewinnlegs.
+5. Optional unter **▾ Average & Doppel** Average und Missed Doubles eintragen und unter **Bonuspunkte** High Finish, kürzestes Leg und 180er.
+6. Unten auf **Speichern** klicken. Nach etwa einer Minute sehen alle den neuen Stand.
 
 ### Von Hand
 
@@ -111,6 +114,7 @@ skripte/
     tabelle.js        Gesamttabelle und Gleichstandsregeln
     elo.js            Elo-Wertung über alle Saisons, Siegchance
     statistik.js      Spielerstatistik, direkte Duelle
+    modus.js          Spielmodus: Startpunkte, Double In/Out, Gewinnlegs
     erfolge.js        Erfolge und ihre Stufen (Grenzwerte hier anpassen)
   anzeige/          alles, was gezeichnet wird
     seite.js          render(): baut die ganze Seite neu auf

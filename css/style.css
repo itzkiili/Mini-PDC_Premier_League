@@ -208,6 +208,12 @@ footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wr
 @media (max-width: 560px) { .players-grid { grid-template-columns: repeat(2, 1fr); } }
 .players-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; color: var(--muted); }
 .hint { font-size: 0.85rem; color: var(--muted); margin: 10px 0 0; }
+.badge.modus { border: 1px solid var(--gold); color: var(--text); }
+.modus-row select, .modus-grid select { font: inherit; font-size: 0.9rem; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); max-width: 100%; }
+.modus-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+@media (max-width: 560px) { .modus-grid { grid-template-columns: repeat(2, 1fr); } }
+.modus-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; color: var(--muted); }
+.modus-grid .st-in { width: 100%; padding: 6px 8px; font-size: 0.9rem; border-radius: 8px; }
 .date-input { width: 9.5rem; padding: 4px 8px; }
 .editing .slot.pick { cursor: pointer; }
 .editing .slot.pick:hover { background: var(--accent-soft); }

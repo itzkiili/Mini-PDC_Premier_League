@@ -8,6 +8,7 @@ import { state, gh, punkte, setRenderer } from "../kern/zustand.js";
 import { resolveDay } from "../auswertung/spieltag.js";
 import { computeStandings } from "../auswertung/tabelle.js";
 import { computeElo, eloStartFor } from "../auswertung/elo.js";
+import { seasonModus, modusText, bestOf, legsToWin } from "../auswertung/modus.js";
 import { startDayIdx, setDayHash, dayNr, isPinnedDay } from "./navigation.js";
 import { renderStandings, playedDays, previousRanks } from "./tabelle.js";
 import { renderSeasonFinal } from "./saisonfinale.js";
@@ -41,6 +42,7 @@ function renderPage() {
   renderDay(resolved);
   renderHeader(resolved, standings.rows);
   renderPointsGrid();
+  renderFormat();
   renderWarnings(warnings);
   renderEditBar();
   renderFooter();
@@ -107,6 +109,15 @@ function renderPointsGrid() {
       })),
     ]));
   });
+}
+
+// Spielformat der Saison im Abschnitt „Modus & Punkte“
+function renderFormat() {
+  const box = document.getElementById("spielformat");
+  if (!box) return;
+  const m = seasonModus(state.liga);
+  box.textContent = modusText(m) + ", großes Finale " + bestOf(legsToWin(m, "Finale")) +
+    ". An Spezial-Spieltagen kann der Modus abweichen (steht dann beim Spieltag).";
 }
 
 // Hinweise auf Fehler in den Daten

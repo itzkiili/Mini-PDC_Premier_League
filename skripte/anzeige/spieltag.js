@@ -10,8 +10,9 @@ import { shareDayLink } from "./navigation.js";
 import { nameBtn } from "./spielerkarte.js";
 import { openCompare } from "./vergleich.js";
 import { achievementsOfDay } from "./erfolge.js";
+import { cleanModus, dayModus, vorlageOf, modusText } from "../auswertung/modus.js";
 import {
-  dateInput, pinDayButton, deleteDayButton, playerEditor, bonusEditor,
+  dateInput, pinDayButton, modusEditor, deleteDayButton, playerEditor, bonusEditor,
   scoreInput, pickWinner, statsPanel, groupStechenEl,
 } from "../bearbeiten/eingabe.js";
 
@@ -31,6 +32,7 @@ export function dayView(day, d) {
     editing ? dateInput(day) : null,
     el("span", { class: "badge" + (d.complete ? " done" : ""), text: d.complete ? "abgeschlossen" : "läuft" }),
     d.count ? el("span", { class: "badge", text: d.count + " Spieler · " + (d.mode === "gruppe" ? "Dreiergruppen" : "Turnierbaum") }) : null,
+    modusBadge(day),
     editing ? pinDayButton(day) : shareBtn,
     editing ? deleteDayButton(day) : null,
   ]));
@@ -39,6 +41,7 @@ export function dayView(day, d) {
     if (newAch) wrap.appendChild(newAch);
   }
   if (editing) wrap.appendChild(playerEditor(day));
+  if (editing) wrap.appendChild(modusEditor(day));
 
   // ---------- Platzierung und Turnierbaum ----------
   const treeBox = el("div", null, [el("h3", { text: "Turnierbaum" }), el("div", { class: "card" }, treeOf(day, d))]);
@@ -49,6 +52,15 @@ export function dayView(day, d) {
   if (editing && d.count) wrap.appendChild(bonusEditor(day, d));
   else if (d.bonus.any) wrap.appendChild(bonusView(d));
   return wrap;
+}
+
+// Abweichender Spielmodus, z. B. „170er-Legs · 170 Double Out · Best of 5“
+function modusBadge(day) {
+  if (!cleanModus(day.modus)) return null;
+  const vorlage = vorlageOf(day.modus);
+  const m = dayModus(day, state.liga);
+  return el("span", { class: "badge modus", text: (vorlage ? vorlage.name : "Eigener Modus") + " · " + modusText(m),
+    title: "Spielmodus an diesem Spieltag. Finale: " + modusText(m, true) });
 }
 
 // Platzierung erst zeigen, wenn alle Spiele gespielt sind (im Bearbeiten-Modus immer)

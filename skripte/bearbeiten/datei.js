@@ -7,6 +7,7 @@
 import { KEY_ORDER } from "../kern/konstanten.js";
 import { clean, toNum } from "../kern/hilfen.js";
 import { punkte, bonusCfg } from "../kern/zustand.js";
+import { cleanModus, MODUS_FELDER } from "../auswertung/modus.js";
 
 const HEADER = [
   "// =====================================================================",
@@ -15,6 +16,13 @@ const HEADER = [
   "//",
   "//  Diese Datei kannst du auf der Seite über „Ergebnisse bearbeiten“",
   "//  ändern oder weiterhin hier von Hand bearbeiten.",
+  "//",
+  "//  Spielmodus (optional, bei LIGA für die Saison oder bei einem Spieltag):",
+  "//  - modus: { start: 501, ein: \"single\", aus: \"double\", legs: 2, legsFinale: 3 }",
+  "//        start: Startpunkte   ein: \"double\" = Double In",
+  "//        aus: \"double\", \"master\" (Doppel oder Triple) oder \"single\"",
+  "//        legs: Gewinnlegs (2 = Best of 3)   legsFinale: Gewinnlegs im Finale",
+  "//        legsPlus: zusätzliche Gewinnlegs an einem Spieltag (170er-Legs: 1)",
   "//",
   "//  Aufbau eines Spieltags:",
   "//  - spieler: bis zu 8 Namen in der Reihenfolge A bis H, freie Plätze = null",
@@ -41,6 +49,14 @@ const HEADER = [
 
 // Name als Text in Anführungszeichen, leer = null
 function q(v) { return v === null || v === undefined || String(v).trim() === "" ? "null" : JSON.stringify(String(v).trim()); }
+
+// Spielmodus als eine Zeile: { start: 170, legsPlus: 1 } (oder null)
+function modusValue(raw) {
+  const m = cleanModus(raw);
+  if (!m) return null;
+  return "{ " + MODUS_FELDER.filter(function (k) { return k in m; })
+    .map(function (k) { return k + ": " + JSON.stringify(m[k]); }).join(", ") + " }";
+}
 
 // Schlüssel ohne Anführungszeichen, wenn möglich (VF1: …)
 function key(k) { return /^[A-Za-z_$][\w$]*$/.test(k) ? k : JSON.stringify(k); }
@@ -70,6 +86,11 @@ function ligaLines(liga, days) {
   const bc = bonusCfg(liga);
   out.push("  // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180");
   out.push("  bonus: { checkout: " + bc.checkout + ", leg: " + bc.leg + ", je180: " + bc.je180 + " },");
+  const modus = modusValue(liga.modus);
+  if (modus) {
+    out.push("  // Spielmodus der Saison (siehe oben); fehlt er, gilt 501 Double Out, Best of 3, Finale Best of 5");
+    out.push("  modus: " + modus + ",");
+  }
   const ts = (Array.isArray(liga.stechen) ? liga.stechen : []).map(clean).filter(Boolean);
   if (ts.length) {
     out.push("  // Entscheidungsleg/Stechen bei Gleichstand in der Gesamttabelle (bessere zuerst)");
@@ -96,6 +117,8 @@ function dayLines(day) {
   out.push("  {");
   out.push("    nr: " + (Number(day.nr) || 0) + ",");
   out.push("    datum: " + JSON.stringify(day.datum || "") + ",");
+  const modus = modusValue(day.modus);
+  if (modus) out.push("    modus: " + modus + ",");
   out.push("    spieler: [" + players.map(q).join(", ") + "],");
 
   // sieger (immer vorhanden, ggf. leer)
