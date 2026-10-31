@@ -60,12 +60,10 @@ function tile(label, value, sub) {
 }
 
 function statTiles(st) {
-  const avg = st.doneDays ? (st.donePoints / st.doneDays).toFixed(1).replace(".", ",") : "–";
   const diff = st.lw - st.ll;
   const doubles = st.coHit + st.coMiss;
   return el("div", { class: "tiles" }, [
     tile("Punkte", String(st.points), st.days + (st.days === 1 ? " Spieltag" : " Spieltage")),
-    tile("Ø Punkte", avg, "pro Spieltag"),
     tile("Beste Platzierung", st.best ? st.best + "." : "–", st.best ? st.bestCount + "×" : null),
     tile("Spiele", st.w + "–" + st.l, "Siegquote " + pct(st.w, st.w + st.l)),
     tile("Legs", st.legGames ? st.lw + ":" + st.ll : "–", st.legGames ? (diff > 0 ? "+" : "") + diff + " · " + pct(st.lw, st.lw + st.ll) : "noch keine Legs"),
@@ -76,7 +74,6 @@ function statTiles(st) {
       st.tN ? "in " + st.tN + (st.tN === 1 ? " gezähltem Spiel" : " gezählten Spielen") : "nur mit Live-Zähler"),
     tile("Checkout-Quote", doubles ? pct(st.coHit, doubles) : "–",
       doubles ? st.coHit + " von " + doubles + " Doppeln" : "noch nicht erfasst"),
-    tile("Bonuspunkte", st.bonus ? "+" + st.bonus : "–", "in den Punkten enthalten"),
     tile("180er", String(st.n180), st.n180 ? "an " + st.days180 + (st.days180 === 1 ? " Spieltag" : " Spieltagen") : "noch keine"),
     tile("Höchstes Finish", st.hiCo ? String(st.hiCo) : "–", st.coTops ? st.coTops + "× Tagesbestwert" : (st.hiCo ? "Saison-Bestwert" : "noch nicht erfasst")),
     tile("Kürzestes Leg", st.bestLeg ? st.bestLeg + " Darts" : "–", st.legTops ? st.legTops + "× Tagesbestwert" : (st.bestLeg ? "Saison-Bestwert" : "noch nicht erfasst")),
