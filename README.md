@@ -63,6 +63,16 @@ Das vollständige Regelwerk steht im PDF im Repository.
 5. Optional unter **▾ Average & Doppel** Average und Missed Doubles eintragen und unter **Bonuspunkte** High Finish, kürzestes Leg und 180er.
 6. Unten auf **Speichern** klicken. Nach etwa einer Minute sehen alle den neuen Stand.
 
+### Mit dem Live-Zähler
+
+1. Im Turnierbaum bei einem offenen Spiel auf **▶ Live zählen** tippen. Das Format (z. B. Best of 3, 170er-Legs) kommt aus dem Spielmodus des Spieltags und lässt sich vor dem ersten Leg für dieses Spiel ändern.
+2. Auswählen, wer das Ausbullen gewonnen hat. Danach wechselt der Anwurf jedes Leg automatisch.
+3. Pro Aufnahme die Punkte eintippen (oder Schnellwahl, am Computer auch per Tastatur). **Bust** bei Überworfen, **⌫** löscht die letzte Ziffer oder macht die letzte Aufnahme rückgängig.
+4. Steht ein Spieler auf einem Finish, fragt der Zähler kurz nach den **Darts aufs Doppel**; beim Checkout, mit dem wievielten Dart gecheckt wurde.
+5. Am Ende im Bearbeiten-Modus **Ins Ergebnis übernehmen** und danach **Speichern**.
+
+Übernommen werden Legs, Sieger, Checkout-Quote, High Finish und 180er. Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. Das laufende Spiel bleibt auf dem Handy gespeichert, auch wenn die Seite neu lädt.
+
 ### Von Hand
 
 Alle Daten stehen in `ergebnisse.js`. Oben in der Datei steht eine Anleitung zum Aufbau. Wichtig: Namen immer genau gleich schreiben (`"Max"`, nie `"max"`).
@@ -101,6 +111,7 @@ css/
   style.css         Aussehen (Farben, Schrift, Layout)
 werkzeuge/
   pruefen.mjs       Prüfung vor dem Hochladen (siehe unten)
+  zaehler-test.mjs  Tests für die Logik des Live-Zählers
 skripte/
   main.js           Start: einziger Einstiegspunkt, ruft alles in der richtigen Reihenfolge auf
   kern/             Grundlagen, von allen genutzt
@@ -141,6 +152,11 @@ skripte/
     zusammenfuehren.js  gleichzeitige Änderungen zusammenführen
     saisonwechsel.js  Saison abschließen
     profil-editor.js  Spielerprofil bearbeiten
+  zaehler/          Live-Zähler
+    spiel.js          Aufnahmen, Bust, Legs, Statistik (reine Berechnung)
+    checkout.js       mögliche Finishes und Checkout-Vorschläge
+    anzeige.js        Bildschirm des Zählers
+    uebernehmen.js    Ergebnis in den Spieltag schreiben
   app/              Installation als App
     installieren.js   Service Worker, „Als App installieren“
     regelwerk.js      PDF-Ansicht in der App
@@ -153,3 +169,4 @@ skripte/
 - Die Skripte sind **ES-Module** (`import`/`export`). Deshalb funktioniert die Seite nur über einen Webserver, nicht per Doppelklick auf `index.html`. Zum Testen auf dem eigenen Rechner im Ordner `python3 -m http.server` starten und `http://localhost:8000` öffnen.
 - Alles, was sich ändert (Daten, Bearbeiten-Modus, Saison), steht in `state` in `skripte/kern/zustand.js`. Nach einer Änderung `render()` aufrufen, im Bearbeiten-Modus `changed()`.
 - **Neue Datei in `skripte/`?** In `app/service-worker.js` in die Liste `CORE` eintragen und `CACHE_VERSION` hochzählen. `node werkzeuge/pruefen.mjs` meldet vergessene Einträge, falsche Importe und Tippfehler.
+- Änderungen am Zähler: `node werkzeuge/zaehler-test.mjs` prüft Checkouts, Bust, Legs, Statistik und das Übernehmen.
