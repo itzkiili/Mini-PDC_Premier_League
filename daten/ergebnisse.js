@@ -27,6 +27,8 @@
 //        z. B. bonus: { "Anna": { co: 121, n180: 2 }, "Ben": { leg: 15 } }
 //  - statistik: optional je Spiel und Spieler Average (avg) und Missed
 //        Doubles (miss), z. B. VF1: { "Anna": { avg: 54.3, miss: 4 } }
+//        vom Live-Zähler zusätzlich: First-9-Average (f9) und Anzahl der
+//        Aufnahmen 100–139 (t100) und 140–179 (t140)
 //        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)
 //  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1
 //
@@ -44,7 +46,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 3,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-10-31T00:19:10.273Z",
+  stand: "2026-11-02T00:44:42.039Z",
 };
 
 const SPIELTAGE = [
@@ -142,7 +144,7 @@ const SPIELTAGE = [
     nr: 3,
     datum: "02.11.2026",
     modus: { start: 170, legsPlus: 1 },
-    spieler: ["Kilian", "Andres", "Philipp", "Tom", "Ben", "Johannes", "Leon"],
+    spieler: ["Kilian", "Andres", "Philipp", "Tom", "Ben", "Johannes", "Leon", "Max"],
     sieger: {},
   },
 ];
