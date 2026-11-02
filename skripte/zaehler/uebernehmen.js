@@ -3,11 +3,11 @@
 //
 //  Immer:              Legs, Sieger, Average (wird beim Spiel angezeigt),
 //                      Missed Doubles (Checkout-Quote), 100+ und 140+ (t100, t140),
-//                      High Finish und 180er (Bonuswerte)
-//  Nur im Ligamodus    First-9-Average (f9) und kürzestes Leg
+//                      High Finish, kürzestes Leg und 180er (Bonuswerte)
+//  Nur im Ligamodus    First-9-Average (f9)
 //  (501 Double Out):   (bei Spezial-Modi nicht vergleichbar)
-//  Averages von Spezial-Spieltagen zählen nicht für die Saisonstatistik
-//  (siehe addMatchStats).
+//  Average und kürzestes Leg von Spezial-Spieltagen zählen nicht für die
+//  Saisonstatistik (siehe addMatchStats und playerStats).
 // =====================================================================
 import { clean } from "../kern/hilfen.js";
 import { cleanupDay } from "../auswertung/spieltag.js";
@@ -55,7 +55,7 @@ export function applyToDay(day, matchId, m) {
   sum.forEach(function (p) {
     const b = {};
     if (p.hiCo !== null) b.co = p.hiCo;
-    if (standard && p.bestLeg !== null) b.leg = p.bestLeg;
+    if (p.bestLeg !== null) b.leg = p.bestLeg;
     if (p.n180) b.n180 = p.n180;
     if (!Object.keys(b).length) return;
     day.bonus = day.bonus || {};
@@ -82,7 +82,7 @@ export function resultText(label, m) {
     if (p.t100 || p.t140) parts.push(p.t100 + "× 100+, " + p.t140 + "× 140+");
     if (m.format.aus !== "single") parts.push("Missed " + p.miss);
     if (p.hiCo !== null) parts.push("High Finish " + p.hiCo);
-    if (standard && p.bestLeg !== null) parts.push("kürzestes Leg " + p.bestLeg);
+    if (p.bestLeg !== null) parts.push("kürzestes Leg " + p.bestLeg);
     if (p.n180) parts.push(p.n180 + "× 180");
     lines.push(p.name + ": " + (parts.join(", ") || "–"));
   });

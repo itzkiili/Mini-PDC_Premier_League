@@ -325,17 +325,24 @@ export function statsPanel(day, match) {
 // ---------------------------------------------------------------------
 const BONUS_LIMITS = {
   co: [2, 170, "Ein Checkout liegt zwischen 2 und 170."],
-  leg: [9, 99, "Ein Leg braucht mindestens 9 Darts."],
+  leg: [9, 99, "Ein Leg braucht mindestens 9 Darts."],   // Minimum hängt vom Modus ab, siehe minLegDarts
   n180: [0, 50, "Bitte eine Anzahl zwischen 0 und 50."],
 };
 
+// Wenigste Darts für ein Leg in diesem Modus (60 Punkte pro Dart), z. B. 501 → 9, 170 → 3
+function minLegDarts(day) {
+  const start = Number(dayModus(day, state.liga).start) || 501;
+  return Math.max(1, Math.ceil(start / 60));
+}
+
 export function bonusEditor(day, d) {
   const names = d.players.filter(Boolean);
+  const legMin = minLegDarts(day);
   function onBonus(e) {
     const n = e.target.getAttribute("data-name"), f = e.target.getAttribute("data-f");
     const raw = e.target.value.trim();
     let v = raw === "" ? null : parseInt(raw, 10);
-    const lim = BONUS_LIMITS[f];
+    const lim = f === "leg" ? [legMin, 99, "Ein Leg braucht mindestens " + legMin + " Darts."] : BONUS_LIMITS[f];
     if (v !== null && (!isFinite(v) || v < lim[0] || v > lim[1])) {
       const prev = day.bonus && day.bonus[n] ? day.bonus[n][f] : null;
       e.target.value = prev != null ? String(prev) : "";
@@ -374,7 +381,7 @@ export function bonusEditor(day, d) {
       ])]),
       el("tbody", null, rows),
     ])]),
-    el("p", { class: "hint", text: "Leer lassen, was nicht zählt. Höchstes Checkout und kürzestes Leg des Tages bekommen je " + bonusCfg().checkout + " Bonuspunkt, jede 180 zählt einzeln. Bei Gleichstand bekommen alle mit dem Bestwert den Bonus." }),
+    el("p", { class: "hint", text: "Leer lassen, was nicht zählt. Höchstes Checkout und kürzestes Leg des Tages bekommen je " + bonusCfg().checkout + " Bonuspunkt, jede 180 zählt einzeln. Bei Gleichstand bekommen alle mit dem Bestwert den Bonus." + (d.standard === false ? " Spezial-Modus: Das kürzeste Leg gibt Bonuspunkte, zählt aber nicht für die Saisonstatistik." : "") }),
   ]);
 }
 

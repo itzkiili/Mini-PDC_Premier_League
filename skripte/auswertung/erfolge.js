@@ -89,7 +89,7 @@ export function computeAchievements() {
         add(name, "stamm", 1, s, d);
         const bp = d.bonus && d.bonus.per[name];
         if (bp && bp.co > 0) reach(name, "finish", function (z) { return bp.co >= z; }, s, d, String(bp.co));
-        if (bp && bp.leg > 0) reach(name, "kurz", function (z) { return bp.leg <= z; }, s, d, bp.leg + " Darts");
+        if (bp && bp.leg > 0 && d.standard !== false) reach(name, "kurz", function (z) { return bp.leg <= z; }, s, d, bp.leg + " Darts");
         if (d.bonus) add(name, "bonus", d.bonus.pointsOf(name), s, d);
       });
       d.places.forEach(function (pl) {

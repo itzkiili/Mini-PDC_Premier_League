@@ -44,9 +44,12 @@ export function playerStats(name) {
       st.n180 += bp.n180 || 0;
       if (bp.n180) st.days180++;
       if (bp.gotCo) st.coTops++;
-      if (bp.gotLeg) st.legTops++;
       if (bp.co && (st.hiCo === null || bp.co > st.hiCo)) st.hiCo = bp.co;
-      if (bp.leg && (st.bestLeg === null || bp.leg < st.bestLeg)) st.bestLeg = bp.leg;
+      // Kürzestes Leg: Bonuspunkte immer, Statistik nur im normalen Modus
+      if (d.standard !== false) {
+        if (bp.gotLeg) st.legTops++;
+        if (bp.leg && (st.bestLeg === null || bp.leg < st.bestLeg)) st.bestLeg = bp.leg;
+      }
     }
     // Platzierung
     if (pl) {

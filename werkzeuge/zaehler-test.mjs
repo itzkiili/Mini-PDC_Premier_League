@@ -245,7 +245,7 @@ eq("Spezial: Average gespeichert, kein First 9", day.statistik.VF1, { Anna: { av
   const a2 = computeStandings([resolveDay(day, [])]).rows.filter(function (x) { return x.name === "Anna"; })[0];
   eq("Normaler Spieltag zählt Average", [resolveDay(day, []).standard, a2.avgN, a2.avgSum], [true, 1, 85]);
 }
-eq("Spezial: High Finish ja, kürzestes Leg nein", day.bonus, { Anna: { co: 110 } });
+eq("Spezial: High Finish und kürzestes Leg (nur Bonus)", day.bonus, { Anna: { co: 110, leg: 6 } });
 
 if (fails.length) {
   console.log("✗ " + fails.length + " von " + (ok + fails.length) + " Tests fehlgeschlagen:\n  " + fails.join("\n  "));

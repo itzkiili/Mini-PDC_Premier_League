@@ -239,7 +239,7 @@ function playerPanel(s, sum, i) {
     el("div", { class: "zl-way", text: weg ? weg.join(" · ") : " " }),
     el("div", { class: "zl-pstats" }, [
       el("span", { text: "Ø " + fmtAvg(sum[i].avg) }),
-      el("span", { text: st.darts + " Darts" }),
+      el("span", { text: s.legDarts[i] + " Darts" }),
     ]),
     el("div", { class: "zl-visits" }, st.visits.slice(-4).map(function (v) {
       return el("span", { class: v === "Bust" ? "bust" : v === "180" ? "max" : "", text: v });
@@ -429,7 +429,6 @@ function doneView(s) {
     ["100+", function (p) { return p.t100; }, String, true],
     ["140+", function (p) { return p.t140; }, String, true],
     ["180er", function (p) { return p.n180; }, String, true],
-    ["Darts", function (p) { return p.darts; }, String, null],
   ];
   // Sieger links, wie oben
   const pa = sum[w], pb = sum[l];
@@ -447,7 +446,7 @@ function doneView(s) {
 
   // Hinweise
   const notes = [];
-  if (!isStandard(m.format)) notes.push("Spezial-Modus: Der Average steht beim Spiel, zählt aber nicht für die Saisonstatistik. First 9 und kürzestes Leg werden nicht übernommen.");
+  if (!isStandard(m.format)) notes.push("Spezial-Modus: Der Average steht beim Spiel, das kürzeste Leg zählt für die Bonuspunkte. Für die Saisonstatistik zählt beides nicht, First 9 wird nicht übernommen.");
   if (day && hasResult(day, cur.id)) notes.push("Für dieses Spiel ist schon ein Ergebnis eingetragen.");
   if (!state.editing) notes.push("Zum Übernehmen anmelden. Das Spiel bleibt so lange auf diesem Gerät gespeichert.");
 
