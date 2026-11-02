@@ -73,6 +73,8 @@ Das vollständige Regelwerk steht im PDF im Repository.
 
 Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Average, First-9-Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich.
 
+**Caller-Ansagen:** Mit 🔇/🔊 oben im Zähler lassen sich Ansagen wie im Fernsehen einschalten („One hundred and eighty!“, „No score“, „Kilian, you require 81“, „Game shot, and the match“). Im Menü „⋯“ lässt sich zwischen Englisch und Deutsch wechseln. Genutzt wird die Sprachausgabe des Handys, die Einstellung gilt pro Gerät.
+
 Wird der Spielmodus eines Spieltags geändert, übernimmt der Zähler ihn beim nächsten Öffnen. Läuft das Spiel schon, fragt er, ob es mit dem neuen Modus von vorn beginnen soll. Das laufende Spiel bleibt auf dem Handy gespeichert, auch wenn die Seite neu lädt.
 
 ### Von Hand
@@ -159,6 +161,7 @@ skripte/
     checkout.js       mögliche Finishes und Checkout-Vorschläge
     anzeige.js        Bildschirm des Zählers
     uebernehmen.js    Ergebnis in den Spieltag schreiben
+    caller.js         Caller-Ansagen (Sprachausgabe des Geräts)
   app/              Installation als App
     installieren.js   Service Worker, „Als App installieren“
     regelwerk.js      PDF-Ansicht in der App

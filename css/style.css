@@ -569,6 +569,7 @@ tr.r1 td.pts, tr.r2 td.pts, tr.r3 td.pts { font-weight: 700; }
 .zl-format { font-size: 0.75rem; color: var(--muted); }
 .zl-icon { width: 40px; height: 40px; padding: 0; font-size: 1.15rem; border-radius: 10px; border: none; background: none; color: var(--text); }
 .zl-icon:hover { background: var(--surface-2); }
+.zl-icon.on { color: var(--accent); }
 .zl-icon-space { width: 40px; flex: none; }
 .zl-menu { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--line); }
 

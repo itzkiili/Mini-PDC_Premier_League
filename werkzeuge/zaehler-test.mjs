@@ -4,6 +4,7 @@
 // =====================================================================
 import { minDarts, checkoutWeg, isPossibleVisit } from "../skripte/zaehler/checkout.js";
 import { applyToDay } from "../skripte/zaehler/uebernehmen.js";
+import { numberWords, callsAtStart, callsAfterVisit } from "../skripte/zaehler/caller.js";
 import { serialize } from "../skripte/bearbeiten/datei.js";
 import { parseDataFile } from "../skripte/kern/daten.js";
 import { resolveDay } from "../skripte/auswertung/spieltag.js";
@@ -128,6 +129,35 @@ eq("Single Out nie", asksDoubles(20, "single"), false);
   eq("Checkout 40 mit 2. Dart: 1–2", checkoutDoubles(checkVisit(g, at(40), 40), 2), [1, 2]);
 }
 eq("Legverlauf", replay(m).legList.map(function (l) { return [l.winner, l.starter, l.darts, l.checkout]; }), [[0, 0, 9, 141], [1, 1, 17, 41], [0, 0, 15, 40]]);
+
+// ---------- Caller-Ansagen ----------
+eq("Zahlen in Worten", [0, 7, 19, 26, 40, 41, 100, 101, 140, 171].map(numberWords),
+  ["zero", "seven", "nineteen", "twenty-six", "forty", "forty-one", "one hundred", "one hundred and one", "one hundred and forty", "one hundred and seventy-one"]);
+{
+  // Ansagen nach jeder Aufnahme des ganzen Spiels mitschreiben
+  const calls = function (lang) {
+    const out = [callsAtStart(m, lang).map(function (c) { return c.text; }).join(" | ")];
+    for (let i = 1; i <= m.events.length; i++) {
+      const part = Object.assign({}, m, { events: m.events.slice(0, i) });
+      const prev = Object.assign({}, m, { events: m.events.slice(0, i - 1) });
+      out.push(callsAfterVisit(part, replay(prev), replay(part), lang).map(function (c) { return (c.big ? "!" : "") + c.text; }).join(" | "));
+    }
+    return out;
+  };
+  const en = calls("en");
+  eq("Start", en[0], "Anna to throw first. Game on!");
+  eq("180 betont", en[1], "!One hundred and eighty!");
+  eq("Score", en[2], "Sixty");
+  eq("You require", en[4], "Sixty | Anna, you require one hundred and forty-one");
+  eq("Game shot Leg 1", en[5], "Game shot, and the first leg, Anna! | Ben to throw first.");
+  eq("No score bei Bust", en.indexOf("No score | Ben, you require forty-one") > 0, true);
+  eq("Game shot Leg 2", en.some(function (t) { return t === "Game shot, and the second leg, Ben! | Anna to throw first."; }), true);
+  eq("Game shot Match", en[en.length - 1], "Game shot, and the match, Anna!");
+  const de = calls("de");
+  eq("Deutsch", [de[0], de[1], de[4], de[5], de[de.length - 1]], [
+    "Anna beginnt. Game on!", "!Hundertachtzig!", "60 | Anna, noch 141",
+    "Game shot, und das erste Leg: Anna! | Ben beginnt.", "Game shot, und das Match: Anna!"]);
+}
 
 // ---------- Übernehmen ----------
 function dayWith(extra) {
