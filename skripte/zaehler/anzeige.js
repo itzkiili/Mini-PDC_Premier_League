@@ -16,7 +16,7 @@ import { minDarts, checkoutWeg } from "./checkout.js";
 import { newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "./spiel.js";
 import { applyToDay, hasResult, resultText } from "./uebernehmen.js";
 import {
-  callerSettings, saveCallerSettings, speechAvailable, callsAtStart, callsAfterVisit, speak, silence, initCaller,
+  callerSettings, saveCallerSettings, speechAvailable, callerAvailable, callsAtStart, callsAfterVisit, speak, silence, initCaller, warmUp,
 } from "./caller.js";
 
 const STORE_KEY = "liga.zaehler";
@@ -85,6 +85,7 @@ export function openScorer(day, match) {
   saveCur();
   const dlg = getDialog("zaehler-dialog");
   dlg.setAttribute("aria-label", "Live-Zähler");
+  if (callerSettings().on) warmUp();
   draw();
   openDialog(dlg);
 }
@@ -120,7 +121,7 @@ function topBar(s) {
   const cs = callerSettings();
   const items = [];
   if (speechAvailable()) {
-    items.push(btn("Ansagen: " + (cs.lang === "de" ? "Deutsch" : "Englisch"), "", function () {
+    items.push(btn("Handy-Stimme: " + (cs.lang === "de" ? "Deutsch" : "Englisch"), "", function () {
       cs.lang = cs.lang === "de" ? "en" : "de";
       cs.on = true;
       saveCallerSettings(cs);
@@ -137,12 +138,12 @@ function topBar(s) {
 
 // Lautsprecher: Ansagen an/aus (pro Gerät gespeichert)
 function speakerButton() {
-  if (!speechAvailable()) return el("span", { class: "zl-icon-space" });
+  if (!callerAvailable()) return el("span", { class: "zl-icon-space" });
   const cs = callerSettings();
   return btn(cs.on ? "🔊" : "🔇", "zl-icon" + (cs.on ? " on" : ""), function () {
     cs.on = !cs.on;
     saveCallerSettings(cs);
-    if (cs.on) speak([{ text: cs.lang === "de" ? "Ansagen an" : "Caller on" }], cs.lang);
+    if (cs.on) { warmUp(); speak([{ text: cs.lang === "de" ? "Ansagen an" : "Game on!", parts: ["gameon"] }], cs.lang); }
     else silence();
     draw();
   }, { "aria-label": cs.on ? "Ansagen ausschalten" : "Ansagen einschalten", "aria-pressed": cs.on ? "true" : "false",
