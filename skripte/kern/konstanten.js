@@ -10,6 +10,8 @@ export const ARCHIVE_FOLDER = "daten/archiv/";
 export const PROFILE_FILE = "daten/spieler.js";
 export const PROFILE_IMG_DIR = "daten/bilder/";
 export const PROFILE_IMG_SIZE = 400;   // Profilbilder werden quadratisch auf 400 × 400 verkleinert
+export const CALLER_FILE = "daten/caller.js";        // Verzeichnis der Caller-Aufnahmen
+export const CALLER_DIR = "daten/caller/";           // die Aufnahmen selbst (WAV)
 
 // ---------- Punkte (falls in ergebnisse.js nichts steht) ----------
 export const DEFAULT_PUNKTE = [15, 13, 11, 9, 9, 7, 6, 5];   // 7–8 Spieler (Turnierbaum)

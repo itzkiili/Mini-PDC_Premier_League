@@ -15,6 +15,9 @@ import { openAdmin } from "../bearbeiten/anmeldung.js";
 import { minDarts, checkoutWeg } from "./checkout.js";
 import { newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "./spiel.js";
 import { applyToDay, hasResult, resultText } from "./uebernehmen.js";
+import {
+  callerSettings, saveCallerSettings, speechAvailable, callerAvailable, callsAtStart, callsAfterVisit, speak, silence, initCaller, warmUp,
+} from "./caller.js";
 
 const STORE_KEY = "liga.zaehler";
 const QUICK = [0, 26, 41, 45, 60, 81, 85, 100, 140, 180];
@@ -82,6 +85,7 @@ export function openScorer(day, match) {
   saveCur();
   const dlg = getDialog("zaehler-dialog");
   dlg.setAttribute("aria-label", "Live-Zähler");
+  if (callerSettings().on) warmUp();
   draw();
   openDialog(dlg);
 }
@@ -110,13 +114,46 @@ function topBar(s) {
       el("span", { class: "zl-title", text: matchLabel(cur) }),
       el("span", { class: "zl-format", text: formatText(f) }),
     ]),
-    s ? btn("⋯", "zl-icon", function () { ui.menu = !ui.menu; draw(); }, { "aria-label": "Mehr", "aria-expanded": ui.menu ? "true" : "false" }) : el("span", { class: "zl-icon-space" }),
+    speakerButton(),
+    btn("⋯", "zl-icon", function () { ui.menu = !ui.menu; draw(); }, { "aria-label": "Mehr", "aria-expanded": ui.menu ? "true" : "false" }),
   ]);
-  if (!ui.menu || !s) return bar;
-  return el("div", null, [bar, el("div", { class: "zl-menu" }, [
-    btn("Letzte Aufnahme rückgängig", "", function () { ui.menu = false; undoLast(); }, { disabled: cur.match.events.length ? null : "disabled" }),
-    btn("Spiel verwerfen", "danger", function () { ui.menu = false; discard(); }),
-  ])]);
+  if (!ui.menu) return bar;
+  const cs = callerSettings();
+  const items = [];
+  if (speechAvailable()) {
+    items.push(btn("Handy-Stimme: " + (cs.lang === "de" ? "Deutsch" : "Englisch"), "", function () {
+      cs.lang = cs.lang === "de" ? "en" : "de";
+      cs.on = true;
+      saveCallerSettings(cs);
+      speak([{ text: cs.lang === "de" ? "Ansagen auf Deutsch" : "Game on!" }], cs.lang);
+      draw();
+    }, { title: "Sprache der Ansagen wechseln" }));
+  }
+  if (s) {
+    items.push(btn("Letzte Aufnahme rückgängig", "", function () { ui.menu = false; undoLast(); }, { disabled: cur.match.events.length ? null : "disabled" }));
+    items.push(btn("Spiel verwerfen", "danger", function () { ui.menu = false; discard(); }));
+  }
+  return el("div", null, [bar, el("div", { class: "zl-menu" }, items)]);
+}
+
+// Lautsprecher: Ansagen an/aus (pro Gerät gespeichert)
+function speakerButton() {
+  if (!callerAvailable()) return el("span", { class: "zl-icon-space" });
+  const cs = callerSettings();
+  return btn(cs.on ? "🔊" : "🔇", "zl-icon" + (cs.on ? " on" : ""), function () {
+    cs.on = !cs.on;
+    saveCallerSettings(cs);
+    if (cs.on) { warmUp(); speak([{ text: cs.lang === "de" ? "Ansagen an" : "Game on!", parts: ["gameon"] }], cs.lang); }
+    else silence();
+    draw();
+  }, { "aria-label": cs.on ? "Ansagen ausschalten" : "Ansagen einschalten", "aria-pressed": cs.on ? "true" : "false",
+    title: cs.on ? "Ansagen ausschalten" : "Ansagen einschalten" });
+}
+
+// Ansagen, wenn eingeschaltet
+function call(calls) {
+  const cs = callerSettings();
+  if (cs.on) speak(calls, cs.lang);
 }
 
 // ---------------------------------------------------------------------
@@ -131,6 +168,7 @@ function setupView() {
       return el("button", { type: "button", class: "zl-starter", onclick: function () {
         cur.match = newMatch(cur.players, i, cur.format);
         saveCur(); draw();
+        call(callsAtStart(cur.match, callerSettings().lang));
       } }, [profileAvatar(n), el("b", { text: n }), el("span", { text: "beginnt" })]);
     })),
     el("p", { class: "zl-hint", text: "Danach wechselt der Anwurf jedes Leg." }),
@@ -270,6 +308,7 @@ function backspace() {
 }
 
 function undoLast() {
+  silence();
   ui.error = ""; ui.input = ""; ui.ask = null;
   if (cur.match.events.length) { undo(cur.match); saveCur(); }
   draw();
@@ -301,9 +340,11 @@ function submit(quick, bust) {
 function askFor(a) { ui.ask = a; ui.input = ""; ui.error = ""; draw(); }
 
 function commit(score, bust, darts, doubles) {
+  const before = replay(cur.match);
   addVisit(cur.match, score, bust, darts, doubles);
   ui.ask = null; ui.input = ""; ui.error = "";
   saveCur(); draw();
+  call(callsAfterVisit(cur.match, before, replay(cur.match), callerSettings().lang));
 }
 
 // ---------- Rückfragen: Checkout-Dart, Darts aufs Doppel (über der Tastatur) ----------
@@ -454,6 +495,8 @@ function doneView(s) {
 //  Tastatur (Computer): Ziffern, Enter, Rücktaste, Esc bei Rückfragen
 // ---------------------------------------------------------------------
 export function initScorer() {
+  initCaller();
+  getDialog("zaehler-dialog").addEventListener("close", silence);
   // Auf dem ganzen Dokument, weil beim Neuzeichnen der Fokus verloren geht
   document.addEventListener("keydown", function (e) {
     const dlg = document.getElementById("zaehler-dialog");

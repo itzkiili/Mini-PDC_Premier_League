@@ -73,6 +73,10 @@ Das vollständige Regelwerk steht im PDF im Repository.
 
 Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Average, First-9-Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich.
 
+**Caller-Ansagen:** Mit 🔇/🔊 oben im Zähler lassen sich Ansagen wie im Fernsehen einschalten („One hundred and eighty!“, „No score“, „Kilian, you require 81“, „Game shot, and the match“). Die Einstellung gilt pro Gerät.
+
+**Eigene Ansagen aufnehmen:** Im Bearbeiten-Modus unten auf **🎙 Caller**. Clip für Clip aufnehmen (Sätze, eure Namen, die Zahlen 1–180), anhören, behalten. Die Seite schneidet Stille ab und gleicht die Lautstärke an. Behaltene Aufnahmen funktionieren sofort im Zähler auf diesem Gerät; **Hochladen** schickt alle neuen in einem Commit zu GitHub (`daten/caller/`, Verzeichnis in `daten/caller.js`), danach hören sie alle. Wo ein Clip fehlt, spricht die Handy-Stimme (im Menü „⋯“ Englisch oder Deutsch). Tipp: mit „180“, „No score“, euren Namen und den häufigsten Zahlen anfangen.
+
 Wird der Spielmodus eines Spieltags geändert, übernimmt der Zähler ihn beim nächsten Öffnen. Läuft das Spiel schon, fragt er, ob es mit dem neuen Modus von vorn beginnen soll. Das laufende Spiel bleibt auf dem Handy gespeichert, auch wenn die Seite neu lädt.
 
 ### Von Hand
@@ -101,6 +105,8 @@ daten/
   saisons.js          Liste der archivierten Saisons
   archiv/             abgeschlossene Saisons (eine Datei pro Saison)
   spieler.js          Spielerprofile: Spitzname, Bild, Walk-on-Song
+  caller.js           Verzeichnis der eigenen Caller-Aufnahmen
+  caller/             die Aufnahmen (WAV)
   bilder/             Profilbilder
   zugang.js           verschlüsselter Zugang für den Bearbeiten-Modus (nicht von Hand ändern)
 dokumente/
@@ -159,6 +165,10 @@ skripte/
     checkout.js       mögliche Finishes und Checkout-Vorschläge
     anzeige.js        Bildschirm des Zählers
     uebernehmen.js    Ergebnis in den Spieltag schreiben
+    caller.js         Caller-Ansagen: eigene Aufnahme oder Sprachausgabe
+    clips.js          Liste der Clips und woraus eine Ansage besteht
+    audio.js          Aufnahmen abspielen, aufbereiten (WAV), auf dem Gerät speichern
+    aufnahme.js       Aufnahme-Modus und Hochladen
   app/              Installation als App
     installieren.js   Service Worker, „Als App installieren“
     regelwerk.js      PDF-Ansicht in der App

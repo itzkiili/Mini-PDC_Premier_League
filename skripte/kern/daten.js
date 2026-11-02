@@ -1,16 +1,17 @@
 // =====================================================================
 //  Datendateien lesen
 //  daten/*.js werden in index.html als normale <script> geladen und legen
-//  LIGA, SPIELTAGE, SAISONS, SPIELER und ZUGANG an. Nur diese Datei greift
+//  LIGA, SPIELTAGE, SAISONS, SPIELER, CALLER und ZUGANG an. Nur diese Datei greift
 //  direkt darauf zu.
 // =====================================================================
-/* global LIGA, SPIELTAGE, SAISONS, SPIELER, ZUGANG */
+/* global LIGA, SPIELTAGE, SAISONS, SPIELER, CALLER, ZUGANG */
 
 export const geladen = {
   liga: typeof LIGA !== "undefined" && LIGA ? LIGA : null,
   tage: typeof SPIELTAGE !== "undefined" ? SPIELTAGE : undefined,
   saisons: typeof SAISONS !== "undefined" && Array.isArray(SAISONS) ? SAISONS : [],
   spieler: typeof SPIELER !== "undefined" && SPIELER ? SPIELER : {},
+  caller: typeof CALLER !== "undefined" && CALLER ? CALLER : {},
   zugang: typeof ZUGANG !== "undefined" ? ZUGANG : null,
 };
 
@@ -23,5 +24,11 @@ export function parseDataFile(text) {
 // Text von spieler.js auswerten
 export function parseProfilesFile(text) {
   const f = new Function(text + "\n;return (typeof SPIELER !== 'undefined' ? SPIELER : {});");
+  return f() || {};
+}
+
+// Text von caller.js auswerten
+export function parseCallerFile(text) {
+  const f = new Function(text + "\n;return (typeof CALLER !== 'undefined' ? CALLER : {});");
   return f() || {};
 }
