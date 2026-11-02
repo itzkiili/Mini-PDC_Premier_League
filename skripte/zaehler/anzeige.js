@@ -13,7 +13,7 @@ import { dayIdxByNr } from "../anzeige/navigation.js";
 import { profileAvatar } from "../anzeige/profil.js";
 import { openAdmin } from "../bearbeiten/anmeldung.js";
 import { minDarts, checkoutWeg } from "./checkout.js";
-import { newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "./spiel.js";
+import { newMatch, replay, checkVisit, checkoutDoubles, bustDoubles, addVisit, undo, summary, isStandard } from "./spiel.js";
 import { applyToDay, hasResult, resultText } from "./uebernehmen.js";
 import {
   callerSettings, saveCallerSettings, speechAvailable, callerAvailable, callsAtStart, callsAfterVisit, speak, silence, initCaller, warmUp,
@@ -322,8 +322,8 @@ function submit(quick, bust) {
   const c = checkVisit(m, s, score);
   if (c.error && !bust) { ui.error = c.error; ui.input = ""; draw(); return; }
   if (bust) {
-    // Überworfen: Punkte zählen nicht; Darts aufs Doppel wie bei jeder Aufnahme auf einem kurzen Finish
-    const opts = checkVisit(m, s, 0).doubleOptions;
+    // Überworfen: Punkte zählen nicht; Darts aufs Doppel, wenn ein Versuch möglich war
+    const opts = bustDoubles(m, s);
     return opts ? askFor({ score: score || 0, bust: true, doubleOptions: opts }) : commit(score || 0, true, 3, 0);
   }
   if (c.checkout) {

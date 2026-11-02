@@ -11,7 +11,7 @@ import { serialize } from "../skripte/bearbeiten/datei.js";
 import { parseDataFile } from "../skripte/kern/daten.js";
 import { resolveDay } from "../skripte/auswertung/spieltag.js";
 import { computeStandings } from "../skripte/auswertung/tabelle.js";
-import { asksDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
+import { doubleOptionsFor, bustDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
 
 let ok = 0;
 const fails = [];
@@ -65,7 +65,7 @@ for (let i = 0; i < 4; i++) { addVisit(m, 100); addVisit(m, 100); }
 s = replay(m);
 eq("Rest Leg 2", s.rest, [101, 101]);
 c = checkVisit(m, s, 60);
-eq("101 Rest: keine Doppel-Rückfrage (über 50)", [c.bust, c.doubleOptions], [false, null]);
+eq("101 → 41: Doppel-Rückfrage (Rest danach ≤ 50)", [c.bust, c.doubleOptions], [false, [0, 1, 2]]);
 addVisit(m, 60, false, 3, 1);         // Ben: 41 Rest, ein Dart aufs Doppel daneben
 s = replay(m);
 c = checkVisit(m, s, 100);
@@ -117,17 +117,26 @@ eq("Ben First 9", sum[1].f9, (120 + 300 + 0) / 24 * 3);
 eq("Anna 100+/140+ (141 zählt als 140+, Bust nicht)", [sum[0].t100, sum[0].t140], [5, 2]);
 eq("Ben 100+/140+", [sum[1].t100, sum[1].t140], [4, 0]);
 
-// ---------- Doppel-Rückfrage nur bis 50 Rest (Master Out: 60) ----------
-eq("Grenze 50", [asksDoubles(50, "double"), asksDoubles(51, "double"), asksDoubles(41, "double"), asksDoubles(1, "double")], [true, false, true, false]);
-eq("Master bis 60", [asksDoubles(60, "master"), asksDoubles(61, "master")], [true, false]);
-eq("Single Out nie", asksDoubles(20, "single"), false);
+// ---------- Doppel-Rückfrage: nur wenn ein Versuch möglich war ----------
+eq("Rest vorher ≤ 50", [doubleOptionsFor(50, 30, false, "double"), doubleOptionsFor(41, 21, false, "double")], [[0, 1, 2, 3], [0, 1, 2]]);
+eq("Rest nachher ≤ 50", [doubleOptionsFor(60, 40, false, "double"), doubleOptionsFor(140, 40, false, "double")], [[0, 1, 2], [0, 1]]);
+eq("Nachher > 50: keine Frage", [doubleOptionsFor(60, 60, false, "double"), doubleOptionsFor(140, 80, false, "double"), doubleOptionsFor(180, 120, false, "double")], [null, null, null]);
+eq("Kein Finish (169): keine Frage", doubleOptionsFor(169, 40, false, "double"), null);
+eq("Master Out bis 60", [doubleOptionsFor(60, 60, false, "master"), doubleOptionsFor(61, 61, false, "master")], [[0, 1, 2, 3], null]);
+eq("Single Out nie", doubleOptionsFor(20, 10, false, "single"), null);
 {
   const g = newMatch(["A", "B"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 });
   const at = function (r) { return Object.assign(replay(g), { rest: [r, r] }); };
-  eq("Rest 60, 20 geworfen: keine Frage", checkVisit(g, at(60), 20).doubleOptions, null);
+  eq("Rest 60, 20 geworfen: 0–2 aufs Doppel", checkVisit(g, at(60), 20).doubleOptions, [0, 1, 2]);
+  eq("Rest 60, 0 geworfen: keine Frage (ohne Punkte kein Doppel)", checkVisit(g, at(60), 0).doubleOptions, null);
+  eq("Rest 60, Bust: 0–2", [checkVisit(g, at(60), 61).bust, checkVisit(g, at(60), 61).doubleOptions, bustDoubles(g, at(60))], [true, [0, 1, 2], [0, 1, 2]]);
+  eq("Rest 140, Bust-Knopf: keine Frage", bustDoubles(g, at(140)), null);
   eq("Rest 40, 20 geworfen: 0–3", checkVisit(g, at(40), 20).doubleOptions, [0, 1, 2, 3]);
   eq("Rest 41, Bust: 0–2 (zwei Darts nötig)", checkVisit(g, at(41), 60).doubleOptions, [0, 1, 2]);
-  eq("Checkout 100: ein Dart aufs Doppel", checkoutDoubles(checkVisit(g, at(100), 100), 3), [1]);
+  eq("Checkout 60 mit 3. Dart: 1–2", checkoutDoubles(checkVisit(g, at(60), 60), 3), [1, 2]);
+  eq("Checkout 60 mit 2. Dart: genau 1", checkoutDoubles(checkVisit(g, at(60), 60), 2), [1]);
+  eq("Checkout 100 mit 3. Dart: 1–2", checkoutDoubles(checkVisit(g, at(100), 100), 3), [1, 2]);
+  eq("Checkout 141 mit 3. Dart: genau 1", checkoutDoubles(checkVisit(g, at(141), 141), 3), [1]);
   eq("Checkout 40 mit 2. Dart: 1–2", checkoutDoubles(checkVisit(g, at(40), 40), 2), [1, 2]);
 }
 eq("Legverlauf", replay(m).legList.map(function (l) { return [l.winner, l.starter, l.darts, l.checkout]; }), [[0, 0, 9, 141], [1, 1, 17, 41], [0, 0, 15, 40]]);

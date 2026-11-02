@@ -13,13 +13,32 @@
 // =====================================================================
 import { isPossibleVisit, minDarts } from "./checkout.js";
 
-// Darts aufs Doppel werden nur abgefragt, wenn der Rest höchstens so groß ist
-// (der höchste Rest, den man mit einem Dart auschecken kann). Darüber zählt
-// beim Checkout genau ein Dart aufs Doppel, sonst keiner.
+// Höchster Rest, den man mit einem Dart auschecken kann (Double Out: Bull)
 export const DOPPEL_GRENZE = { double: 50, master: 60 };
 
-export function asksDoubles(rest, aus) {
-  return aus !== "single" && rest <= DOPPEL_GRENZE[aus] && minDarts(rest, aus) !== null;
+function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
+
+// ---------------------------------------------------------------------
+//  Darts aufs Doppel: nur fragen, wenn in dieser Aufnahme ein Versuch
+//  möglich war. Ergebnis: mögliche Anzahl (z. B. [0, 1, 2]) oder null.
+//    - Rest vorher ≤ 50 (Master Out: 60): man stand schon auf einem Doppel
+//    - Rest nachher ≤ 50: z. B. 60 → erst 20, dann zwei Darts auf D20
+//    - Bust aus einem Rest, der mit zwei Darts zu checken ist
+//  Wie viele es höchstens sein können, hängt davon ab, wie viele Darts man
+//  mindestens bis zum Doppel braucht (60: einer → bis zu 2 aufs Doppel).
+// ---------------------------------------------------------------------
+export function doubleOptionsFor(rest, after, bust, aus) {
+  if (aus === "single") return null;
+  const needed = minDarts(rest, aus);
+  if (needed === null) return null;
+  const grenze = DOPPEL_GRENZE[aus];
+  const possible = rest <= grenze || (bust ? needed <= 2 : after <= grenze);
+  return possible ? range(0, 4 - needed) : null;
+}
+
+// Für Bust-Knopf: Darts aufs Doppel beim aktuellen Spieler
+export function bustDoubles(m, s) {
+  return doubleOptionsFor(s.rest[s.turn], null, true, m.format.aus);
 }
 
 // format: { start, ein, aus, legsToWin }; starter: 0 oder 1 (wer das erste Leg beginnt)
@@ -112,29 +131,23 @@ export function checkVisit(m, s, score) {
   const rest = s.rest[s.turn];
   const needed = minDarts(rest, aus);   // null = mit dieser Aufnahme nicht auscheckbar
   const after = rest - score;
-  const range = function (a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
 
   if (after === 0) {
     if (needed === null) return { error: rest + " kann man nicht auschecken" + (aus === "double" ? " (Double Out)." : ".") };
-    return { bust: false, checkout: true, needed: needed, single: aus === "single", ask: asksDoubles(rest, aus),
+    return { bust: false, checkout: true, needed: needed, single: aus === "single",
       dartOptions: range(needed, 3), doubleOptions: null };
   }
   const bust = after < 0 || (after === 1 && aus !== "single");
-  // Darts aufs Doppel nur abfragen, wenn der Spieler auf einem kurzen Finish stand
-  const doubleOptions = asksDoubles(rest, aus) ? range(0, 4 - needed) : null;
-  return { bust: bust, checkout: false, dartOptions: null, doubleOptions: doubleOptions };
+  return { bust: bust, checkout: false, dartOptions: null, doubleOptions: doubleOptionsFor(rest, after, bust, aus) };
 }
 
 // Beim Checkout mit `darts` Darts: mögliche Darts aufs Doppel (null = keine Rückfrage)
 // Wer z. B. 40 mit dem 3. Dart checkt, kann 1 bis 3 Darts aufs Doppel geworfen haben;
-// bei 100 (zwei Darts nötig) mit dem 3. Dart nur 1 oder 2.
-// Über DOPPEL_GRENZE: immer genau ein Dart (der Treffer).
+// bei 60 oder 100 (zwei Darts nötig) mit dem 3. Dart 1 oder 2, mit dem 2. Dart genau 1.
+// Nur eine Möglichkeit: wird ohne Rückfrage übernommen.
 export function checkoutDoubles(c, darts) {
   if (c.single) return null;
-  if (!c.ask) return [1];
-  const r = [];
-  for (let i = 1; i <= darts - c.needed + 1; i++) r.push(i);
-  return r;
+  return range(1, darts - c.needed + 1);
 }
 
 // Aufnahme speichern; darts = Anzahl Darts beim Checkout, sonst 3
