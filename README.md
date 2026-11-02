@@ -71,7 +71,7 @@ Das vollständige Regelwerk steht im PDF im Repository.
 4. Steht ein Spieler auf **50 oder weniger** (Master Out: 60), fragt der Zähler kurz nach den **Darts aufs Doppel**. Beim Checkout fragt er, mit dem wievielten Dart gecheckt wurde; aus einem höheren Rest zählt automatisch ein Dart aufs Doppel.
 5. Am Ende im Bearbeiten-Modus **Ins Ergebnis übernehmen** und danach **Speichern**.
 
-Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Average, First-9-Average und kürzestes Leg nur im normalen Modus (501 Double Out), weil sie bei Spezial-Modi nicht vergleichbar sind. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich.
+Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Der Average wird immer beim Spiel gespeichert und im Turnierbaum angezeigt; für die Saisonstatistik (Spielerkarte, Vergleich, Erfolge) zählen aber nur Spiele im normalen Modus (501 Double Out). First-9-Average und kürzestes Leg gibt es nur im normalen Modus, weil sie bei Spezial-Modi nicht vergleichbar sind. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich.
 
 **Caller-Ansagen:** Mit 🔇/🔊 oben im Zähler lassen sich Ansagen wie im Fernsehen einschalten („One hundred and eighty!“, „No score“, „Kilian, you require 81“, „Game shot, and the match“). Die Einstellung gilt pro Gerät.
 

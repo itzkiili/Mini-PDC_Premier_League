@@ -224,7 +224,18 @@ addVisit(sp, 60); addVisit(sp, 100); addVisit(sp, 110, false, 3, 2);
 day = dayWith();
 eq("Übernehmen Spezial", applyToDay(day, "VF1", sp), null);
 eq("Spezial: Legs", day.ergebnisse.VF1, { Anna: 1, Ben: 0 });
-eq("Spezial: kein Average/First 9, aber 100+", day.statistik.VF1, { Anna: { miss: 1, t100: 1, t140: 0 }, Ben: { miss: 0, t100: 1, t140: 0 } });
+eq("Spezial: Average gespeichert, kein First 9", day.statistik.VF1, { Anna: { avg: 85, miss: 1, t100: 1, t140: 0 }, Ben: { avg: 100, miss: 0, t100: 1, t140: 0 } });
+{
+  // Spezial-Spieltag: Average steht beim Spiel, zählt aber nicht für die Saison
+  day.modus = { start: 170, legsPlus: 1 };
+  const r = resolveDay(day, []);
+  eq("Spezial-Spieltag erkannt", [r.standard, r.matches.VF1.stats.Anna.avg], [false, 85]);
+  const anna = computeStandings([r]).rows.filter(function (x) { return x.name === "Anna"; })[0];
+  eq("Saison ohne Spezial-Average, Checkout zählt", [anna.avgN, anna.coHit, anna.coMiss, anna.t100], [0, 1, 1, 1]);
+  delete day.modus;
+  const a2 = computeStandings([resolveDay(day, [])]).rows.filter(function (x) { return x.name === "Anna"; })[0];
+  eq("Normaler Spieltag zählt Average", [resolveDay(day, []).standard, a2.avgN, a2.avgSum], [true, 1, 85]);
+}
 eq("Spezial: High Finish ja, kürzestes Leg nein", day.bonus, { Anna: { co: 110 } });
 
 if (fails.length) {

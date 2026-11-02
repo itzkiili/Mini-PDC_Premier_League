@@ -1,10 +1,13 @@
 // =====================================================================
 //  Ergebnis des Zählers in den Spieltag schreiben
 //
-//  Immer:              Legs, Sieger, Missed Doubles (Checkout-Quote),
-//                      100+ und 140+ (t100, t140), High Finish und 180er (Bonuswerte)
-//  Nur im Ligamodus    Average, First-9-Average (f9) und kürzestes Leg
+//  Immer:              Legs, Sieger, Average (wird beim Spiel angezeigt),
+//                      Missed Doubles (Checkout-Quote), 100+ und 140+ (t100, t140),
+//                      High Finish und 180er (Bonuswerte)
+//  Nur im Ligamodus    First-9-Average (f9) und kürzestes Leg
 //  (501 Double Out):   (bei Spezial-Modi nicht vergleichbar)
+//  Averages von Spezial-Spieltagen zählen nicht für die Saisonstatistik
+//  (siehe addMatchStats).
 // =====================================================================
 import { clean } from "../kern/hilfen.js";
 import { cleanupDay } from "../auswertung/spieltag.js";
@@ -36,7 +39,7 @@ export function applyToDay(day, matchId, m) {
   const stats = {};
   sum.forEach(function (p) {
     const st = {};
-    if (standard && p.avg !== null) st.avg = Math.round(p.avg * 100) / 100;
+    if (p.avg !== null) st.avg = Math.round(p.avg * 100) / 100;
     if (m.format.aus !== "single") st.miss = p.miss;
     if (standard && p.f9 !== null) st.f9 = Math.round(p.f9 * 100) / 100;
     st.t100 = p.t100;
@@ -74,7 +77,7 @@ export function resultText(label, m) {
   const lines = [label + ": " + sum[0].name + " " + sum[0].legs + ":" + sum[1].legs + " " + sum[1].name];
   sum.forEach(function (p) {
     const parts = [];
-    if (standard && p.avg !== null) parts.push("Ø " + p.avg.toFixed(2).replace(".", ","));
+    if (p.avg !== null) parts.push("Ø " + p.avg.toFixed(2).replace(".", ","));
     if (standard && p.f9 !== null) parts.push("First 9 " + p.f9.toFixed(2).replace(".", ","));
     if (p.t100 || p.t140) parts.push(p.t100 + "× 100+, " + p.t140 + "× 140+");
     if (m.format.aus !== "single") parts.push("Missed " + p.miss);

@@ -59,7 +59,7 @@ export function playerStats(name) {
     // Spiele
     PLAY_ORDER.forEach(function (id) {
       const mt = d.matches[id];
-      if (mt && mt.stats && (mt.a.name === name || mt.b.name === name)) addMatchStats(st, mt, name);
+      if (mt && mt.stats && (mt.a.name === name || mt.b.name === name)) addMatchStats(st, mt, name, d.standard);
       if (!mt || mt.state !== "gespielt") return;
       const an = mt.a.name, bn = mt.b.name;
       if (an !== name && bn !== name) return;

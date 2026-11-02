@@ -4,7 +4,8 @@
 // =====================================================================
 import { PLACE_OF } from "../kern/konstanten.js";
 import { clean } from "../kern/hilfen.js";
-import { punkte, bonusCfg } from "../kern/zustand.js";
+import { state, punkte, bonusCfg } from "../kern/zustand.js";
+import { dayModus } from "./modus.js";
 
 function known(name) { return { pending: false, name: name }; }
 function waiting(from) { return { pending: true, from: from }; }
@@ -15,6 +16,7 @@ function waiting(from) { return { pending: true, from: from }; }
 //    matches   { VF1: { a, b, state, winner, loser, score, stats }, … }
 //              state: "offen", "gespielt", "wartet", "freilos" oder "leer"
 //    places    [{ place, name, points }]  name undefined = noch offen
+//    standard  im normalen Ligamodus gespielt (501 Double Out)?
 //    groups    nur bei "gruppe"
 //    invalid*  Einträge, die nicht (mehr) passen -> cleanupDay
 //  Probleme werden als Text in `warnings` gesammelt.
@@ -100,8 +102,11 @@ export function resolveDay(day, warnings) {
   }
 
   const count = players.filter(Boolean).length;
+  // Normaler Ligamodus (501 Double Out)? Nur dann zählen Averages für die Saisonstatistik.
+  const mod = dayModus(day, state.liga);
   const common = {
     count: count, nr: day.nr, datum: day.datum, players: players, matches: m,
+    standard: mod.start === 501 && mod.ein === "single" && mod.aus === "double",
     invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats,
   };
 

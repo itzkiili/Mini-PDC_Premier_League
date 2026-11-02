@@ -447,7 +447,7 @@ function doneView(s) {
 
   // Hinweise
   const notes = [];
-  if (!isStandard(m.format)) notes.push("Spezial-Modus: Average, First 9 und kürzestes Leg werden nicht in die Statistik übernommen.");
+  if (!isStandard(m.format)) notes.push("Spezial-Modus: Der Average steht beim Spiel, zählt aber nicht für die Saisonstatistik. First 9 und kürzestes Leg werden nicht übernommen.");
   if (day && hasResult(day, cur.id)) notes.push("Für dieses Spiel ist schon ein Ergebnis eingetragen.");
   if (!state.editing) notes.push("Zum Übernehmen anmelden. Das Spiel bleibt so lange auf diesem Gerät gespeichert.");
 

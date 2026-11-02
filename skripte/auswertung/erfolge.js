@@ -110,7 +110,7 @@ export function computeAchievements() {
           if (!ps) return;
           const opp = name === an ? bn : an;
           const avg = toNum(ps.avg), miss = toNum(ps.miss);
-          if (avg !== null) reach(name, "avg", function (z) { return avg >= z; }, s, d, fmtAvg(avg) + " gegen " + opp);
+          if (avg !== null && d.standard !== false) reach(name, "avg", function (z) { return avg >= z; }, s, d, fmtAvg(avg) + " gegen " + opp);
           if (miss !== null && mt.score) {
             const hit = name === an ? mt.score.a : mt.score.b;
             const q = hit > 0 ? hit / (hit + miss) * 100 : 0;

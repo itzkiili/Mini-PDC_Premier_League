@@ -14,10 +14,12 @@ export function newAcc(o) {
 }
 
 // Average / Missed Doubles eines Spielers aus einem Spiel sammeln
-export function addMatchStats(acc, mt, name) {
+// standard = false (Spezial-Spieltag): Average und First 9 zählen nicht
+export function addMatchStats(acc, mt, name, standard) {
   if (!mt.stats || !mt.stats[name]) return;
   const ps = mt.stats[name];
-  const avg = toNum(ps.avg), miss = toNum(ps.miss);
+  const special = standard === false;
+  const avg = special ? null : toNum(ps.avg), miss = toNum(ps.miss);
   if (avg !== null) {
     acc.avgSum += avg; acc.avgN++;
     if (acc.bestAvg === null || avg > acc.bestAvg) acc.bestAvg = avg;
@@ -26,7 +28,7 @@ export function addMatchStats(acc, mt, name) {
     const mine = mt.a.name === name ? mt.score.a : mt.score.b;
     acc.coHit += mine; acc.coMiss += miss;
   }
-  const f9 = toNum(ps.f9), t100 = toNum(ps.t100), t140 = toNum(ps.t140);
+  const f9 = special ? null : toNum(ps.f9), t100 = toNum(ps.t100), t140 = toNum(ps.t140);
   if (f9 !== null) { acc.f9Sum += f9; acc.f9N++; }
   if (t100 !== null || t140 !== null) { acc.t100 += t100 || 0; acc.t140 += t140 || 0; acc.tN++; }
 }
@@ -63,7 +65,7 @@ export function computeStandings(resolved) {
     });
     Object.keys(d.matches).forEach(function (id) {
       const mt = d.matches[id];
-      if (mt.stats) [mt.a.name, mt.b.name].forEach(function (n) { if (n) addMatchStats(stat(n), mt, n); });
+      if (mt.stats) [mt.a.name, mt.b.name].forEach(function (n) { if (n) addMatchStats(stat(n), mt, n, d.standard); });
       if (mt.state !== "gespielt") return;
       if (mt.score) {
         const sa = stat(mt.a.name), sb = stat(mt.b.name);
