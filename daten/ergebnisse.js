@@ -46,7 +46,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 3,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-02T18:31:35.113Z",
+  stand: "2026-11-02T18:54:34.906Z",
 };
 
 const SPIELTAGE = [
@@ -149,11 +149,13 @@ const SPIELTAGE = [
       VF1: "Andres",
       VF2: "Tom",
       VF3: "Johannes",
+      VF4: "Leon",
     },
     ergebnisse: {
       VF1: { "Kilian": 0, "Andres": 3 },
       VF2: { "Philipp": 1, "Tom": 3 },
       VF3: { "Ben": 1, "Johannes": 3 },
+      VF4: { "Leon": 3, "Max": 1 },
     },
     bonus: {
       "Andres": { co: 50 },
@@ -161,11 +163,14 @@ const SPIELTAGE = [
       "Tom": { co: 20 },
       "Ben": { co: 48 },
       "Johannes": { co: 40 },
+      "Leon": { co: 26 },
+      "Max": { co: 30 },
     },
     statistik: {
       VF1: { "Kilian": { miss: 4, t100: 0, t140: 0 }, "Andres": { miss: 12, t100: 1, t140: 0 } },
       VF2: { "Philipp": { avg: 19.11, miss: 29, t100: 0, t140: 0 }, "Tom": { avg: 21.32, miss: 37, t100: 0, t140: 0 } },
       VF3: { "Ben": { avg: 21.3, miss: 41, t100: 0, t140: 0 }, "Johannes": { avg: 21.83, miss: 34, t100: 1, t140: 0 } },
+      VF4: { "Leon": { avg: 23.28, miss: 20, t100: 1, t140: 0 }, "Max": { avg: 19.27, miss: 21, t100: 1, t140: 0 } },
     },
   },
 ];
