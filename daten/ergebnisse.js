@@ -44,9 +44,9 @@ const LIGA = {
   // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180
   bonus: { checkout: 1, leg: 1, je180: 1 },
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
-  aktuell: 3,
+  aktuell: 4,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-02T21:29:54.590Z",
+  stand: "2026-11-03T11:31:06.049Z",
 };
 
 const SPIELTAGE = [
@@ -197,5 +197,11 @@ const SPIELTAGE = [
       P3: { "Tom": { avg: 24.83, miss: 5, t100: 0, t140: 0 }, "Leon": { avg: 27.82, miss: 14, t100: 0, t140: 0 } },
       Finale: { "Andres": { avg: 18.8, miss: 61, t100: 0, t140: 0 }, "Johannes": { avg: 21.74, miss: 56, t100: 1, t140: 0 } },
     },
+  },
+  {
+    nr: 4,
+    datum: "09.11.2026",
+    spieler: ["Tom", "Leon", "Kilian", "Ben", "Philipp", "Andres", "Johannes"],
+    sieger: {},
   },
 ];
