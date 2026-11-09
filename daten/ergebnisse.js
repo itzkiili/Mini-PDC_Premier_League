@@ -46,7 +46,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 4,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-09T20:01:53.045Z",
+  stand: "2026-11-09T20:16:17.906Z",
 };
 
 const SPIELTAGE = [
@@ -210,6 +210,7 @@ const SPIELTAGE = [
       PR1: "Tom",
       PR2: "Jonas",
       HF1: "Kilian",
+      HF2: "Andres",
     },
     ergebnisse: {
       VF1: { "Tom": 1, "Leon": 2 },
@@ -219,13 +220,14 @@ const SPIELTAGE = [
       PR1: { "Tom": 2, "Ben": 1 },
       PR2: { "Philipp": 0, "Jonas": 2 },
       HF1: { "Leon": 0, "Kilian": 2 },
+      HF2: { "Andres": 2, "Johannes": 0 },
     },
     bonus: {
       "Kilian": { co: 20, leg: 33 },
       "Tom": { co: 40, leg: 41 },
       "Leon": { co: 40, leg: 31 },
       "Philipp": { co: 10, leg: 46 },
-      "Andres": { co: 62, leg: 31 },
+      "Andres": { co: 80, leg: 29 },
       "Johannes": { co: 49, leg: 30 },
       "Ben": { co: 8, leg: 46 },
       "Jonas": { co: 20, leg: 34 },
@@ -238,6 +240,7 @@ const SPIELTAGE = [
       PR1: { "Tom": { avg: 32.02, miss: 13, f9: 32, t100: 0, t140: 0 }, "Ben": { avg: 33.32, miss: 35, f9: 60.89, t100: 2, t140: 0 } },
       PR2: { "Philipp": { avg: 31.29, miss: 3, f9: 37.83, t100: 0, t140: 0 }, "Jonas": { avg: 36.22, miss: 24, f9: 58.67, t100: 1, t140: 1 } },
       HF1: { "Leon": { avg: 44, miss: 5, f9: 55.5, t100: 1, t140: 1 }, "Kilian": { avg: 44.21, miss: 8, f9: 45.67, t100: 0, t140: 0 } },
+      HF2: { "Andres": { avg: 49.28, miss: 9, f9: 72, t100: 1, t140: 0 }, "Johannes": { avg: 49.3, miss: 9, f9: 69.83, t100: 1, t140: 0 } },
     },
   },
 ];
