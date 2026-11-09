@@ -7,11 +7,12 @@
 import { LABELS } from "../kern/konstanten.js";
 import { el, getDialog, openDialog } from "../kern/dom.js";
 import { store, load } from "../kern/hilfen.js";
-import { state, render } from "../kern/zustand.js";
+import { state, gh, render } from "../kern/zustand.js";
 import { matchFormat, bestOf, AUS_NAMEN } from "../auswertung/modus.js";
 import { dayIdxByNr } from "../anzeige/navigation.js";
 import { profileAvatar } from "../anzeige/profil.js";
 import { openAdmin } from "../bearbeiten/anmeldung.js";
+import { saveToGitHub } from "../bearbeiten/speichern.js";
 import { minDarts, checkoutWeg } from "./checkout.js";
 import { newMatch, replay, checkVisit, checkoutDoubles, bustDoubles, addVisit, undo, summary, isStandard } from "./spiel.js";
 import { applyToDay, hasResult, resultText } from "./uebernehmen.js";
@@ -385,6 +386,37 @@ function discard() {
 }
 
 // ---------------------------------------------------------------------
+//  Ergebnis in den Spieltag schreiben und (mit GitHub) gleich speichern.
+//  Läuft auch direkt nach der Anmeldung; dann ist state.days frisch von GitHub.
+// ---------------------------------------------------------------------
+async function uploadResult() {
+  if (!cur || !cur.match) return;
+  const idx = dayIdxByNr(cur.nr);
+  const day = idx >= 0 ? state.days[idx] : null;
+  const err = !day ? "Spieltag " + cur.nr + " gibt es nicht mehr." : applyToDay(day, cur.id, cur.match);
+  if (err) {
+    // Zähler wieder zeigen, damit man den Fehler sieht und das Ergebnis kopieren kann
+    ui.msg = { kind: "err", text: err };
+    const dlg = getDialog("zaehler-dialog");
+    draw();
+    if (!dlg.open) openDialog(dlg);
+    return;
+  }
+  cur = null; saveCur();
+  getDialog("zaehler-dialog").close();
+  state.currentIdx = idx;
+  state.dirty = true;
+  if (gh.connected) {
+    render();
+    await saveToGitHub();
+  } else {
+    state.statusText = "Ergebnis übernommen. Zum Sichern unten „Datei herunterladen“.";
+    state.statusKind = "ok";
+    render();
+  }
+}
+
+// ---------------------------------------------------------------------
 //  Endbildschirm
 // ---------------------------------------------------------------------
 function doneView(s) {
@@ -448,26 +480,15 @@ function doneView(s) {
   const notes = [];
   if (!isStandard(m.format)) notes.push("Spezial-Modus: Der Average steht beim Spiel, das kürzeste Leg zählt für die Bonuspunkte. Für die Saisonstatistik zählt beides nicht, First 9 wird nicht übernommen.");
   if (day && hasResult(day, cur.id)) notes.push("Für dieses Spiel ist schon ein Ergebnis eingetragen.");
-  if (!state.editing) notes.push("Zum Übernehmen anmelden. Das Spiel bleibt so lange auf diesem Gerät gespeichert.");
+  if (!state.editing) notes.push("Nach der Anmeldung wird das Ergebnis sofort eingetragen und gespeichert. Bis dahin bleibt das Spiel auf diesem Gerät.");
 
   // Aktionen
   const msgEl = ui.msg ? el("p", { class: ui.msg.kind === "err" ? "zl-error" : "zl-ok", text: ui.msg.text }) : null;
   const primary = state.editing
-    ? btn("Ins Ergebnis übernehmen", "primary big", function () {
-        if (!day) { ui.msg = { kind: "err", text: "Spieltag " + cur.nr + " gibt es nicht mehr." }; draw(); return; }
-        const err = applyToDay(day, cur.id, m);
-        if (err) { ui.msg = { kind: "err", text: err }; draw(); return; }
-        cur = null; saveCur();
+    ? btn(gh.connected ? "Übernehmen & speichern" : "Ins Ergebnis übernehmen", "primary big", uploadResult)
+    : btn("Anmelden & speichern", "primary big", function () {
         getDialog("zaehler-dialog").close();
-        state.currentIdx = idx;
-        state.dirty = true;
-        state.statusText = "Ergebnis übernommen. Zum Speichern unten auf „Speichern“ tippen.";
-        state.statusKind = "ok";
-        render();
-      })
-    : btn("Anmelden zum Übernehmen", "primary big", function () {
-        getDialog("zaehler-dialog").close();
-        openAdmin(false);
+        openAdmin(false, uploadResult);
       });
 
   return el("div", { class: "zl-done" }, [

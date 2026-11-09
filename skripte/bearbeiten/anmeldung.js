@@ -3,6 +3,8 @@
 //  1. Auf diesem Gerät schon angemeldet → direkt verbinden
 //  2. zugang.js vorhanden → Passwort abfragen
 //  3. sonst (oder „Zugang neu einrichten“) → Token und Passwort einrichten
+//  openAdmin(false, danach): danach() läuft direkt nach der Anmeldung,
+//  z. B. um ein gezähltes Spiel sofort zu übernehmen und zu speichern.
 // =====================================================================
 import { ACCESS_FILE, DATA_FILE } from "../kern/konstanten.js";
 import { el, setMsg } from "../kern/dom.js";
@@ -17,7 +19,20 @@ import { startEdit } from "./leiste.js";
 const LOGGED_IN = "Angemeldet. Aktueller Stand aus GitHub geladen.";
 const NO_CRYPTO = "Dein Browser unterstützt die Verschlüsselung hier nicht. Öffne die Seite über https.";
 
-export async function openAdmin(forceSetup) {
+let afterLogin = null;   // einmal nach erfolgreicher Anmeldung ausführen
+
+// Anmeldung fertig: Bearbeiten starten, dann den gemerkten Schritt ausführen
+function loggedIn(text) {
+  const next = afterLogin;
+  afterLogin = null;
+  startEdit(text);
+  if (next) next();
+}
+
+function cancel(box) { afterLogin = null; box.hidden = true; }
+
+export async function openAdmin(forceSetup, then) {
+  if (then !== undefined) afterLogin = then || null;
   const box = document.getElementById("admin");
   box.innerHTML = "";
   box.hidden = false;
@@ -32,7 +47,7 @@ async function loginWithStoredToken(box, token) {
   const msg = el("p", { class: "status", text: "Melde an …" });
   box.appendChild(el("div", { class: "card admin" }, [el("h2", { text: "Ergebnisse bearbeiten" }), msg]));
   if (await connect(load("liga.repo"), load("liga.branch") || "main", token, true, msg)) {
-    startEdit(LOGGED_IN);
+    loggedIn(LOGGED_IN);
   } else {
     store("liga.token", null);
     msg.appendChild(document.createTextNode(" Bitte neu anmelden."));
@@ -53,7 +68,7 @@ function loginForm(box) {
     let token;
     try { token = await decryptToken(z, pwIn.value); }
     catch (e) { setMsg(msg, e.message || "Falsches Passwort.", "err"); return; }
-    if (await connect(z.repo, z.branch || "main", token, remember.checked, msg)) startEdit(LOGGED_IN);
+    if (await connect(z.repo, z.branch || "main", token, remember.checked, msg)) loggedIn(LOGGED_IN);
   };
   pwIn.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
   box.appendChild(el("div", { class: "card admin" }, [
@@ -63,7 +78,7 @@ function loginForm(box) {
     el("label", { class: "check" }, [remember, document.createTextNode("Auf diesem Gerät angemeldet bleiben (nur auf deinem eigenen Gerät)")]),
     el("div", { class: "row" }, [
       el("button", { class: "btn primary", type: "button", text: "Anmelden", onclick: doLogin }),
-      el("button", { class: "btn", type: "button", text: "Abbrechen", onclick: function () { box.hidden = true; } }),
+      el("button", { class: "btn", type: "button", text: "Abbrechen", onclick: function () { cancel(box); } }),
       el("button", { class: "linkbtn", type: "button", text: "Zugang neu einrichten", onclick: function () { openAdmin(true); } }),
     ]),
     msg,
@@ -105,7 +120,7 @@ function setupForm(box) {
       setMsg(msg, "Verschlüssele den Token und speichere zugang.js …");
       const neu = await encryptToken(token, pw1.value, repo, branch);
       await putFile(ACCESS_FILE, accessFileText(neu), "Zugang für Ergebnisse bearbeiten eingerichtet");
-      startEdit("Zugang eingerichtet. Ab jetzt reicht das Passwort (in etwa einer Minute aktiv).");
+      loggedIn("Zugang eingerichtet. Ab jetzt reicht das Passwort (in etwa einer Minute aktiv).");
     } catch (e) {
       gh.connected = false;
       setMsg(msg, (e && e.message) ? e.message : "Einrichten fehlgeschlagen.", "err");
@@ -123,11 +138,11 @@ function setupForm(box) {
     el("div", { class: "row" }, [
       el("button", { class: "btn primary", type: "button", text: "Zugang einrichten", onclick: doSetup }),
       el("button", { class: "btn", type: "button", text: "Ohne GitHub bearbeiten", onclick: function () {
-        gh.connected = false; startEdit("Bearbeiten ohne GitHub-Verbindung.");
+        gh.connected = false; loggedIn("Bearbeiten ohne GitHub-Verbindung.");
       } }),
       z
         ? el("button", { class: "btn", type: "button", text: "Zurück zur Anmeldung", onclick: function () { openAdmin(false); } })
-        : el("button", { class: "btn", type: "button", text: "Abbrechen", onclick: function () { box.hidden = true; } }),
+        : el("button", { class: "btn", type: "button", text: "Abbrechen", onclick: function () { cancel(box); } }),
     ]),
     msg,
   ]));

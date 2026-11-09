@@ -22,7 +22,7 @@ export function renderFooter() {
   f.appendChild(el("span", { text: (stand ? "Stand: " + stand + " · " : "") + "Tabelle wird automatisch aus den Ergebnissen berechnet." }));
   const links = el("span", { class: "footer-links" }, [installButton()]);
   if (!state.editing && !viewingArchive()) {
-    links.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false); } }));
+    links.appendChild(el("button", { class: "linkbtn", type: "button", text: "Ergebnisse bearbeiten", onclick: function () { openAdmin(false, null); } }));
   }
   f.appendChild(links);
 }
