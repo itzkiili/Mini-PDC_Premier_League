@@ -46,7 +46,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 4,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-09T21:46:44.239Z",
+  stand: "2026-11-10T09:25:19.877Z",
 };
 
 const SPIELTAGE = [
@@ -254,5 +254,12 @@ const SPIELTAGE = [
       P3: { "Leon": { avg: 40.18, miss: 14, f9: 48.27, t100: 2, t140: 0 }, "Johannes": { avg: 40.45, miss: 35, f9: 50.8, t100: 0, t140: 1 } },
       Finale: { "Kilian": { avg: 53.05, miss: 12, f9: 65.67, t100: 3, t140: 0 }, "Andres": { avg: 45.86, miss: 0, f9: 51.67, t100: 0, t140: 0 } },
     },
+  },
+  {
+    nr: 5,
+    datum: "16.11.2026",
+    modus: { ein: "double" },
+    spieler: ["Philipp", "Ben", "Andres", "Leon", "Johannes", "Kilian", "Tom"],
+    sieger: {},
   },
 ];
