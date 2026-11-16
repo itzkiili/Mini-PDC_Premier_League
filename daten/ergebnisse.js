@@ -46,7 +46,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 5,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-16T15:06:31.379Z",
+  stand: "2026-11-16T17:54:03.195Z",
 };
 
 const SPIELTAGE = [
@@ -259,6 +259,17 @@ const SPIELTAGE = [
     nr: 5,
     datum: "16.11.2026",
     spieler: ["Philipp", "Ben", "Andres", "Leon", "Johannes", "Kilian", "Tom"],
-    sieger: {},
+    sieger: {
+      VF1: "Ben",
+    },
+    ergebnisse: {
+      VF1: { "Philipp": 0, "Ben": 2 },
+    },
+    bonus: {
+      "Ben": { co: 32, leg: 32 },
+    },
+    statistik: {
+      VF1: { "Philipp": { avg: 38.42, miss: 2, f9: 49.67, t100: 1, t140: 0 }, "Ben": { avg: 41.75, miss: 1, f9: 36.83, t100: 0, t140: 0 } },
+    },
   },
 ];
