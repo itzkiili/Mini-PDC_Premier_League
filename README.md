@@ -9,7 +9,7 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 ## Funktionen
 
 - **Gesamttabelle** mit Punkten, Spieltagsiegen, Legs, Differenz, Average, Checkout-Quote und Bonuspunkten, dazu Trendpfeilen (▲ ▼) seit dem letzten Spieltag
-- **Spieltage** mit Turnierbaum (7–8 Spieler) oder Dreiergruppen (5–6 Spieler) und der Platzierung des Tages
+- **Spieltage** mit Turnierbaum (8 Spieler), Turnierbaum plus Verlierergruppe (7 Spieler) oder Dreiergruppen (5–6 Spieler) und der Platzierung des Tages
 - **Spielerkarte:** Klick auf einen Namen zeigt Statistiken, den Platzierungsverlauf, die Bilanz gegen jeden Gegner, Lieblings- und Angstgegner
 - **Direktvergleich** zweier Spieler: direkte Duelle, Saisonwerte als Balken, gemeinsamer Verlauf
 - **Saisonfinale:** vorläufiges Bracket der Top 8 nach aktuellem Tabellenstand
@@ -23,8 +23,11 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 
 | Teilnehmer | Format |
 |---|---|
-| 7–8 Spieler | Viertelfinale → Halbfinale (Plätze 1–4) und Platzierungsrunde (Plätze 5–8); jeder Platz wird ausgespielt |
+| 8 Spieler | Viertelfinale → Halbfinale (Plätze 1–4) und Platzierungsrunde (Plätze 5–8); jeder Platz wird ausgespielt |
+| 7 Spieler | Viertelfinale (eins kampflos) → Halbfinale (Plätze 1–4); die drei Verlierer spielen als Verlierergruppe jeder gegen jeden (Plätze 5–7), bei Gleichstand Stechen |
 | 5–6 Spieler | 3 Viertelfinals → Gewinnergruppe (Plätze 1–3) und Verlierergruppe (Plätze 4–6), jeweils jeder gegen jeden; bei Gleichstand Stechen |
+
+Der Ablauf je Spielerzahl steht an einer Stelle: `ABLAEUFE` in `skripte/auswertung/spieltag.js`. Jeder Spieltag besteht aus den Viertelfinals und zwei Bausteinen – oben für die Sieger, unten für die Verlierer –, jeweils **Baum** (Halbfinals, dann Spiel um die Plätze) oder **Tabelle** (jeder gegen jeden).
 
 **Spielformat:** standardmäßig 501 Double Out, Best of 3, großes Finale Best of 5. Für die ganze Saison lässt sich das in `daten/ergebnisse.js` bei `LIGA` ändern, z. B. `modus: { legs: 3, legsFinale: 4 }` für Best of 5 und im Finale Best of 7. Für Spezial-Spieltage wählt man im Bearbeiten-Modus beim Spieltag einen eigenen Modus (siehe unten).
 
@@ -129,7 +132,7 @@ skripte/
     dom.js            Bausteine für Elemente und Fenster
     hilfen.js         kleine Hilfsfunktionen (Zahlen, Base64, Gerätespeicher)
   auswertung/       Berechnungen, ohne etwas anzuzeigen
-    spieltag.js       Turnierbaum, Dreiergruppen, Platzierungen, Bonuspunkte
+    spieltag.js       Bauplan je Spielerzahl (ABLAEUFE) aus Baum und Tabelle, Platzierungen, Bonuspunkte
     tabelle.js        Gesamttabelle und Gleichstandsregeln
     elo.js            Elo-Wertung über alle Saisons, Siegchance
     statistik.js      Spielerstatistik, direkte Duelle

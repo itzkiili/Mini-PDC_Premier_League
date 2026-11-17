@@ -1,8 +1,8 @@
 // =====================================================================
-//  Auswertung eines Spieltags: Turnierbaum, Dreiergruppen, Platzierungen, Bonuspunkte
+//  Auswertung eines Spieltags: Bauplan aus Bausteinen (Baum, Tabelle),
+//  Platzierungen, Bonuspunkte
 //  Reine Berechnung, ohne Zugriff auf die Seite.
 // =====================================================================
-import { PLACE_OF } from "../kern/konstanten.js";
 import { clean } from "../kern/hilfen.js";
 import { state, punkte, bonusCfg } from "../kern/zustand.js";
 import { dayModus } from "./modus.js";
@@ -12,12 +12,15 @@ function waiting(from) { return { pending: true, from: from }; }
 
 // ---------------------------------------------------------------------
 //  Ergebnis von resolveDay:
-//    mode      "ko" (7–8 Spieler) oder "gruppe" (5–6 Spieler)
-//    matches   { VF1: { a, b, state, winner, loser, score, stats }, … }
+//    ablauf    Bauplan (siehe ABLAEUFE)
+//    matches   { VF1: { a, b, state, winner, loser, score, stats, places? }, … }
 //              state: "offen", "gespielt", "wartet", "freilos" oder "leer"
+//              places: bei Platzierungsspielen [Platz Sieger, Platz Verlierer]
+//    vorrunde  die Viertelfinals
+//    bloecke   [oben, unten], je Baum oder Tabelle
 //    places    [{ place, name, points }]  name undefined = noch offen
 //    standard  im normalen Ligamodus gespielt (501 Double Out)?
-//    groups    nur bei "gruppe"
+//    groups    die Tabellen-Bausteine (für Stechen)
 //    invalid*  Einträge, die nicht (mehr) passen -> cleanupDay
 //  Probleme werden als Text in `warnings` gesammelt.
 // ---------------------------------------------------------------------
@@ -104,105 +107,144 @@ export function resolveDay(day, warnings) {
   const count = players.filter(Boolean).length;
   // Normaler Ligamodus (501 Double Out)? Nur dann zählen Averages für die Saisonstatistik.
   const mod = dayModus(day, state.liga);
-  const common = {
-    count: count, nr: day.nr, datum: day.datum, players: players, matches: m,
+  const ablauf = ablaufFor(count);
+  const built = buildDay(ablauf, day, players, m, play, warnings, label, count === 5 || count === 6 ? "gruppe" : null);
+  return Object.assign(built, {
+    count: count, nr: day.nr, datum: day.datum, players: players, matches: m, ablauf: ablauf,
     standard: mod.start === 501 && mod.ein === "single" && mod.aus === "double",
     invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats,
-  };
-
-  if (count === 5 || count === 6) {
-    return Object.assign(resolveGroups(day, players, m, play, warnings, label), common, {
-      bonus: dayBonus(day, players),
-    });
-  }
-  return Object.assign(resolveKo(players, m, play), common, { bonus: dayBonus(day, players) });
-}
-
-// ---------- 7–8 Spieler: Turnierbaum ----------
-function resolveKo(players, m, play) {
-  const P = players.map(known);
-  play("VF1", P[0], P[1]); play("VF2", P[2], P[3]);
-  play("VF3", P[4], P[5]); play("VF4", P[6], P[7]);
-  play("HF1", m.VF1.w, m.VF2.w); play("HF2", m.VF3.w, m.VF4.w);
-  play("PR1", m.VF1.l, m.VF2.l); play("PR2", m.VF3.l, m.VF4.l);
-  play("Finale", m.HF1.w, m.HF2.w); play("P3", m.HF1.l, m.HF2.l);
-  play("P5", m.PR1.w, m.PR2.w); play("P7", m.PR1.l, m.PR2.l);
-
-  const places = [];
-  Object.keys(PLACE_OF).forEach(function (id) {
-    const mt = m[id], pl = PLACE_OF[id];
-    const done = !mt.w.pending;
-    places.push({ place: pl[0], name: done ? mt.w.name : undefined });
-    places.push({ place: pl[1], name: done ? mt.l.name : undefined });
+    bonus: dayBonus(day, players),
   });
-  places.sort(function (x, y) { return x.place - y.place; });
-  places.forEach(function (p) { p.points = p.name ? (punkte()[p.place - 1] || 0) : 0; });
-
-  const complete = ["Finale", "P3", "P5", "P7"].every(function (id) { return !m[id].w.pending; });
-  return { mode: "ko", places: places, complete: complete };
 }
 
-// ---------- 5–6 Spieler: drei Viertelfinals, dann zwei Dreiergruppen ----------
-function resolveGroups(day, players, m, play, warnings, label) {
-  const list = players.filter(Boolean);
-  while (list.length < 6) list.push(null);
-  const Q = list.map(known);
-  play("VF1", Q[0], Q[1]); play("VF2", Q[2], Q[3]); play("VF3", Q[4], Q[5]);
-  const stechen = day.stechen || {};
+// ---------------------------------------------------------------------
+//  Bauplan eines Spieltags je nach Spielerzahl:
+//    vorrunde  Anzahl Viertelfinals (bei ungerader Zahl ist eins kampflos)
+//    oben      Baustein für die Sieger der Viertelfinals
+//    unten     Baustein für die Verlierer
+//  Bausteine: "baum"    = Halbfinals, dann Spiel um den oberen und unteren Platz
+//             "tabelle" = jeder gegen jeden (drei Spieler), bei Gleichstand Stechen
+//  Hier ändern, um einen Spieltag anders zu spielen.
+// ---------------------------------------------------------------------
+export const ABLAEUFE = {
+  8: { vorrunde: 4, oben: "baum", unten: "baum" },
+  7: { vorrunde: 4, oben: "baum", unten: "tabelle" },
+  6: { vorrunde: 3, oben: "tabelle", unten: "tabelle" },
+  5: { vorrunde: 3, oben: "tabelle", unten: "tabelle" },
+};
+// Weniger als 5 Spieler (z. B. während der Eingabe): wie bei 8, mit Freilosen
+export function ablaufFor(count) { return ABLAEUFE[count] || ABLAEUFE[8]; }
 
-  // Jeder gegen jeden: Spiel 1 = Platz 0 gegen 1, Spiel 2 = 1 gegen 2, Spiel 3 = 0 gegen 2
-  function makeGroup(key, title, slots, ids, offset) {
-    const pairs = [[0, 1], [1, 2], [0, 2]];
-    const matches = ids.map(function (id, i) { return play(id, slots[pairs[i][0]], slots[pairs[i][1]]); });
-    const g = { key: key, title: title, offset: offset, matches: matches, members: [], wins: {}, order: null, tie: false, badStechen: false };
-    if (slots.some(function (x) { return x.pending; })) return g;
-    g.members = slots.map(function (x) { return x.name; }).filter(Boolean);
-    g.members.forEach(function (n) { g.wins[n] = 0; });
-    const real = matches.filter(function (mt) { return mt.state !== "leer" && mt.state !== "freilos"; });
-    real.forEach(function (mt) { if (mt.state === "gespielt") g.wins[mt.winner]++; });
-    g.legs = {};
-    g.members.forEach(function (n) { g.legs[n] = { w: 0, l: 0, any: false }; });
-    real.forEach(function (mt) {
-      if (!mt.score) return;
-      g.legs[mt.a.name].w += mt.score.a; g.legs[mt.a.name].l += mt.score.b; g.legs[mt.a.name].any = true;
-      g.legs[mt.b.name].w += mt.score.b; g.legs[mt.b.name].l += mt.score.a; g.legs[mt.b.name].any = true;
-    });
-    if (real.some(function (mt) { return mt.state !== "gespielt"; })) return g;
-    const sorted = g.members.slice().sort(function (a, b) { return g.wins[b] - g.wins[a]; });
-    const values = sorted.map(function (n) { return g.wins[n]; });
-    const distinct = values.every(function (v, i) { return values.indexOf(v) === i; });
-    if (distinct) { g.order = sorted; return g; }
-    // Gleichstand: Reihenfolge aus dem Stechen
-    g.tie = true;
-    const st = (Array.isArray(stechen[key]) ? stechen[key] : []).map(clean).filter(Boolean);
-    const ok = st.length === g.members.length && g.members.every(function (n) { return st.indexOf(n) >= 0; });
-    if (ok) g.order = st;
-    else if (st.length) {
-      g.badStechen = true;
-      warnings.push(label + ", " + title + ": Beim Stechen müssen genau diese Spieler stehen: " + g.members.join(", ") + ".");
-    }
-    return g;
-  }
+// Spiel-Kennungen der Bausteine; oben und unten haben eigene Kennungen
+const BAUM_IDS = {
+  oben: { halb: ["HF1", "HF2"], platz: ["Finale", "P3"], titel: "Hauptrunde" },
+  unten: { halb: ["PR1", "PR2"], platz: ["P5", "P7"], titel: "Platzierungsrunde" },
+};
+const TABELLE_IDS = {
+  oben: { key: "G", ids: ["G1", "G2", "G3"], titel: "Gewinnergruppe" },
+  unten: { key: "V", ids: ["V1", "V2", "V3"], titel: "Verlierergruppe" },
+};
+const VF_IDS = ["VF1", "VF2", "VF3", "VF4"];
 
-  const groups = [
-    makeGroup("G", "Gewinnergruppe", [m.VF1.w, m.VF2.w, m.VF3.w], ["G1", "G2", "G3"], 0),
-    makeGroup("V", "Verlierergruppe", [m.VF1.l, m.VF2.l, m.VF3.l], ["V1", "V2", "V3"], 3),
-  ];
+function buildDay(ablauf, day, players, m, play, warnings, label, punkteArt) {
+  // Viertelfinals: bei 3 Viertelfinals rücken die Spieler ohne Lücke auf
+  const n = ablauf.vorrunde;
+  const list = n === 4 ? players.slice(0, 8) : players.filter(Boolean);
+  while (list.length < n * 2) list.push(null);
+  const vf = VF_IDS.slice(0, n).map(function (id, i) { return play(id, known(list[2 * i]), known(list[2 * i + 1])); });
+
+  const ctx = { day: day, m: m, play: play, warnings: warnings, label: label };
+  const oben = baustein(ablauf.oben, "oben", vf.map(function (x) { return x.w; }), 0, ctx);
+  const unten = baustein(ablauf.unten, "unten", vf.map(function (x) { return x.l; }), oben.size, ctx);
+  const bloecke = [oben, unten];
+
   const places = [];
-  groups.forEach(function (g) {
+  bloecke.forEach(function (b) { Array.prototype.push.apply(places, b.places); });
+  places.sort(function (x, y) { return x.place - y.place; });
+  places.forEach(function (p) { p.points = p.name ? (punkte(punkteArt)[p.place - 1] || 0) : 0; });
+  return {
+    vorrunde: vf, bloecke: bloecke, places: places,
+    groups: bloecke.filter(function (b) { return b.art === "tabelle"; }),
+    complete: bloecke.every(function (b) { return b.complete; }),
+  };
+}
+
+function baustein(art, seite, slots, offset, ctx) {
+  return art === "tabelle"
+    ? tabelle(TABELLE_IDS[seite], slots.slice(0, 3), offset, ctx)   // bei 4 Viertelfinals ist das vierte kampflos
+    : baum(BAUM_IDS[seite], slots, offset, ctx);
+}
+
+// ---------- Baustein Baum: 4 Spieler, Plätze offset+1 bis offset+4 ----------
+function baum(ids, s, offset, ctx) {
+  const play = ctx.play;
+  const h1 = play(ids.halb[0], s[0], s[1]), h2 = play(ids.halb[1], s[2], s[3]);
+  const top = play(ids.platz[0], h1.w, h2.w), low = play(ids.platz[1], h1.l, h2.l);
+  top.places = [offset + 1, offset + 2];
+  low.places = [offset + 3, offset + 4];
+  const places = [];
+  [top, low].forEach(function (mt) {
+    const done = !mt.w.pending;
+    places.push({ place: mt.places[0], name: done ? mt.w.name : undefined });
+    places.push({ place: mt.places[1], name: done ? mt.l.name : undefined });
+  });
+  return {
+    art: "baum", titel: ids.titel, offset: offset, size: 4, places: places,
+    runden: [[h1, h2], [top, low]], finale: ids.platz[0] === "Finale" ? "Finale" : null,
+    complete: !top.w.pending && !low.w.pending,
+  };
+}
+
+// ---------- Baustein Tabelle: drei Spieler, jeder gegen jeden ----------
+// Spiel 1 = Platz 0 gegen 1, Spiel 2 = 1 gegen 2, Spiel 3 = 0 gegen 2
+function tabelle(ids, slots, offset, ctx) {
+  const play = ctx.play;
+  const stechen = ctx.day.stechen || {};
+  const key = ids.key, title = ids.titel;
+  const pairs = [[0, 1], [1, 2], [0, 2]];
+  const matches = ids.ids.map(function (id, i) { return play(id, slots[pairs[i][0]], slots[pairs[i][1]]); });
+  const g = { art: "tabelle", key: key, title: title, titel: title, offset: offset, size: 3, matches: matches,
+    members: [], wins: {}, order: null, tie: false, badStechen: false };
+  const finish = function () {
+    g.places = [];
     for (let i = 0; i < 3; i++) {
-      const place = g.offset + i + 1;
+      const place = offset + i + 1;
       let name;
       if (g.order) name = g.order[i] !== undefined ? g.order[i] : null;
       else if (!g.members.length) name = undefined;
       else name = i < g.members.length ? undefined : null;
-      places.push({ place: place, name: name, points: name ? (punkte("gruppe")[place - 1] || 0) : 0 });
+      g.places.push({ place: place, name: name });
     }
-  });
-  return {
-    mode: "gruppe", groups: groups, places: places,
-    complete: groups.every(function (g) { return g.order; }),
+    g.complete = !!g.order;
+    return g;
   };
+  if (slots.some(function (x) { return x.pending; })) return finish();
+  g.members = slots.map(function (x) { return x.name; }).filter(Boolean);
+  g.members.forEach(function (n) { g.wins[n] = 0; });
+  const real = matches.filter(function (mt) { return mt.state !== "leer" && mt.state !== "freilos"; });
+  real.forEach(function (mt) { if (mt.state === "gespielt") g.wins[mt.winner]++; });
+  g.legs = {};
+  g.members.forEach(function (n) { g.legs[n] = { w: 0, l: 0, any: false }; });
+  real.forEach(function (mt) {
+    if (!mt.score) return;
+    g.legs[mt.a.name].w += mt.score.a; g.legs[mt.a.name].l += mt.score.b; g.legs[mt.a.name].any = true;
+    g.legs[mt.b.name].w += mt.score.b; g.legs[mt.b.name].l += mt.score.a; g.legs[mt.b.name].any = true;
+  });
+  if (real.some(function (mt) { return mt.state !== "gespielt"; })) return finish();
+  const sorted = g.members.slice().sort(function (a, b) { return g.wins[b] - g.wins[a]; });
+  const values = sorted.map(function (n) { return g.wins[n]; });
+  const distinct = values.every(function (v, i) { return values.indexOf(v) === i; });
+  if (distinct) { g.order = sorted; return finish(); }
+  // Gleichstand: Reihenfolge aus dem Stechen
+  g.tie = true;
+  const st = (Array.isArray(stechen[key]) ? stechen[key] : []).map(clean).filter(Boolean);
+  const ok = st.length === g.members.length && g.members.every(function (n) { return st.indexOf(n) >= 0; });
+  if (ok) g.order = st;
+  else if (st.length) {
+    g.badStechen = true;
+    ctx.warnings.push(ctx.label + ", " + title + ": Beim Stechen müssen genau diese Spieler stehen: " + g.members.join(", ") + ".");
+  }
+  return finish();
 }
 
 // ---------------------------------------------------------------------

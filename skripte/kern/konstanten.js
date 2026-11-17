@@ -37,13 +37,13 @@ export const KEY_ORDER = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2"
   "G1", "G2", "G3", "V1", "V2", "V3"];
 
 // Tatsächliche Spielreihenfolge am Abend (Statistik, Serien, „Nächstes Spiel“)
-export const PLAY_ORDER = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2", "P7", "P5", "P3", "Finale",
-  "V1", "G1", "V2", "G2", "V3", "G3"];
+// Bei 7 Spielern laufen die Spiele der Verlierergruppe zwischen den Halbfinals.
+export const PLAY_ORDER = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2",
+  "V1", "G1", "HF1", "V2", "G2", "HF2", "V3", "G3", "P7", "P5", "P3", "Finale"];
 
 // Reihenfolge, in der die Elo-Wertung die Spiele verrechnet.
 // Nicht ändern: eine andere Reihenfolge ergibt andere Elo-Werte.
 export const ELO_ORDER = ["VF1", "VF2", "VF3", "VF4", "PR1", "PR2", "HF1", "HF2", "P7", "P5", "P3", "Finale",
   "G1", "V1", "G2", "V2", "G3", "V3"];
 
-// Spiele, die direkt über zwei Plätze entscheiden (Turnierbaum)
-export const PLACE_OF = { Finale: [1, 2], P3: [3, 4], P5: [5, 6], P7: [7, 8] };
+

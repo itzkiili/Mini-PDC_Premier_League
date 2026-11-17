@@ -1,8 +1,8 @@
 // =====================================================================
-//  Ein Spieltag: Kopf, Platzierung, Turnierbaum oder Dreiergruppen, Bonus
+//  Ein Spieltag: Kopf, Platzierung, Bausteine (Baum, Tabelle), Bonus
 //  Im Bearbeiten-Modus kommen die Eingabefelder aus bearbeiten/eingabe.js dazu.
 // =====================================================================
-import { PLACE_OF, LABELS } from "../kern/konstanten.js";
+import { LABELS } from "../kern/konstanten.js";
 import { el } from "../kern/dom.js";
 import { toNum, fmtAvg } from "../kern/hilfen.js";
 import { state, bonusCfg, viewingArchive } from "../kern/zustand.js";
@@ -32,7 +32,7 @@ export function dayView(day, d) {
     el("h3", { text: "Spieltag " + nr + (!editing && d.datum ? " · " + d.datum : "") }),
     editing ? dateInput(day) : null,
     el("span", { class: "badge" + (d.complete ? " done" : ""), text: d.complete ? "abgeschlossen" : "läuft" }),
-    d.count ? el("span", { class: "badge", text: d.count + " Spieler · " + (d.mode === "gruppe" ? "Dreiergruppen" : "Turnierbaum") }) : null,
+    d.count ? el("span", { class: "badge", text: d.count + " Spieler · " + ablaufText(d) }) : null,
     modusBadge(day),
     editing ? pinDayButton(day) : shareBtn,
     editing ? deleteDayButton(day) : null,
@@ -88,37 +88,41 @@ function placesBox(d) {
 }
 
 function treeOf(day, d) {
-  const m = d.matches;
   if (d.count === 0) {
     return [el("div", { class: "bracket" }, [el("p", { class: "note", text: state.editing ? "Trag oben die Spieler ein, dann erscheint hier der Turnierbaum." : "Noch keine Spieler eingetragen." })])];
   }
-  if (d.mode === "gruppe") {
-    return [el("div", { class: "bracket" }, [
+  // Oben ein Baum: Viertelfinals gehören mit in den Baum, sonst stehen sie für sich
+  const first = d.bloecke[0];
+  const out = [];
+  if (first.art !== "baum") {
+    out.push(el("div", { class: "bracket" }, [
       el("h3", { text: "Viertelfinale" }),
-      el("div", { class: "rounds" }, [m.VF1, m.VF2, m.VF3].map(function (mt) {
+      el("div", { class: "rounds" }, d.vorrunde.map(function (mt) {
         return el("div", { class: "round" }, [matchEl(day, mt)]);
       })),
-    ])].concat(d.groups.map(function (g) { return groupEl(day, g); }));
+    ]));
   }
-  return [
-    el("div", { class: "bracket" }, [
-      el("h3", { text: "Hauptrunde · Plätze 1–4" }),
+  d.bloecke.forEach(function (b, i) {
+    if (b.art === "tabelle") { out.push(groupEl(day, b)); return; }
+    const vor = i === 0 ? [roundEl(day, "Viertelfinale", d.vorrunde)] : [];
+    out.push(el("div", { class: "bracket" }, [
+      el("h3", { text: b.titel + " · Plätze " + (b.offset + 1) + "–" + (b.offset + b.size) }),
       swipeHint(),
-      el("div", { class: "rounds" }, [
-        roundEl(day, "Viertelfinale", [m.VF1, m.VF2, m.VF3, m.VF4]),
-        roundEl(day, "Halbfinale", [m.HF1, m.HF2]),
-        roundEl(day, "Platzierung", [m.Finale, m.P3], "Finale"),
-      ]),
-    ]),
-    el("div", { class: "bracket" }, [
-      el("h3", { text: "Platzierungsrunde · Plätze 5–8" }),
-      swipeHint(),
-      el("div", { class: "rounds two" }, [
-        roundEl(day, "Platzierungsrunde", [m.PR1, m.PR2]),
-        roundEl(day, "Platzierung", [m.P5, m.P7]),
-      ]),
-    ]),
-  ];
+      el("div", { class: "rounds" + (vor.length ? "" : " two") }, vor.concat([
+        roundEl(day, i === 0 ? "Halbfinale" : "Platzierungsrunde", b.runden[0]),
+        roundEl(day, "Platzierung", b.runden[1], b.finale),
+      ])),
+    ]));
+  });
+  return out;
+}
+
+// Kurzbeschreibung des Ablaufs, z. B. „Turnierbaum + Tabelle“
+function ablaufText(d) {
+  const arten = d.bloecke.map(function (b) { return b.art; });
+  if (arten[0] === "tabelle" && arten[1] === "tabelle") return "Dreiergruppen";
+  if (arten[0] === "baum" && arten[1] === "baum") return "Turnierbaum";
+  return "Turnierbaum + Verlierergruppe";
 }
 
 // ---------- Bonuspunkte (Anzeige) ----------
@@ -188,7 +192,7 @@ function slotEl(day, match, side, tagText) {
 }
 
 function matchEl(day, match, isFinal) {
-  const pl = PLACE_OF[match.id];
+  const pl = match.places;
   function tagFor(side) {
     if (!pl || !match.winner) return null;
     const s = side === "a" ? match.a : match.b;
@@ -225,7 +229,7 @@ function roundEl(day, title, matches, finalId) {
   ]);
 }
 
-// ---------- Dreiergruppe (5–6 Spieler) ----------
+// ---------- Tabelle: Dreiergruppe (5–6 Spieler, Verlierer bei 7) ----------
 function groupEl(day, g) {
   const size = g.members.length || 3;
   const range = "Plätze " + (g.offset + 1) + "–" + (g.offset + size);
