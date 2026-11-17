@@ -280,13 +280,14 @@ const SPIELTAGE = [
       Finale: { "Andres": 3, "Tom": 1 },
       V1: { "Philipp": 0, "Leon": 2 },
       V2: { "Leon": 0, "Johannes": 2 },
+      V3: { "Philipp": 0, "Johannes": 2 },
     },
     bonus: {
       "Ben": { co: 32, leg: 32 },
       "Andres": { co: 75, leg: 30 },
       "Leon": { co: 60, leg: 29 },
       "Kilian": { co: 40, leg: 26 },
-      "Johannes": { co: 32, leg: 27 },
+      "Johannes": { co: 64, leg: 27 },
       "Tom": { co: 40, leg: 28 },
     },
     statistik: {
@@ -299,6 +300,7 @@ const SPIELTAGE = [
       Finale: { "Andres": { avg: 37.93, miss: 29, f9: 44.67, t100: 2, t140: 0 }, "Tom": { avg: 35.61, miss: 14, f9: 42.42, t100: 2, t140: 0 } },
       V1: { "Philipp": { avg: 36.08, miss: 0, f9: 50, t100: 0, t140: 0 }, "Leon": { avg: 40.08, miss: 14, f9: 48.33, t100: 0, t140: 0 } },
       V2: { "Leon": { avg: 49.78, miss: 0, f9: 54, t100: 1, t140: 0 }, "Johannes": { avg: 52.74, miss: 5, f9: 56.33, t100: 0, t140: 0 } },
+      V3: { "Philipp": { avg: 39.59, miss: 1, f9: 33.33, t100: 1, t140: 0 }, "Johannes": { avg: 43.57, miss: 1, f9: 48.50, t100: 2, t140: 0 } },
     },
   },
 ];
