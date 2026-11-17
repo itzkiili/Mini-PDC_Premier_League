@@ -12,6 +12,7 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 - **Spieltage** mit Turnierbaum (8 Spieler), Turnierbaum plus Verlierergruppe (7 Spieler) oder Dreiergruppen (5–6 Spieler) und der Platzierung des Tages
 - **Spielerkarte:** Klick auf einen Namen zeigt Statistiken, den Platzierungsverlauf, die Bilanz gegen jeden Gegner, Lieblings- und Angstgegner
 - **Direktvergleich** zweier Spieler: direkte Duelle, Saisonwerte als Balken, gemeinsamer Verlauf
+- **Spielbericht:** Klick auf ein gespieltes Spiel (im Turnierbaum oder bei den direkten Duellen) zeigt dessen Statistik im Nachhinein – Average, First 9, Checkout-Quote, 100+/140+ und bei Spielen aus dem Live-Zähler auch High Finish, kürzestes Leg, 180er und den Legverlauf
 - **Saisonfinale:** vorläufiges Bracket der Top 8 nach aktuellem Tabellenstand
 - **Bearbeiten-Modus:** Spieler, Legs, Average, Missed Doubles und Bonuswerte direkt auf der Seite eintragen, mit Passwort geschützt und automatisch auf GitHub gespeichert
 - **Regelwerk** als PDF verlinkt
@@ -74,7 +75,7 @@ Das vollständige Regelwerk steht im PDF im Repository.
 4. Der Zähler fragt nach den **Darts aufs Doppel**, wenn in der Aufnahme ein Doppel-Versuch möglich war: wenn der Spieler vorher auf 50 oder weniger stand (Master Out: 60), nachher auf 50 oder weniger steht (z. B. 60 → 20 geworfen → 40) oder aus einem Zwei-Dart-Finish überworfen hat. Beim Checkout fragt er, mit dem wievielten Dart gecheckt wurde, und wenn es mehrere Möglichkeiten gibt, wie viele Darts aufs Doppel gingen.
 5. Am Ende **Anmelden & speichern** tippen: Nach der Anmeldung wird das Ergebnis sofort eingetragen und bei GitHub gespeichert. Wer schon angemeldet ist, tippt **Übernehmen & speichern**.
 
-Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Der Average wird immer beim Spiel gespeichert und im Turnierbaum angezeigt; für die Saisonstatistik (Spielerkarte, Vergleich, Erfolge) zählen aber nur Spiele im normalen Modus (501 Double Out). Das kürzeste Leg wird immer übernommen und gibt auch bei Spezial-Spieltagen (z. B. 170er-Legs) den Bonuspunkt; in der Statistik (Spielerkarte, Vergleich, Erfolg „Kurzer Prozess“) zählt es nur im normalen Modus. First-9-Average gibt es nur im normalen Modus, weil er bei Spezial-Modi nicht vergleichbar ist. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich.
+Übernommen werden Legs, Sieger, Checkout-Quote, High Finish, 180er sowie die Aufnahmen 100+ (100–139) und 140+ (140–179). Der Average wird immer beim Spiel gespeichert und im Turnierbaum angezeigt; für die Saisonstatistik (Spielerkarte, Vergleich, Erfolge) zählen aber nur Spiele im normalen Modus (501 Double Out). Das kürzeste Leg wird immer übernommen und gibt auch bei Spezial-Spieltagen (z. B. 170er-Legs) den Bonuspunkt; in der Statistik (Spielerkarte, Vergleich, Erfolg „Kurzer Prozess“) zählt es nur im normalen Modus. First-9-Average gibt es nur im normalen Modus, weil er bei Spezial-Modi nicht vergleichbar ist. First 9, 100+ und 140+ gibt es nur für gezählte Spiele; sie erscheinen in der Spielerkarte und im Direktvergleich. Für den Spielbericht speichert der Zähler zusätzlich pro Spiel High Finish, kürzestes Leg und 180er (in `statistik`) sowie den Legverlauf (in `verlauf`: Sieger, Darts und Checkout je Leg).
 
 **Caller-Ansagen:** Mit 🔇/🔊 oben im Zähler lassen sich Ansagen wie im Fernsehen einschalten („One hundred and eighty!“, „No score“, „Kilian, you require 81“, „Game shot, and the match“). Die Einstellung gilt pro Gerät.
 
@@ -145,6 +146,7 @@ skripte/
     saisonfinale.js   vorläufiges Bracket der Top 8
     spielerkarte.js   Spielerkarte
     vergleich.js      Direktvergleich zweier Spieler
+    spielbericht.js   Statistik eines gespielten Spiels (Spielbericht)
     weltrangliste.js  ewige Elo-Rangliste
     naechstes-spiel.js  „Nächstes Spiel“ oben auf der Seite
     erfolge.js        Abzeichen in der Spielerkarte, „🎉 Neu“ am Spieltag

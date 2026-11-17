@@ -8,6 +8,7 @@ import { state } from "../kern/zustand.js";
 import { playerStats, headToHeadSeason, headToHeadAll } from "../auswertung/statistik.js";
 import { duelChance } from "../auswertung/elo.js";
 import { openPlayer, chartFrame, svgText, CHART } from "./spielerkarte.js";
+import { openMatchReport } from "./spielbericht.js";
 
 const DUELS_SHOWN = 5;          // so viele Duelle werden zunächst angezeigt
 let compareScope = "alle";      // "alle" Saisons oder nur "saison"
@@ -132,7 +133,9 @@ function duelBox(a, b, duelsSeason, duelsAll, multiSeason) {
     el("table", { class: "mini cmp-duels" }, [el("tbody", null, shownDuels.map(function (x) {
       const res = x.sa !== null ? x.sa + ":" + x.sb : (x.aWon ? "Sieg" : "Niederlage");
       const avgs = (x.avgA !== null || x.avgB !== null) ? "Ø " + fmtAvg(x.avgA) + " / " + fmtAvg(x.avgB) : "";
-      return el("tr", null, [
+      const open = function () { openMatchReport({ mt: x.mt, nr: x.nr, datum: x.datum, season: showAll ? x.season : null, modus: x.modus, standard: x.standard }); };
+      return el("tr", { class: "duel-row", role: "button", tabindex: "0", title: "Statistik zu diesem Spiel", onclick: open,
+        onkeydown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } } }, [
         el("td", { class: "dash", text: (showAll ? shortSeason(x.season) + " · " : "") + "ST " + x.nr }),
         el("td", { text: x.label }),
         el("td", { class: "num " + (x.aWon ? "good" : "bad"), text: res }),

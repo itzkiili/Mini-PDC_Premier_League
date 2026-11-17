@@ -3,7 +3,8 @@
 //
 //  Immer:              Legs, Sieger, Average (wird beim Spiel angezeigt),
 //                      Missed Doubles (Checkout-Quote), 100+ und 140+ (t100, t140),
-//                      High Finish, kürzestes Leg und 180er (Bonuswerte)
+//                      High Finish, kürzestes Leg und 180er (Bonuswerte des Tages
+//                      und je Spiel in statistik), Legverlauf (verlauf)
 //  Nur im Ligamodus    First-9-Average (f9)
 //  (501 Double Out):   (bei Spezial-Modi nicht vergleichbar)
 //  Average und kürzestes Leg von Spezial-Spieltagen zählen nicht für die
@@ -44,12 +45,20 @@ export function applyToDay(day, matchId, m) {
     if (standard && p.f9 !== null) st.f9 = Math.round(p.f9 * 100) / 100;
     st.t100 = p.t100;
     st.t140 = p.t140;
+    // Für den Spielbericht: Bestwerte dieses Spiels
+    if (p.hiCo !== null) st.co = p.hiCo;
+    if (p.bestLeg !== null) st.leg = p.bestLeg;
+    if (p.n180) st.n180 = p.n180;
     if (Object.keys(st).length) stats[p.name] = st;
   });
   if (Object.keys(stats).length) {
     day.statistik = day.statistik || {};
     day.statistik[matchId] = stats;
   }
+
+  // Legverlauf: [Sieger, Darts, Checkout] je Leg
+  day.verlauf = day.verlauf || {};
+  day.verlauf[matchId] = s.legList.map(function (leg) { return [m.players[leg.winner], leg.darts, leg.checkout]; });
 
   // Bonuswerte des Spieltags: Bestwerte behalten, 180er dazuzählen
   sum.forEach(function (p) {

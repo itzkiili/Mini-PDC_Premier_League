@@ -9,7 +9,7 @@ import { numberWords, clipCatalog, slug } from "../skripte/zaehler/clips.js";
 import { encodeWav } from "../skripte/zaehler/audio.js";
 import { serialize } from "../skripte/bearbeiten/datei.js";
 import { parseDataFile } from "../skripte/kern/daten.js";
-import { resolveDay } from "../skripte/auswertung/spieltag.js";
+import { resolveDay, cleanupDay } from "../skripte/auswertung/spieltag.js";
 import { computeStandings } from "../skripte/auswertung/tabelle.js";
 import { doubleOptionsFor, bustDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
 
@@ -211,14 +211,20 @@ eq("Übernehmen 501", applyToDay(day, "VF1", m), null);
 eq("Legs", day.ergebnisse.VF1, { Anna: 2, Ben: 1 });
 eq("Sieger", day.sieger.VF1, "Anna");
 eq("Statistik", day.statistik.VF1, {
-  Anna: { avg: 107.85, miss: 1, f9: 135.67, t100: 5, t140: 2 },
-  Ben: { avg: Math.round((120 + 501) / 35 * 3 * 100) / 100, miss: 1, f9: 52.5, t100: 4, t140: 0 },
+  Anna: { avg: 107.85, miss: 1, f9: 135.67, t100: 5, t140: 2, co: 141, leg: 9, n180: 3 },
+  Ben: { avg: Math.round((120 + 501) / 35 * 3 * 100) / 100, miss: 1, f9: 52.5, t100: 4, t140: 0, co: 41, leg: 17 },
 });
 {
   // Speichern und wieder einlesen: neue Felder bleiben erhalten, Tabelle summiert sie
   const text = serialize({ name: "Test" }, [day]);
   const back = parseDataFile(text).tage[0];
-  eq("Gespeichert", back.statistik.VF1.Anna, { avg: 107.85, miss: 1, f9: 135.67, t100: 5, t140: 2 });
+  eq("Gespeichert", back.statistik.VF1.Anna, { avg: 107.85, miss: 1, f9: 135.67, t100: 5, t140: 2, co: 141, leg: 9, n180: 3 });
+  eq("Legverlauf gespeichert", back.verlauf.VF1, day.verlauf.VF1);
+  const mt = resolveDay(back, []).matches.VF1;
+  eq("Legverlauf ausgewertet", mt.verlauf.map(function (x) { return x.winner; }), day.verlauf.VF1.map(function (x) { return x[0]; }));
+  const bad = JSON.parse(JSON.stringify(back)); bad.verlauf.VF1[0][0] = "Zoe";
+  cleanupDay(bad);
+  eq("Falscher Legverlauf wird entfernt", bad.verlauf, undefined);
   const rows = computeStandings([resolveDay(back, [])]).rows;
   const anna = rows.filter(function (r) { return r.name === "Anna"; })[0];
   eq("Summiert", [anna.f9N, anna.f9Sum, anna.t100, anna.t140, anna.tN], [1, 135.67, 5, 2, 1]);
@@ -233,7 +239,7 @@ addVisit(sp, 60); addVisit(sp, 100); addVisit(sp, 110, false, 3, 2);
 day = dayWith();
 eq("Übernehmen Spezial", applyToDay(day, "VF1", sp), null);
 eq("Spezial: Legs", day.ergebnisse.VF1, { Anna: 1, Ben: 0 });
-eq("Spezial: Average gespeichert, kein First 9", day.statistik.VF1, { Anna: { avg: 85, miss: 1, t100: 1, t140: 0 }, Ben: { avg: 100, miss: 0, t100: 1, t140: 0 } });
+eq("Spezial: Average gespeichert, kein First 9", day.statistik.VF1, { Anna: { avg: 85, miss: 1, t100: 1, t140: 0, co: 110, leg: 6 }, Ben: { avg: 100, miss: 0, t100: 1, t140: 0 } });
 {
   // Spezial-Spieltag: Average steht beim Spiel, zählt aber nicht für die Saison
   day.modus = { start: 170, legsPlus: 1 };

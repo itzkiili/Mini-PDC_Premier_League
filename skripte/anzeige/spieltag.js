@@ -10,6 +10,7 @@ import { scoreButton } from "../zaehler/anzeige.js";
 import { shareDayLink } from "./navigation.js";
 import { nameBtn } from "./spielerkarte.js";
 import { openCompare } from "./vergleich.js";
+import { openMatchReport } from "./spielbericht.js";
 import { achievementsOfDay } from "./erfolge.js";
 import { cleanModus, dayModus, vorlageOf, modusText } from "../auswertung/modus.js";
 import {
@@ -205,10 +206,21 @@ function matchEl(day, match, isFinal) {
   // Noch nicht gespielt und beide Spieler bekannt: Klick öffnet den Vergleich
   const preview = !state.editing && match.state === "offen" && match.a.name && match.b.name;
   if (preview) stateText = "Vorschau ›";
-  const attrs = { class: "match" + (isFinal ? " final" : "") + (preview ? " preview" : "") };
+  // Gespielt: Klick öffnet den Spielbericht
+  const report = !state.editing && match.state === "gespielt";
+  if (report) stateText = "Statistik ›";
+  const attrs = { class: "match" + (isFinal ? " final" : "") + (preview || report ? " preview" : "") };
   if (preview) {
     Object.assign(attrs, clickable(function () { openCompare(match.a.name, match.b.name); }));
     attrs.title = match.a.name + " und " + match.b.name + " vergleichen";
+  }
+  if (report) {
+    Object.assign(attrs, clickable(function () {
+      const mod = dayModus(day, state.liga);
+      openMatchReport({ mt: match, nr: day.nr, datum: day.datum, modus: mod,
+        standard: mod.start === 501 && mod.ein === "single" && mod.aus === "double" });
+    }));
+    attrs.title = "Statistik zu diesem Spiel";
   }
   // Offenes Spiel mit beiden Spielern: Live-Zähler
   const scorable = match.state === "offen" && match.a.name && match.b.name && !viewingArchive();

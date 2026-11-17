@@ -3,7 +3,7 @@
 //  Platzierungen, Bonuspunkte
 //  Reine Berechnung, ohne Zugriff auf die Seite.
 // =====================================================================
-import { clean } from "../kern/hilfen.js";
+import { clean, toNum } from "../kern/hilfen.js";
 import { state, punkte, bonusCfg } from "../kern/zustand.js";
 import { dayModus } from "./modus.js";
 
@@ -13,7 +13,8 @@ function waiting(from) { return { pending: true, from: from }; }
 // ---------------------------------------------------------------------
 //  Ergebnis von resolveDay:
 //    ablauf    Bauplan (siehe ABLAEUFE)
-//    matches   { VF1: { a, b, state, winner, loser, score, stats, places? }, … }
+//    matches   { VF1: { a, b, state, winner, loser, score, stats, verlauf?, places? }, … }
+//              verlauf: [{ winner, darts, checkout }] je Leg (vom Live-Zähler)
 //              state: "offen", "gespielt", "wartet", "freilos" oder "leer"
 //              places: bei Platzierungsspielen [Platz Sieger, Platz Verlierer]
 //    vorrunde  die Viertelfinals
@@ -40,6 +41,8 @@ export function resolveDay(day, warnings) {
   const invalid = [];
   const invalidScore = [];
   const invalidStats = [];
+  const invalidVerlauf = [];
+  const vlx = (day.verlauf && typeof day.verlauf === "object") ? day.verlauf : {};
   const stx = (day.statistik && typeof day.statistik === "object") ? day.statistik : {};
   const erg = (day.ergebnisse && typeof day.ergebnisse === "object") ? day.ergebnisse : {};
 
@@ -62,15 +65,18 @@ export function resolveDay(day, warnings) {
       if (clean(sieger[id])) invalid.push(id);
       if (erg[id]) invalidScore.push(id);
       if (stx[id]) invalidStats.push(id);
+      if (vlx[id]) invalidVerlauf.push(id);
     } else if (a.name === null && b.name === null) {
       if (erg[id]) invalidScore.push(id);
       if (stx[id]) invalidStats.push(id);
+      if (vlx[id]) invalidVerlauf.push(id);
       match.state = "leer";
       match.w = known(null); match.l = known(null);
     } else if (a.name === null || b.name === null) {
       const real = a.name !== null ? a.name : b.name;
       if (erg[id]) invalidScore.push(id);
       if (stx[id]) invalidStats.push(id);
+      if (vlx[id]) invalidVerlauf.push(id);
       match.state = "freilos"; match.winner = real;
       match.w = known(real); match.l = known(null);
     } else {
@@ -80,6 +86,15 @@ export function resolveDay(day, warnings) {
       if (sx && typeof sx === "object") {
         if (Object.keys(sx).every(function (k) { return k === a.name || k === b.name; })) match.stats = sx;
         else invalidStats.push(id);
+      }
+      // Legverlauf: [[Sieger, Darts, Checkout], …]
+      const vl = vlx[id];
+      if (vl !== undefined) {
+        const okVl = Array.isArray(vl) && vl.every(function (x) {
+          return Array.isArray(x) && (x[0] === a.name || x[0] === b.name);
+        });
+        if (okVl) match.verlauf = vl.map(function (x) { return { winner: x[0], darts: toNum(x[1]), checkout: toNum(x[2]) }; });
+        else invalidVerlauf.push(id);
       }
       if (sc) {
         match.score = sc;
@@ -110,9 +125,9 @@ export function resolveDay(day, warnings) {
   const ablauf = ablaufFor(count);
   const built = buildDay(ablauf, day, players, m, play, warnings, label, count === 5 || count === 6 ? "gruppe" : null);
   return Object.assign(built, {
-    count: count, nr: day.nr, datum: day.datum, players: players, matches: m, ablauf: ablauf,
+    count: count, nr: day.nr, datum: day.datum, players: players, matches: m, ablauf: ablauf, modus: mod,
     standard: mod.start === 501 && mod.ein === "single" && mod.aus === "double",
-    invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats,
+    invalid: invalid, invalidScore: invalidScore, invalidStats: invalidStats, invalidVerlauf: invalidVerlauf,
     bonus: dayBonus(day, players),
   });
 }
@@ -290,6 +305,7 @@ export function cleanupDay(day) {
     r.invalid.forEach(function (id) { delete day.sieger[id]; changed = true; });
     r.invalidScore.forEach(function (id) { if (day.ergebnisse) { delete day.ergebnisse[id]; changed = true; } });
     r.invalidStats.forEach(function (id) { if (day.statistik) { delete day.statistik[id]; changed = true; } });
+    r.invalidVerlauf.forEach(function (id) { if (day.verlauf) { delete day.verlauf[id]; changed = true; } });
     r.bonus.invalid.forEach(function (n) { if (day.bonus) { delete day.bonus[n]; changed = true; } });
     if (r.groups) r.groups.forEach(function (g) {
       if (day.stechen && day.stechen[g.key] && day.stechen[g.key].length && (!g.tie || g.badStechen)) {
@@ -301,6 +317,7 @@ export function cleanupDay(day) {
   Object.keys(day.sieger).forEach(function (k) { if (!clean(day.sieger[k])) delete day.sieger[k]; });
   if (day.ergebnisse && !Object.keys(day.ergebnisse).length) delete day.ergebnisse;
   if (day.statistik && !Object.keys(day.statistik).length) delete day.statistik;
+  if (day.verlauf && !Object.keys(day.verlauf).length) delete day.verlauf;
   if (day.bonus && !Object.keys(day.bonus).length) delete day.bonus;
 }
 

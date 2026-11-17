@@ -126,6 +126,7 @@ export function headToHead(a, b, resolvedList, season) {
       list.push({
         nr: d.nr != null ? d.nr : idx + 1, label: LABELS[id], aWon: mt.winner === a, season: season || null,
         sa: sa, sb: sb, avgA: avgOf(a), avgB: avgOf(b),
+        mt: mt, datum: d.datum || "", modus: d.modus, standard: d.standard,   // für den Spielbericht
       });
     });
   });
