@@ -9,7 +9,7 @@ import { LABELS } from "../kern/konstanten.js";
 import { clone } from "../kern/hilfen.js";
 import { state } from "../kern/zustand.js";
 
-const MERGE_GROUPS = ["sieger", "ergebnisse", "statistik", "bonus", "stechen"];
+const MERGE_GROUPS = ["sieger", "ergebnisse", "statistik", "verlauf", "bonus", "stechen"];
 
 // Aktueller Stand zum Vergleichen
 export function snapshot() { return { liga: clone(state.liga), days: clone(state.days) }; }
@@ -66,7 +66,7 @@ export function conflictLabel(key) {
   const parts = key.split("|");
   if (parts[0] === "liga") return parts[1] === "stechen" ? "Entscheidungsleg der Gesamttabelle" : "Liga-Einstellung „" + parts[1] + "“";
   const names = { da: "Spieltag angelegt/gelöscht", datum: "Datum", spieler: "Spielerliste", sieger: "Sieger",
-    ergebnisse: "Legs", statistik: "Average/Doppel", bonus: "Bonuswerte", stechen: "Stechen" };
+    ergebnisse: "Legs", statistik: "Average/Doppel", verlauf: "Legverlauf", bonus: "Bonuswerte", stechen: "Stechen" };
   let t = "Spieltag " + parts[1] + " · " + (names[parts[2]] || parts[2]);
   if (parts[3]) t += " · " + (LABELS[parts[3]] || parts[3]);
   return t;

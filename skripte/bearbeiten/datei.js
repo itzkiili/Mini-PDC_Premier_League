@@ -40,9 +40,12 @@ const HEADER = [
   "//        z. B. bonus: { \"Anna\": { co: 121, n180: 2 }, \"Ben\": { leg: 15 } }",
   "//  - statistik: optional je Spiel und Spieler Average (avg) und Missed",
   "//        Doubles (miss), z. B. VF1: { \"Anna\": { avg: 54.3, miss: 4 } }",
-  "//        vom Live-Zähler zusätzlich: First-9-Average (f9) und Anzahl der",
-  "//        Aufnahmen 100–139 (t100) und 140–179 (t140)",
+  "//        vom Live-Zähler zusätzlich: First-9-Average (f9), Anzahl der",
+  "//        Aufnahmen 100–139 (t100) und 140–179 (t140), High Finish (co),",
+  "//        kürzestes Leg in Darts (leg) und Anzahl 180er (n180) in diesem Spiel",
   "//        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)",
+  "//  - verlauf: optional je Spiel die Legs der Reihe nach (vom Live-Zähler):",
+  "//        [Sieger, Darts, Checkout], z. B. VF1: [[\"Anna\", 15, 40], [\"Ben\", 18, 32]]",
   "//  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1",
   "//",
   "//  Namen immer genau gleich schreiben (z. B. immer \"Max\", nie \"max\").",
@@ -161,13 +164,21 @@ function dayLines(day) {
     const parts = Object.keys(sxAll[k]).map(function (n) {
       const ps = sxAll[k][n] || {};
       const f = [];
-      ["avg", "miss", "f9", "t100", "t140"].forEach(function (k) {
+      ["avg", "miss", "f9", "t100", "t140", "co", "leg", "n180"].forEach(function (k) {
         if (toNum(ps[k]) !== null) f.push(k + ": " + toNum(ps[k]));
       });
       return f.length ? q(n) + ": { " + f.join(", ") + " }" : null;
     }).filter(Boolean);
     return parts.length ? k + ": { " + parts.join(", ") + " }," : null;
   }), sxKeys.length > 0);
+
+  // verlauf: VF1: [["Anna", 15, 40], ["Ben", 18, 32]]
+  const vlAll = day.verlauf || {};
+  block(out, "verlauf", KEY_ORDER.filter(function (k) { return Array.isArray(vlAll[k]) && vlAll[k].length; }).map(function (k) {
+    return k + ": [" + vlAll[k].map(function (x) {
+      return "[" + q(x[0]) + ", " + (toNum(x[1]) !== null ? toNum(x[1]) : "null") + ", " + (toNum(x[2]) !== null ? toNum(x[2]) : "null") + "]";
+    }).join(", ") + "],";
+  }));
 
   // stechen: G: ["Anna", "Ben", "Carl"]
   const st = day.stechen || {};
