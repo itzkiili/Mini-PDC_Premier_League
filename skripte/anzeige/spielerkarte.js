@@ -77,6 +77,7 @@ function statTiles(st) {
     tile("180er", String(st.n180), st.n180 ? "an " + st.days180 + (st.days180 === 1 ? " Spieltag" : " Spieltagen") : "noch keine"),
     tile("Höchstes Finish", st.hiCo ? String(st.hiCo) : "–", st.coTops ? st.coTops + "× Tagesbestwert" : (st.hiCo ? "Saison-Bestwert" : "noch nicht erfasst")),
     tile("Kürzestes Leg", st.bestLeg ? st.bestLeg + " Darts" : "–", st.legTops ? st.legTops + "× Tagesbestwert" : (st.bestLeg ? "Saison-Bestwert" : "noch nicht erfasst")),
+    st.tippGames ? tile("Tippspiele", st.tippWins + " von " + st.tippGames + " gewonnen", st.tipp ? "+" + st.tipp + " Punkte" : "noch keine Punkte") : null,
   ]);
 }
 

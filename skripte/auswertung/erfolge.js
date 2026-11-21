@@ -10,6 +10,7 @@ import { PLAY_ORDER } from "../kern/konstanten.js";
 import { toNum, fmtAvg, plural } from "../kern/hilfen.js";
 import { state, currentSeasonLabel } from "../kern/zustand.js";
 import { earlierSeasons } from "./statistik.js";
+import { tippList, tippWinners } from "./tippspiel.js";
 
 export const STUFEN = ["Bronze", "Silber", "Gold"];
 export const STUFEN_ICON = ["🥉", "🥈", "🥇"];
@@ -31,6 +32,8 @@ export const ERFOLGE = [
     text: function (n) { return plural(n, "Entscheidungsleg", "Entscheidungslegs") + " gewonnen"; } },
   { id: "bonus", icon: "🎁", name: "Bonusjäger", art: "zahl", stufen: [1, 5, 10],
     text: function (n) { return plural(n, "Bonuspunkt", "Bonuspunkte"); } },
+  { id: "tipp", icon: "🔮", name: "Tippkönig", art: "zahl", stufen: [1, 3, 5],
+    text: function (n) { return plural(n, "Tippspiel", "Tippspiele") + " gewonnen"; } },
   { id: "pech", icon: "💔", name: "Unglücklich", art: "zahl", stufen: [1, 3, 5],
     text: function (n) { return n + "× Platz 2 an einem Spieltag"; } },
 ];
@@ -47,19 +50,20 @@ export function achLevel(stufen) {
 // Alle Saisons bis zur angezeigten, älteste zuerst
 function seasonsForAchievements() {
   return earlierSeasons().map(function (x) {
-    return { label: x.season.name, current: false, resolved: x.resolved };
-  }).concat([{ label: currentSeasonLabel(), current: true, resolved: state.resolved }]);
+    return { label: x.season.name, current: false, resolved: x.resolved, tipps: tippList({ tippspiele: x.tipps }) };
+  }).concat([{ label: currentSeasonLabel(), current: true, resolved: state.resolved, tipps: tippList(state.liga) }]);
 }
 
 // Wird nur neu berechnet, wenn sich die Spieltage geändert haben (neues render)
 let cache = null;
 let cacheKey = null;
+let cacheTipps = null;
 
 // Ergebnis:
 //   got[name][erfolgId]   = [Bronze, Silber, Gold], jeweils { season, current, nr, datum, detail } oder leer
 //   count[name][erfolgId] = Zählerstand (bei art "zahl")
 export function computeAchievements() {
-  if (cache && cacheKey === state.resolved) return cache;
+  if (cache && cacheKey === state.resolved && cacheTipps === state.liga.tippspiele) return cache;
   const got = {}, count = {};
   const slot = function (name, id) {
     const p = got[name] || (got[name] = {});
@@ -67,7 +71,7 @@ export function computeAchievements() {
   };
   const mark = function (name, id, i, s, d, detail) {
     const st = slot(name, id);
-    if (!st[i]) st[i] = { season: s.label, current: s.current, nr: d.nr, datum: d.datum || "", detail: detail || "" };
+    if (!st[i]) st[i] = { season: s.label, current: s.current, nr: d.nr, datum: d.datum || "", detail: detail || "", tipp: d.tipp || null };
   };
   // art "zahl": hochzählen, bei Erreichen einer Stufe merken
   const add = function (name, id, by, s, d) {
@@ -119,8 +123,14 @@ export function computeAchievements() {
         });
       });
     });
+    // Tippspiele: jeder Gewinner zählt (meiste Tipp-Punkte, bei Gleichstand alle)
+    s.tipps.forEach(function (t) {
+      const at = { nr: null, datum: t.datum, tipp: t.name };
+      tippWinners(t).forEach(function (name) { add(name, "tipp", 1, s, at); });
+    });
   });
   cache = { got: got, count: count };
   cacheKey = state.resolved;
+  cacheTipps = state.liga.tippspiele;
   return cache;
 }

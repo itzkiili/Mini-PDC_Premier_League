@@ -6,6 +6,7 @@ import { toNum } from "../kern/hilfen.js";
 import { state, currentSeasonLabel } from "../kern/zustand.js";
 import { addMatchStats, newAcc } from "./tabelle.js";
 import { resolveAll } from "./spieltag.js";
+import { tippList, tippWinners } from "./tippspiel.js";
 
 // Ausgewertete Spieltage aller archivierten Saisons vor der angezeigten, älteste zuerst
 export function earlierSeasons() {
@@ -15,7 +16,7 @@ export function earlierSeasons() {
     if (state.archiveView && state.archiveView.id === s.id) break;
     const days = state.archives[s.id];
     if (!days) continue;
-    list.push({ season: s, resolved: resolveAll(days) });
+    list.push({ season: s, resolved: resolveAll(days), tipps: state.archiveTipps[s.id] || [] });
   }
   return list;
 }
@@ -28,7 +29,13 @@ export function playerStats(name) {
     name: name, days: 0, doneDays: 0, points: 0, best: null, bestCount: 0,
     w: 0, l: 0, lw: 0, ll: 0, legGames: 0, dec: 0, decW: 0, nil: 0,
     bonus: 0, donePoints: 0, n180: 0, hiCo: null, bestLeg: null, coTops: 0, legTops: 0, days180: 0,
-    history: [], results: [], opp: {},
+    history: [], results: [], opp: {}, tipp: 0, tippGames: 0, tippWins: 0,
+  });
+  // Tippspiele
+  tippList(state.liga).forEach(function (t) {
+    if (name in t.tipps) st.tippGames++;
+    if (tippWinners(t).indexOf(name) < 0) return;
+    st.tipp += t.punkte; st.points += t.punkte; st.tippWins++;
   });
   state.resolved.forEach(function (d, idx) {
     if (d.players.indexOf(name) < 0) return;

@@ -8,7 +8,8 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 
 ## Funktionen
 
-- **Gesamttabelle** mit Punkten, Spieltagsiegen, Legs, Differenz, Average, Checkout-Quote und Bonuspunkten, dazu Trendpfeilen (▲ ▼) seit dem letzten Spieltag
+- **Gesamttabelle** mit Punkten, Spieltagsiegen, Legs, Differenz, Average, Checkout-Quote, Bonuspunkten und Tipp-Punkten, dazu Trendpfeilen (▲ ▼) seit dem letzten Spieltag
+- **Tippspiele** (z. B. zum Grand Slam): im Bearbeiten-Modus über „🔮 Tippspiele“ die Punkte jedes Spielers im Tippspiel eintragen. Wer die meisten hat, gewinnt (bei Gleichstand alle) und bekommt 5 Punkte in der Tabelle (Spalte „Tipp“, kein Bonus; pro Tippspiel änderbar) sowie den Erfolg „Tippkönig“ für 1, 3 und 5 gewonnene Tippspiele
 - **Spieltage** mit Turnierbaum (8 Spieler), Turnierbaum plus Verlierergruppe (7 Spieler) oder Dreiergruppen (5–6 Spieler) und der Platzierung des Tages
 - **Spielerkarte:** Klick auf einen Namen zeigt Statistiken, den Platzierungsverlauf, die Bilanz gegen jeden Gegner, Lieblings- und Angstgegner
 - **Direktvergleich** zweier Spieler: direkte Duelle, Saisonwerte als Balken, gemeinsamer Verlauf
@@ -139,6 +140,7 @@ skripte/
     statistik.js      Spielerstatistik, direkte Duelle
     modus.js          Spielmodus: Startpunkte, Double In/Out, Gewinnlegs
     erfolge.js        Erfolge und ihre Stufen (Grenzwerte hier anpassen)
+    tippspiel.js      Tippspiele: Gewinner und Punkte für die Tabelle
   anzeige/          alles, was gezeichnet wird
     seite.js          render(): baut die ganze Seite neu auf
     tabelle.js        Gesamttabelle mit Trendpfeilen
@@ -164,6 +166,7 @@ skripte/
     speichern.js      Speichern bei GitHub oder als Datei
     zusammenfuehren.js  gleichzeitige Änderungen zusammenführen
     saisonwechsel.js  Saison abschließen
+    tippspiele.js     Tippspiele eintragen (Fenster „🔮 Tippspiele“)
     profil-editor.js  Spielerprofil bearbeiten
   zaehler/          Live-Zähler
     spiel.js          Aufnahmen, Bust, Legs, Statistik (reine Berechnung)

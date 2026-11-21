@@ -4,6 +4,7 @@
 // =====================================================================
 import { clean, toNum } from "../kern/hilfen.js";
 import { state } from "../kern/zustand.js";
+import { tippList, tippPoints } from "./tippspiel.js";
 
 // Zähler für Average und Checkout-Quote an ein Objekt anhängen
 // f9Sum/f9N: First-9-Average je Spiel; t100/t140: Aufnahmen; tN: Spiele mit gezählten Aufnahmen (Live-Zähler)
@@ -45,7 +46,7 @@ export function computeStandings(resolved) {
   const stats = {};
   const h2h = {};
   function stat(name) {
-    if (!stats[name]) stats[name] = newAcc({ name: name, days: 0, wins: 0, seconds: 0, points: 0, bonus: 0, lw: 0, ll: 0, legs: false });
+    if (!stats[name]) stats[name] = newAcc({ name: name, days: 0, wins: 0, seconds: 0, points: 0, bonus: 0, tipp: 0, lw: 0, ll: 0, legs: false });
     return stats[name];
   }
   resolved.forEach(function (d) {
@@ -76,6 +77,9 @@ export function computeStandings(resolved) {
       h2h[mt.winner][mt.loser] = (h2h[mt.winner][mt.loser] || 0) + 1;
     });
   });
+  // Tippspiele: Punkte zählen mit, aber nicht als Bonus
+  const tipp = tippPoints(tippList(state.liga));
+  Object.keys(tipp).forEach(function (n) { const s = stat(n); s.tipp += tipp[n]; s.points += tipp[n]; });
   function h2hWins(x, y) { return (h2h[x] && h2h[x][y]) || 0; }
   const tableStechen = (Array.isArray(state.liga.stechen) ? state.liga.stechen : []).map(clean).filter(Boolean);
 

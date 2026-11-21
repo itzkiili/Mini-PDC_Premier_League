@@ -4,6 +4,7 @@
 //  Das Format nicht ändern: alte Archive und das Bearbeiten von Hand
 //  verlassen sich darauf.
 // =====================================================================
+import { tippList } from "../auswertung/tippspiel.js";
 import { KEY_ORDER } from "../kern/konstanten.js";
 import { clean, toNum } from "../kern/hilfen.js";
 import { punkte, bonusCfg } from "../kern/zustand.js";
@@ -16,6 +17,11 @@ const HEADER = [
   "//",
   "//  Diese Datei kannst du auf der Seite über „Ergebnisse bearbeiten“",
   "//  ändern oder weiterhin hier von Hand bearbeiten.",
+  "//",
+  "//  Tippspiele (optional, bei LIGA): tipps = Punkte jedes Spielers im Tippspiel;",
+  "//  wer die meisten hat, gewinnt (bei Gleichstand alle) und bekommt punkte (Standard 5)",
+  "//  in der Tabelle (Spalte „Tipp“, kein Bonus)",
+  "//  - tippspiele: [{ name: \"Tippspiel Grand Slam\", datum: \"22.11.2026\", tipps: { \"Kilian\": 7, \"Leon\": 4 }, punkte: 5 }]",
   "//",
   "//  Spielmodus (optional, bei LIGA für die Saison oder bei einem Spieltag):",
   "//  - modus: { start: 501, ein: \"single\", aus: \"double\", legs: 2, legsFinale: 3 }",
@@ -101,6 +107,16 @@ function ligaLines(liga, days) {
   if (ts.length) {
     out.push("  // Entscheidungsleg/Stechen bei Gleichstand in der Gesamttabelle (bessere zuerst)");
     out.push("  stechen: [" + ts.map(q).join(", ") + "],");
+  }
+  const tl = tippList(liga);
+  if (tl.length) {
+    out.push("  // Tippspiele: tipps = Punkte im Tippspiel, punkte = bekommt nur der Gewinner (Spalte „Tipp“)");
+    out.push("  tippspiele: [");
+    tl.forEach(function (t) {
+      const tipps = Object.keys(t.tipps).map(function (n) { return JSON.stringify(n) + ": " + t.tipps[n]; }).join(", ");
+      out.push("    { name: " + q(t.name) + ", datum: " + q(t.datum) + ", tipps: { " + tipps + " }, punkte: " + t.punkte + " },");
+    });
+    out.push("  ],");
   }
   const aktuellExists = liga.aktuell != null && days.some(function (d) { return Number(d.nr) === Number(liga.aktuell); });
   if (aktuellExists) {

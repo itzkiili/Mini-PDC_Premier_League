@@ -114,6 +114,7 @@ async function closeSeason(oldName, id, newName, msg) {
     if (state.liga.bonus) newLiga.bonus = clone(state.liga.bonus);
     if (state.liga.modus) newLiga.modus = clone(state.liga.modus);
     state.archives[id] = clone(state.days);
+    state.archiveTipps[id] = clone(state.liga.tippspiele || []);
     state.liga = newLiga;
     state.days = [];
     rebuildEloChain();
