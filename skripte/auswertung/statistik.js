@@ -33,9 +33,9 @@ export function playerStats(name) {
   });
   // Tippspiele
   tippList(state.liga).forEach(function (t) {
-    if (!(name in t.punkte)) return;
-    st.tipp += t.punkte[name]; st.points += t.punkte[name]; st.tippGames++;
-    if (tippWinners(t).indexOf(name) >= 0) st.tippWins++;
+    if (name in t.tipps) st.tippGames++;
+    if (tippWinners(t).indexOf(name) < 0) return;
+    st.tipp += t.punkte; st.points += t.punkte; st.tippWins++;
   });
   state.resolved.forEach(function (d, idx) {
     if (d.players.indexOf(name) < 0) return;

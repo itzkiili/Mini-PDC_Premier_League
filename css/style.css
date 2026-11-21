@@ -483,13 +483,15 @@ td.elo { font-variant-numeric: tabular-nums; }
 
 /* Tippspiele (Bearbeiten) */
 .tipp-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 14px 0; }
-.tipp-fields { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
-.tipp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px 12px; margin: 10px 0 12px; }
+.tipp-fields { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 10px; align-items: end; }
+.tipp-label { margin: 12px 0 6px; font-size: 0.9rem; color: var(--muted); }
+.tipp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px 12px; margin: 0 0 12px; }
 .tipp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; border-radius: 8px; }
 .tipp-row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tipp-row input { width: 64px; flex: none; text-align: right; }
 .tipp-row.win { background: var(--accent-soft); font-weight: 700; }
 .tipp-row.win span::after { content: " 🔮"; }
+@media (max-width: 480px) { .tipp-fields { grid-template-columns: 1fr 1fr; } .tipp-fields .field:first-child { grid-column: 1 / -1; } }
 
 /* Weltrangliste */
 #weltrangliste .note { margin: -4px 0 14px; }

@@ -123,7 +123,7 @@ export function computeAchievements() {
         });
       });
     });
-    // Tippspiele: Sieger zählen (bei Gleichstand alle mit den meisten Punkten)
+    // Tippspiele: jeder Gewinner zählt (meiste Tipp-Punkte, bei Gleichstand alle)
     s.tipps.forEach(function (t) {
       const at = { nr: null, datum: t.datum, tipp: t.name };
       tippWinners(t).forEach(function (name) { add(name, "tipp", 1, s, at); });
