@@ -5,6 +5,11 @@
 //  Diese Datei kannst du auf der Seite über „Ergebnisse bearbeiten“
 //  ändern oder weiterhin hier von Hand bearbeiten.
 //
+//  Tippspiele (optional, bei LIGA): tipps = Punkte jedes Spielers im Tippspiel;
+//  wer die meisten hat, gewinnt (bei Gleichstand alle) und bekommt punkte (Standard 5)
+//  in der Tabelle (Spalte „Tipp“, kein Bonus)
+//  - tippspiele: [{ name: "Tippspiel Grand Slam", datum: "22.11.2026", tipps: { "Kilian": 7, "Leon": 4 }, punkte: 5 }]
+//
 //  Spielmodus (optional, bei LIGA für die Saison oder bei einem Spieltag):
 //  - modus: { start: 501, ein: "single", aus: "double", legs: 2, legsFinale: 3 }
 //        start: Startpunkte   ein: "double" = Double In
@@ -16,7 +21,8 @@
 //  - spieler: bis zu 8 Namen in der Reihenfolge A bis H, freie Plätze = null
 //        VF1: A gegen B   VF2: C gegen D   VF3: E gegen F   VF4: G gegen H
 //  - sieger:  Name des Siegers je Spiel; noch nicht gespielte Spiele weglassen
-//        7–8 Spieler: VF1–VF4, PR1, PR2, HF1, HF2, P7, P5, P3, Finale
+//        8 Spieler:   VF1–VF4, PR1, PR2, HF1, HF2, P7, P5, P3, Finale
+//        7 Spieler:   VF1–VF4 (VF4 kampflos), HF1, HF2, P3, Finale, Verlierergruppe V1–V3
 //        5–6 Spieler: VF1–VF3, Gewinnergruppe G1–G3, Verlierergruppe V1–V3
 //          G1: Sieger VF1 – VF2   G2: Sieger VF2 – VF3   G3: Sieger VF1 – VF3
 //          (V1–V3 genauso mit den Verlierern)
@@ -27,9 +33,12 @@
 //        z. B. bonus: { "Anna": { co: 121, n180: 2 }, "Ben": { leg: 15 } }
 //  - statistik: optional je Spiel und Spieler Average (avg) und Missed
 //        Doubles (miss), z. B. VF1: { "Anna": { avg: 54.3, miss: 4 } }
-//        vom Live-Zähler zusätzlich: First-9-Average (f9) und Anzahl der
-//        Aufnahmen 100–139 (t100) und 140–179 (t140)
+//        vom Live-Zähler zusätzlich: First-9-Average (f9), Anzahl der
+//        Aufnahmen 100–139 (t100) und 140–179 (t140), High Finish (co),
+//        kürzestes Leg in Darts (leg) und Anzahl 180er (n180) in diesem Spiel
 //        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)
+//  - verlauf: optional je Spiel die Legs der Reihe nach (vom Live-Zähler):
+//        [Sieger, Darts, Checkout], z. B. VF1: [["Anna", 15, 40], ["Ben", 18, 32]]
 //  - stechen: nur bei Gleichstand in einer Dreiergruppe, Reihenfolge ab Platz 1
 //
 //  Namen immer genau gleich schreiben (z. B. immer "Max", nie "max").
@@ -43,10 +52,14 @@ const LIGA = {
   punkteKlein: [15, 13, 11, 9, 7, 6],
   // Bonuspunkte: höchstes Checkout und kürzestes Leg je Spieltag, jede 180
   bonus: { checkout: 1, leg: 1, je180: 1 },
+  // Tippspiele: tipps = Punkte im Tippspiel, punkte = bekommt nur der Gewinner (Spalte „Tipp“)
+  tippspiele: [
+    { name: "Tippspiel Grand Slam", datum: "16.11.2026", tipps: { "Philipp": 16, "Kilian": 8, "Johannes": 14, "Leon": 14, "Ben": 12, "Andres": 12, "Tom": 12 }, punkte: 5 },
+  ],
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
-  aktuell: 5,
+  aktuell: 6,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-16T20:47:08.003Z",
+  stand: "2026-11-21T23:26:25.601Z",
 };
 
 const SPIELTAGE = [
@@ -300,7 +313,14 @@ const SPIELTAGE = [
       Finale: { "Andres": { avg: 37.93, miss: 29, f9: 44.67, t100: 2, t140: 0 }, "Tom": { avg: 35.61, miss: 14, f9: 42.42, t100: 2, t140: 0 } },
       V1: { "Philipp": { avg: 36.08, miss: 0, f9: 50, t100: 0, t140: 0 }, "Leon": { avg: 40.08, miss: 14, f9: 48.33, t100: 0, t140: 0 } },
       V2: { "Leon": { avg: 49.78, miss: 0, f9: 54, t100: 1, t140: 0 }, "Johannes": { avg: 52.74, miss: 5, f9: 56.33, t100: 0, t140: 0 } },
-      V3: { "Philipp": { avg: 39.59, miss: 1, f9: 33.33, t100: 1, t140: 0 }, "Johannes": { avg: 43.57, miss: 1, f9: 48.50, t100: 2, t140: 0 } },
+      V3: { "Philipp": { avg: 39.59, miss: 1, f9: 33.33, t100: 1, t140: 0 }, "Johannes": { avg: 43.57, miss: 1, f9: 48.5, t100: 2, t140: 0 } },
     },
+  },
+  {
+    nr: 6,
+    datum: "23.11.2026",
+    modus: { ein: "double" },
+    spieler: ["Leon", "Johannes", "Kilian", "Philipp", "Ben", "Tom", "Andres", "Marius"],
+    sieger: {},
   },
 ];
