@@ -1,7 +1,8 @@
 // =====================================================================
 //  Abschnitt „Tippspiele“ (unter dem Saisonfinale)
-//  Ab zwei Tippspielen oben die Wertung der Saison (gewonnene Tippspiele und
-//  Tabellenpunkte), darunter jedes Tippspiel mit seinen Ergebnissen, neuestes zuerst.
+//  Oben die Wertung der Saison (gewonnene Tippspiele und
+//  Tabellenpunkte), darunter eine Leiste wie bei den Spieltagen: es wird
+//  immer ein Tippspiel mit seinen Ergebnissen gezeigt (anfangs das neueste).
 // =====================================================================
 import { el } from "../kern/dom.js";
 import { plural } from "../kern/hilfen.js";
@@ -82,12 +83,21 @@ function tippCard(t) {
   ]);
 }
 
+// Ausgewähltes Tippspiel: der Eintrag selbst (aus LIGA.tippspiele), nicht sein
+// Name – mehrere Tippspiele dürfen gleich heißen. Ohne Auswahl: das neueste.
+let selected = null;
+
+// In der Leiste ohne vorangestelltes „Tippspiel“: „Tippspiel WM“ -> „WM“
+function shortName(name) { return name.replace(/^tippspiel\s*[:\-–]?\s*/i, "") || name; }
+
 export function renderTippspiele() {
   const box = document.getElementById("tipp-view");
   if (!box) return;
   box.innerHTML = "";
-  const list = tippList(state.liga).map(function (t, i) { return Object.assign(t, { idx: i }); })
-    .sort(function (a, b) { return dateKey(b.datum) - dateKey(a.datum) || a.idx - b.idx; });
+  // Wie bei den Spieltagen: ältestes links, neuestes rechts
+  const raw = Array.isArray(state.liga.tippspiele) ? state.liga.tippspiele : [];
+  const list = tippList(state.liga).map(function (t, i) { return Object.assign(t, { idx: i, raw: raw[i] }); })
+    .sort(function (a, b) { return dateKey(a.datum) - dateKey(b.datum) || b.idx - a.idx; });
 
   if (state.editing) {
     box.appendChild(el("div", { class: "row tipp-edit" }, [
@@ -98,11 +108,35 @@ export function renderTippspiele() {
     box.appendChild(el("div", { class: "card" }, [el("p", { class: "empty", text: "In dieser Saison gab es noch kein Tippspiel." })]));
     return;
   }
-  // Wertung erst ab zwei Tippspielen (sonst steht dasselbe in der Karte)
-  if (list.length > 1) {
+  // Wertung, sobald ein Tippspiel gespielt ist (mit Gewinner); leere, gerade
+  // angelegte zählen nicht mit
+  const played = list.filter(function (t) { return t.sieger.length > 0; });
+  if (played.length) {
     box.appendChild(el("h3", { class: "tipp-sub", text: "Wertung" }));
-    box.appendChild(summaryTable(summary(list)));
+    box.appendChild(summaryTable(summary(played)));
     box.appendChild(el("h3", { class: "tipp-sub", text: plural(list.length, "Tippspiel", "Tippspiele") }));
   }
-  box.appendChild(el("div", { class: "tipp-list" }, list.map(tippCard)));
+
+  // Leiste: immer nur ein Tippspiel zeigen
+  const cur = list.filter(function (t) { return t.raw === selected; })[0] || list[list.length - 1];
+  // Beschriftung; bei gleichem Namen das Datum dazu, bei gleichem Namen und Datum eine Nummer
+  const labels = list.map(function (t) { return shortName(t.name); });
+  const withDate = list.map(function (t, i) {
+    const same = labels.filter(function (l) { return l === labels[i]; }).length > 1;
+    return labels[i] + (same && t.datum ? " · " + t.datum : "");
+  });
+  const finalLabels = withDate.map(function (l, i) {
+    const all = withDate.filter(function (x) { return x === l; }).length;
+    if (all < 2) return l;
+    return l + " (" + (withDate.slice(0, i + 1).filter(function (x) { return x === l; }).length) + ")";
+  });
+  const tabs = el("div", { class: "tabs", role: "group", "aria-label": "Tippspiel wählen" }, list.map(function (t, i) {
+    return el("button", {
+      type: "button", "aria-pressed": t === cur ? "true" : "false",
+      text: finalLabels[i],
+      onclick: function () { selected = t.raw; renderTippspiele(); },
+    });
+  }));
+  if (list.length > 1) box.appendChild(tabs);
+  box.appendChild(tippCard(cur));
 }
