@@ -40,7 +40,7 @@ nav a {
   border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
   font-size: 0.92rem;
 }
-nav a:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { nav a:hover { border-color: var(--accent); color: var(--accent); } }
 .theme-toggle {
   position: absolute; top: 28px; right: 0;
   width: 40px; height: 40px; padding: 0; display: grid; place-items: center;
@@ -257,7 +257,7 @@ td.diff { font-weight: 600; }
 
 /* Spielerkarte */
 .player-link { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
-.player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .player-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; } }
 #player-dialog, #compare-dialog, #match-dialog, #install-dialog, #season-dialog, #tipp-dialog, #world-dialog {
   width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
@@ -465,7 +465,9 @@ td.elo { font-variant-numeric: tabular-nums; }
 
 /* Vorschau für noch nicht gespielte Spiele */
 .match.preview { cursor: pointer; transition: border-color 0.15s; }
-.match.preview:hover, .match.preview:focus-visible { border-color: var(--accent); outline: none; }
+/* Hover nur mit Maus: am Handy bleibt :hover nach dem Antippen sonst hängen */
+.match.preview:focus-visible { border-color: var(--accent); outline: none; }
+@media (hover: hover) { .match.preview:hover { border-color: var(--accent); } }
 .match.preview .match-head span:last-child, .head-link { color: var(--accent); }
 .head-link { font: inherit; font-size: inherit; background: none; border: none; padding: 0; cursor: pointer; }
 .head-link:hover { text-decoration: underline; }
@@ -585,7 +587,8 @@ tr.r1 td.pts, tr.r2 td.pts, tr.r3 td.pts { font-weight: 700; }
 .mr-note { margin: 12px 0 0; }
 .mr-actions { margin-top: 14px; display: flex; justify-content: center; }
 .duel-row { cursor: pointer; }
-.duel-row:hover td, .duel-row:focus-visible td { background: var(--surface-2); }
+.duel-row:focus-visible td { background: var(--surface-2); }
+@media (hover: hover) { .duel-row:hover td { background: var(--surface-2); } }
 /* Live-Zähler */
 .match-foot { border-top: 1px solid var(--line); }
 .zaehlen { display: block; width: 100%; font: inherit; font-size: 0.78rem; font-weight: 600; color: var(--accent);

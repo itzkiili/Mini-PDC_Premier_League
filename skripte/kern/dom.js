@@ -28,6 +28,23 @@ export function svg(tag, attrs, children) {
 
 const backdropReady = new WeakSet();   // Fenster, die schon auf Klicks daneben hören
 
+// Letzte Eingabe: Finger/Maus oder Tastatur. Nach dem Schließen eines Fensters
+// gibt der Browser den Fokus an das angetippte Element zurück; manche Browser
+// (Safari, Android) zeigen dann dessen Fokus-Rahmen an, obwohl man nur getippt
+// hat. Deshalb: nach Finger/Maus den Fokus wieder wegnehmen, mit Tastatur lassen.
+let lastInput = "pointer";
+if (typeof document !== "undefined") {
+  document.addEventListener("pointerdown", function () { lastInput = "pointer"; }, true);
+  document.addEventListener("keydown", function (e) { if (e.key !== "Escape") lastInput = "key"; }, true);
+}
+function dropFocusAfterClose() {
+  if (lastInput !== "pointer") return;
+  setTimeout(function () {
+    const a = document.activeElement;
+    if (a && a !== document.body && !(a.closest && a.closest("dialog[open]")) && typeof a.blur === "function") a.blur();
+  }, 0);
+}
+
 // Liefert ein Fenster (dialog) und legt es an, falls es in index.html fehlt.
 // Ein Klick neben das Fenster schließt es.
 export function getDialog(id) {
@@ -43,6 +60,7 @@ export function getDialog(id) {
     dlg.addEventListener("click", function (e) {
       if (e.target === e.currentTarget) e.currentTarget.close();
     });
+    dlg.addEventListener("close", dropFocusAfterClose);
   }
   return dlg;
 }
