@@ -9,7 +9,7 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 ## Funktionen
 
 - **Gesamttabelle** mit Punkten, Spieltagsiegen, Legs, Differenz, Average, Checkout-Quote, Bonuspunkten und Tipp-Punkten, dazu Trendpfeilen (▲ ▼) seit dem letzten Spieltag
-- **Tippspiele** (z. B. zum Grand Slam): im Bearbeiten-Modus über „🔮 Tippspiele“ die Punkte jedes Spielers im Tippspiel eintragen. Wer die meisten hat, gewinnt (bei Gleichstand alle) und bekommt 5 Punkte in der Tabelle (Spalte „Tipp“, kein Bonus; pro Tippspiel änderbar) sowie den Erfolg „Tippkönig“ für 1, 3 und 5 gewonnene Tippspiele. Der Abschnitt **Tippspiele** unter dem Saisonfinale zeigt die Wertung der Saison und die Ergebnisse jedes Tippspiels
+- **Tippspiele** (z. B. zum Grand Slam): im Bearbeiten-Modus über „🔮 Tippspiele“ die Punkte jedes Spielers im Tippspiel eintragen. Wer die meisten hat, gewinnt (bei Gleichstand alle) und bekommt 5 Punkte in der Tabelle (Spalte „Tipp“, kein Bonus; pro Tippspiel änderbar) sowie den Erfolg „Tippkönig“ für 1, 3 und 5 gewonnene Tippspiele. Der Abschnitt **Tippspiele** unter dem Saisonfinale zeigt die Wertung der Saison und – über eine Leiste wie bei den Spieltagen – die Ergebnisse eines Tippspiels
 - **Spieltage** mit Turnierbaum (8 Spieler), Turnierbaum plus Verlierergruppe (7 Spieler) oder Dreiergruppen (5–6 Spieler) und der Platzierung des Tages
 - **Spielerkarte:** Klick auf einen Namen zeigt Statistiken, den Platzierungsverlauf, die Bilanz gegen jeden Gegner, Lieblings- und Angstgegner
 - **Direktvergleich** zweier Spieler: direkte Duelle, Saisonwerte als Balken, gemeinsamer Verlauf
