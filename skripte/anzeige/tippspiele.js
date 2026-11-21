@@ -1,6 +1,6 @@
 // =====================================================================
 //  Abschnitt „Tippspiele“ (unter dem Saisonfinale)
-//  Ab zwei gespielten Tippspielen oben die Wertung der Saison (gewonnene Tippspiele und
+//  Oben die Wertung der Saison (gewonnene Tippspiele und
 //  Tabellenpunkte), darunter eine Leiste wie bei den Spieltagen: es wird
 //  immer ein Tippspiel mit seinen Ergebnissen gezeigt (anfangs das neueste).
 // =====================================================================
@@ -108,14 +108,14 @@ export function renderTippspiele() {
     box.appendChild(el("div", { class: "card" }, [el("p", { class: "empty", text: "In dieser Saison gab es noch kein Tippspiel." })]));
     return;
   }
-  // Wertung erst ab zwei gespielten Tippspielen (mit Gewinner); leere, gerade
-  // angelegte zählen nicht, sonst stünde in der Wertung dasselbe wie in der Karte
+  // Wertung, sobald ein Tippspiel gespielt ist (mit Gewinner); leere, gerade
+  // angelegte zählen nicht mit
   const played = list.filter(function (t) { return t.sieger.length > 0; });
-  if (played.length > 1) {
+  if (played.length) {
     box.appendChild(el("h3", { class: "tipp-sub", text: "Wertung" }));
     box.appendChild(summaryTable(summary(played)));
+    box.appendChild(el("h3", { class: "tipp-sub", text: plural(list.length, "Tippspiel", "Tippspiele") }));
   }
-  if (list.length > 1) box.appendChild(el("h3", { class: "tipp-sub", text: plural(list.length, "Tippspiel", "Tippspiele") }));
 
   // Leiste: immer nur ein Tippspiel zeigen
   const cur = list.filter(function (t) { return t.raw === selected; })[0] || list[list.length - 1];
