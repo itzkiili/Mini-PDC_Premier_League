@@ -83,9 +83,9 @@ function tippCard(t) {
   ]);
 }
 
-let selected = null;   // ausgewähltes Tippspiel (Name + Datum), sonst das neueste
-
-function keyOf(t) { return t.name + "|" + t.datum; }
+// Ausgewähltes Tippspiel: der Eintrag selbst (aus LIGA.tippspiele), nicht sein
+// Name – mehrere Tippspiele dürfen gleich heißen. Ohne Auswahl: das neueste.
+let selected = null;
 
 // In der Leiste ohne vorangestelltes „Tippspiel“: „Tippspiel WM“ -> „WM“
 function shortName(name) { return name.replace(/^tippspiel\s*[:\-–]?\s*/i, "") || name; }
@@ -95,7 +95,8 @@ export function renderTippspiele() {
   if (!box) return;
   box.innerHTML = "";
   // Wie bei den Spieltagen: ältestes links, neuestes rechts
-  const list = tippList(state.liga).map(function (t, i) { return Object.assign(t, { idx: i }); })
+  const raw = Array.isArray(state.liga.tippspiele) ? state.liga.tippspiele : [];
+  const list = tippList(state.liga).map(function (t, i) { return Object.assign(t, { idx: i, raw: raw[i] }); })
     .sort(function (a, b) { return dateKey(a.datum) - dateKey(b.datum) || b.idx - a.idx; });
 
   if (state.editing) {
@@ -115,14 +116,23 @@ export function renderTippspiele() {
   }
 
   // Leiste: immer nur ein Tippspiel zeigen
-  const cur = list.filter(function (t) { return keyOf(t) === selected; })[0] || list[list.length - 1];
-  const names = list.map(function (t) { return t.name; });
-  const tabs = el("div", { class: "tabs", role: "group", "aria-label": "Tippspiel wählen" }, list.map(function (t) {
-    const twice = names.indexOf(t.name) !== names.lastIndexOf(t.name);   // gleicher Name: Datum dazu
+  const cur = list.filter(function (t) { return t.raw === selected; })[0] || list[list.length - 1];
+  // Beschriftung; bei gleichem Namen das Datum dazu, bei gleichem Namen und Datum eine Nummer
+  const labels = list.map(function (t) { return shortName(t.name); });
+  const withDate = list.map(function (t, i) {
+    const same = labels.filter(function (l) { return l === labels[i]; }).length > 1;
+    return labels[i] + (same && t.datum ? " · " + t.datum : "");
+  });
+  const finalLabels = withDate.map(function (l, i) {
+    const all = withDate.filter(function (x) { return x === l; }).length;
+    if (all < 2) return l;
+    return l + " (" + (withDate.slice(0, i + 1).filter(function (x) { return x === l; }).length) + ")";
+  });
+  const tabs = el("div", { class: "tabs", role: "group", "aria-label": "Tippspiel wählen" }, list.map(function (t, i) {
     return el("button", {
       type: "button", "aria-pressed": t === cur ? "true" : "false",
-      text: shortName(t.name) + (twice && t.datum ? " · " + t.datum : ""),
-      onclick: function () { selected = keyOf(t); renderTippspiele(); },
+      text: finalLabels[i],
+      onclick: function () { selected = t.raw; renderTippspiele(); },
     });
   }));
   if (list.length > 1) box.appendChild(tabs);
