@@ -14,7 +14,8 @@ export function renderWorldSection() {
     el("p", { class: "note", text: "Die ewige Elo-Rangliste über alle Saisons. Jeder beginnt einmal mit " + ELO_START + ", danach wird die Wertung von Saison zu Saison weitergeführt." }),
     el("button", { type: "button", class: "btn primary", text: "Weltrangliste öffnen", onclick: openWorldRanking }),
   ]);
-  const after = document.getElementById("saisonfinale") || document.getElementById("regeln");
+  // Reihenfolge wie in der Navigation: … Saisonfinale, Tippspiele, Weltrangliste
+  const after = document.getElementById("tippspiele") || document.getElementById("saisonfinale") || document.getElementById("regeln");
   after.parentNode.insertBefore(sec, after.nextSibling);
   // Aufruf mit …#weltrangliste: nach dem Anlegen dorthin springen
   if (location.hash === "#weltrangliste") sec.scrollIntoView();
