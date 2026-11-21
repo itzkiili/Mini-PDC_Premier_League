@@ -11,7 +11,8 @@ import { nameBtn } from "./spielerkarte.js";
 let achDayOpen = null;   // Spieltag, dessen Erfolgsmeldungen aufgeklappt sind
 
 function achWhen(g) {
-  return (g.current ? "" : shortSeason(g.season) + " · ") + "Spieltag " + g.nr + (g.datum ? " · " + g.datum : "");
+  const what = g.tipp ? g.tipp : "Spieltag " + g.nr;   // Tippspiel statt Spieltag
+  return (g.current ? "" : shortSeason(g.season) + " · ") + what + (g.datum ? " · " + g.datum : "");
 }
 
 // Abschnitt „Erfolge“ in der Spielerkarte

@@ -7,6 +7,7 @@ import { state, gh, render } from "../kern/zustand.js";
 import { saveToGitHub, downloadFile } from "./speichern.js";
 import { openSeasonEnd } from "./saisonwechsel.js";
 import { openRecorder } from "../zaehler/aufnahme.js";
+import { openTippspiele } from "./tippspiele.js";
 
 // Statuszeile setzen und die Leiste neu zeichnen
 export function setStatus(text, kind) {
@@ -33,6 +34,7 @@ export function renderEditBar() {
   if (gh.connected) {
     btns.push(el("button", { class: "btn", type: "button", text: "Saison abschließen", onclick: openSeasonEnd }));
   }
+  btns.push(el("button", { class: "btn", type: "button", text: "🔮 Tippspiele", title: "Punkte aus Tippspielen eintragen", onclick: openTippspiele }));
   btns.push(el("button", { class: "btn", type: "button", text: "🎙 Caller", title: "Eigene Ansagen für den Live-Zähler aufnehmen", onclick: openRecorder }));
   if (load("liga.token")) {
     btns.push(el("button", { class: "btn", type: "button", text: "Gerät abmelden", onclick: function () {

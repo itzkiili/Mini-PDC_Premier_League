@@ -6,7 +6,7 @@
 //  aktuell sind); nur ohne Verbindung wird die gespeicherte Fassung gezeigt.
 //  Nach Änderungen an der Dateiliste CACHE_VERSION hochzählen.
 // =====================================================================
-const CACHE_VERSION = "liga-v16";
+const CACHE_VERSION = "liga-v17";
 
 // Für die Nutzung ohne Internet vorab gespeichert.
 // Neue Datei in skripte/? Hier eintragen (werkzeuge/pruefen.mjs meldet fehlende).
@@ -43,6 +43,7 @@ const CORE = [
   "skripte/auswertung/modus.js",
   "skripte/auswertung/spieltag.js",
   "skripte/auswertung/statistik.js",
+  "skripte/auswertung/tippspiel.js",
   "skripte/auswertung/tabelle.js",
   "skripte/bearbeiten/anmeldung.js",
   "skripte/bearbeiten/datei.js",
@@ -54,6 +55,7 @@ const CORE = [
   "skripte/bearbeiten/speichern.js",
   "skripte/bearbeiten/verschluesselung.js",
   "skripte/bearbeiten/zusammenfuehren.js",
+  "skripte/bearbeiten/tippspiele.js",
   "skripte/kern/daten.js",
   "skripte/kern/dom.js",
   "skripte/kern/hilfen.js",

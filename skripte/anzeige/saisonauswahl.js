@@ -5,6 +5,7 @@
 //  daten/saisons.js         Liste der archivierten Saisons
 //  daten/archiv/<id>.js     eine abgeschlossene Saison (gleiches Format)
 // =====================================================================
+import { tippList } from "../auswertung/tippspiel.js";
 import { el } from "../kern/dom.js";
 import { clone } from "../kern/hilfen.js";
 import { parseDataFile } from "../kern/daten.js";
@@ -100,6 +101,7 @@ export async function loadArchivesForElo() {
     try {
       const parsed = await fetchSeason(s);
       if (parsed.tage) state.archives[s.id] = parsed.tage;
+      state.archiveTipps[s.id] = tippList(parsed.liga);
     } catch (e) {
       console.warn("Archiv „" + s.name + "“ konnte für die Elo-Wertung nicht geladen werden.", e);
     }

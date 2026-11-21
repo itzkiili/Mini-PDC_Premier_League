@@ -2,7 +2,7 @@
 //  Spielerkarte: Statistik, Platzierungsverlauf, Bilanz gegen jeden Gegner
 // =====================================================================
 import { el, svg, getDialog, openDialog, closeDialog, closeButton } from "../kern/dom.js";
-import { fmtAvg, pct } from "../kern/hilfen.js";
+import { fmtAvg, pct, plural } from "../kern/hilfen.js";
 import { state } from "../kern/zustand.js";
 import { playerStats } from "../auswertung/statistik.js";
 import { openCompare, compareSelect, allPlayerNames } from "./vergleich.js";
@@ -77,6 +77,7 @@ function statTiles(st) {
     tile("180er", String(st.n180), st.n180 ? "an " + st.days180 + (st.days180 === 1 ? " Spieltag" : " Spieltagen") : "noch keine"),
     tile("Höchstes Finish", st.hiCo ? String(st.hiCo) : "–", st.coTops ? st.coTops + "× Tagesbestwert" : (st.hiCo ? "Saison-Bestwert" : "noch nicht erfasst")),
     tile("Kürzestes Leg", st.bestLeg ? st.bestLeg + " Darts" : "–", st.legTops ? st.legTops + "× Tagesbestwert" : (st.bestLeg ? "Saison-Bestwert" : "noch nicht erfasst")),
+    st.tippGames ? tile("Tippspiele", (st.tipp > 0 ? "+" : "") + st.tipp + " P.", st.tippWins ? st.tippWins + "× gewonnen" : plural(st.tippGames, "Tippspiel", "Tippspiele")) : null,
   ]);
 }
 

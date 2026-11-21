@@ -4,6 +4,7 @@
 //  Das Format nicht ändern: alte Archive und das Bearbeiten von Hand
 //  verlassen sich darauf.
 // =====================================================================
+import { tippList } from "../auswertung/tippspiel.js";
 import { KEY_ORDER } from "../kern/konstanten.js";
 import { clean, toNum } from "../kern/hilfen.js";
 import { punkte, bonusCfg } from "../kern/zustand.js";
@@ -16,6 +17,10 @@ const HEADER = [
   "//",
   "//  Diese Datei kannst du auf der Seite über „Ergebnisse bearbeiten“",
   "//  ändern oder weiterhin hier von Hand bearbeiten.",
+  "//",
+  "//  Tippspiele (optional, bei LIGA): Punkte zählen in der Tabelle (Spalte „Tipp“),",
+  "//  nicht als Bonus; wer die meisten hat, gewinnt das Tippspiel",
+  "//  - tippspiele: [{ name: \"Tippspiel Grand Slam\", datum: \"22.11.2026\", punkte: { \"Kilian\": 3 } }]",
   "//",
   "//  Spielmodus (optional, bei LIGA für die Saison oder bei einem Spieltag):",
   "//  - modus: { start: 501, ein: \"single\", aus: \"double\", legs: 2, legsFinale: 3 }",
@@ -101,6 +106,16 @@ function ligaLines(liga, days) {
   if (ts.length) {
     out.push("  // Entscheidungsleg/Stechen bei Gleichstand in der Gesamttabelle (bessere zuerst)");
     out.push("  stechen: [" + ts.map(q).join(", ") + "],");
+  }
+  const tl = tippList(liga);
+  if (tl.length) {
+    out.push("  // Tippspiele: Punkte zählen in der Tabelle (Spalte „Tipp“), nicht als Bonus");
+    out.push("  tippspiele: [");
+    tl.forEach(function (t) {
+      const pts = Object.keys(t.punkte).map(function (n) { return JSON.stringify(n) + ": " + t.punkte[n]; }).join(", ");
+      out.push("    { name: " + q(t.name) + ", datum: " + q(t.datum) + ", punkte: { " + pts + " } },");
+    });
+    out.push("  ],");
   }
   const aktuellExists = liga.aktuell != null && days.some(function (d) { return Number(d.nr) === Number(liga.aktuell); });
   if (aktuellExists) {

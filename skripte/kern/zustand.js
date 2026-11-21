@@ -34,6 +34,7 @@ export const state = {
   // ---------- Saisons ----------
   seasons: clone(geladen.saisons),
   archives: {},                  // geladene Spieltage archivierter Saisons, nach id
+  archiveTipps: {},              // Tippspiele archivierter Saisons, nach id
   archiveView: null,             // { id, name }, solange ein Archiv angezeigt wird
   currentSeason: null,           // laufende Saison, solange ein Archiv angezeigt wird
   eloChain: { bySeason: {}, current: null },   // Elo-Stand zu Beginn jeder Saison

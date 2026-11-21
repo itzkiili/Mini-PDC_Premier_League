@@ -5,6 +5,7 @@ import { el } from "../kern/dom.js";
 import { fmtAvg, pct } from "../kern/hilfen.js";
 import { state } from "../kern/zustand.js";
 import { computeStandings } from "../auswertung/tabelle.js";
+import { tippList } from "../auswertung/tippspiel.js";
 import { nameBtn } from "./spielerkarte.js";
 import { tableStechenEl } from "../bearbeiten/eingabe.js";
 
@@ -49,6 +50,7 @@ export function renderStandings(standings, prevRank) {
     box.appendChild(el("div", { class: "empty", text: "Noch keine Ergebnisse eingetragen." }));
     return;
   }
+  const hasTipp = tippList(state.liga).length > 0;   // Spalte „Tipp“ nur, wenn es Tippspiele gibt
   const thead = el("thead", null, [el("tr", null, [
     el("th", { text: "Pl." }),
     el("th", { class: "trend", text: "", title: "Veränderung seit dem letzten Spieltag" }),
@@ -61,6 +63,7 @@ export function renderStandings(standings, prevRank) {
     el("th", { class: "num opt", text: "Ø", title: "3-Dart-Average (Mittelwert der Spiele)" }),
     el("th", { class: "num opt", text: "CO %", title: "Checkout-Quote" }),
     el("th", { class: "num opt", text: "Bonus", title: "Bonuspunkte (in den Punkten enthalten)" }),
+    hasTipp ? el("th", { class: "num opt", text: "Tipp", title: "Punkte aus Tippspielen (in den Punkten enthalten)" }) : null,
     el("th", { class: "num", text: "Punkte" }),
   ])]);
   const tbody = el("tbody");
@@ -79,6 +82,7 @@ export function renderStandings(standings, prevRank) {
       numCell("num opt", r.avgN, r.avgN ? fmtAvg(r.avgSum / r.avgN) : ""),
       numCell("num opt", doubles, pct(r.coHit, doubles)),
       numCell("num opt", r.bonus, "+" + r.bonus),
+      hasTipp ? numCell("num opt", r.tipp, (r.tipp > 0 ? "+" : "") + r.tipp) : null,
       el("td", { class: "num pts", text: String(r.points) }),
     ]));
   });

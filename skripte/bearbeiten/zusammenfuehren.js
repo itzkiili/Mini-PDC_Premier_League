@@ -64,7 +64,11 @@ export function unflattenData(flat) {
 // Verständlicher Name eines Eintrags für die Rückfrage bei Konflikten
 export function conflictLabel(key) {
   const parts = key.split("|");
-  if (parts[0] === "liga") return parts[1] === "stechen" ? "Entscheidungsleg der Gesamttabelle" : "Liga-Einstellung „" + parts[1] + "“";
+  if (parts[0] === "liga") {
+    if (parts[1] === "stechen") return "Entscheidungsleg der Gesamttabelle";
+    if (parts[1] === "tippspiele") return "Tippspiele";
+    return "Liga-Einstellung „" + parts[1] + "“";
+  }
   const names = { da: "Spieltag angelegt/gelöscht", datum: "Datum", spieler: "Spielerliste", sieger: "Sieger",
     ergebnisse: "Legs", statistik: "Average/Doppel", verlauf: "Legverlauf", bonus: "Bonuswerte", stechen: "Stechen" };
   let t = "Spieltag " + parts[1] + " · " + (names[parts[2]] || parts[2]);
