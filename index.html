@@ -33,7 +33,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
 <div class="wrap">
@@ -45,6 +45,7 @@
       <a href="#spieltage">Spieltage</a>
       <a href="#regeln">Modus und Punkte</a>
       <a href="#saisonfinale">Saisonfinale</a>
+      <a href="#tippspiele">Tippspiele</a>
       <a href="#weltrangliste">Weltrangliste</a>
     </nav>
     <div id="warnings"></div>
@@ -67,6 +68,7 @@
     <div class="card rules">
       <p><b>Spieltag:</b> Turnier mit bis zu 8 Spielern, jeder Platz wird ausgespielt. Die Sieger der Viertelfinals spielen um Platz 1–4, die Verlierer um Platz 5–8. Bei 5–6 Spielern gibt es drei Viertelfinals, danach zwei Dreiergruppen (jeder gegen jeden, bei Gleichstand Stechen).</p>
       <p><b>Punkte:</b> nach Platzierung (siehe unten), wer nicht dabei ist, bekommt 0. Dazu je +1 Bonus für das höchste Checkout, das kürzeste Leg und jede 180.</p>
+      <p><b>Tippspiele:</b> der Gewinner eines Tippspiels (z. B. zum Grand Slam) bekommt 5 Punkte für die Tabelle, bei Gleichstand jeder Gewinner. Sie zählen nicht als Bonus.</p>
       <p><b>Spielformat:</b> <span id="spielformat"></span></p>
       <p><b>Gleichstand in der Tabelle:</b> direkter Vergleich → Legdifferenz → Spieltagsiege → Stechen.</p>
       <p><b>Elo:</b> zeigt die Spielstärke über alle Saisons und zählt nicht für die Tabelle.</p>
@@ -79,6 +81,12 @@
     <h2>Saisonfinale</h2>
     <p class="note" id="final-note"></p>
     <div class="card" id="final-bracket"></div>
+  </section>
+
+  <section id="tippspiele">
+    <h2>Tippspiele</h2>
+    <p class="note">Der Gewinner jedes Tippspiels bekommt Punkte für die Gesamttabelle (Spalte „Tipp“), die Tipp-Punkte selbst zählen nicht.</p>
+    <div id="tipp-view"></div>
   </section>
 
   <div id="editbar" class="editbar" hidden></div>

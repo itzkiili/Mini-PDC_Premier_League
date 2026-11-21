@@ -74,7 +74,7 @@ td.num, th.num { text-align: right; }
 td.rank { width: 3rem; color: var(--muted); font-weight: 600; }
 td.pts { font-weight: 700; font-size: 1.05rem; }
 tr.top1 td.rank { color: var(--gold); }
-td.dash { color: var(--muted); }
+td.dash, td.pts.dash { color: var(--muted); }
 .empty { padding: 20px; color: var(--muted); }
 
 /* Spieltag-Auswahl */
@@ -480,6 +480,23 @@ td.elo { font-variant-numeric: tabular-nums; }
 }
 .archive-banner .linkbtn { color: var(--accent); font-weight: 600; }
 #season-dialog, #tipp-dialog { width: min(560px, calc(100vw - 24px)); }
+
+/* Tippspiele (Abschnitt unter dem Saisonfinale) */
+#tippspiele > .note { margin: -4px 0 14px; }
+.tipp-sub { margin: 18px 0 10px; }
+.tipp-edit { margin-bottom: 12px; }
+.tipp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+@media (max-width: 400px) { .tipp-list { grid-template-columns: 1fr; } }
+.tipp-result { padding: 14px 16px; }
+.tipp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.tipp-head h3 { margin: 0; color: var(--text); font-size: 1.1rem; }
+.tipp-head .sub { margin: 2px 0 0; font-size: 0.85rem; }
+.tipp-winner { padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.9rem; white-space: nowrap; }
+.tipp-winner.none { background: var(--surface-2); color: var(--muted); font-weight: 400; }
+table.tipp-scores td { padding: 7px 8px; }
+table.tipp-scores tr:last-child td { border-bottom: none; }
+table.tipp-scores tr.win td { font-weight: 700; }
+table.tipp-scores tr.win td.num { color: var(--accent); }
 
 /* Tippspiele (Bearbeiten) */
 .tipp-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 14px 0; }
