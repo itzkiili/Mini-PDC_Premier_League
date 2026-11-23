@@ -15,6 +15,7 @@ const SPIELER = {
   },
   "Philipp": {
     spitzname: "Flying Phil",
+    bild: "daten/bilder/philipp.png",
     song: "fly away  – Lenny Kravitz",
     songLink: "https://open.spotify.com/intl-de/track/1OxcIUqVmVYxT6427tbhDW?si=fd7e27d1fcf440bf",
   },
