@@ -62,7 +62,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 6,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-23T20:40:42.403Z",
+  stand: "2026-11-23T21:11:21.671Z",
 };
 
 const SPIELTAGE = [
@@ -333,6 +333,7 @@ const SPIELTAGE = [
       PR2: "Marius",
       HF1: "Kilian",
       HF2: "Andres",
+      P7: "Tom",
     },
     ergebnisse: {
       VF1: { "Leon": 2, "Johannes": 0 },
@@ -343,15 +344,17 @@ const SPIELTAGE = [
       PR2: { "Tom": 0, "Marius": 2 },
       HF1: { "Leon": 0, "Kilian": 2 },
       HF2: { "Ben": 0, "Andres": 2 },
+      P7: { "Philipp": 1, "Tom": 2 },
     },
     bonus: {
       "Leon": { co: 26, leg: 35 },
       "Kilian": { co: 100, leg: 29 },
       "Ben": { co: 40, leg: 43 },
-      "Tom": { co: 4, leg: 70 },
+      "Tom": { co: 4, leg: 56 },
       "Andres": { co: 32, leg: 37 },
       "Marius": { co: 20, leg: 37 },
       "Johannes": { co: 26, leg: 30 },
+      "Philipp": { co: 18, leg: 40 },
     },
     statistik: {
       VF1: { "Leon": { avg: 38.05, miss: 9, t100: 2, t140: 0, co: 26, leg: 35 }, "Johannes": { avg: 36.27, miss: 8, t100: 1, t140: 0 } },
@@ -362,6 +365,7 @@ const SPIELTAGE = [
       PR2: { "Tom": { avg: 31.26, miss: 5, t100: 0, t140: 0 }, "Marius": { avg: 37.11, miss: 13, t100: 0, t140: 0, co: 16, leg: 40 } },
       HF1: { "Leon": { avg: 39, miss: 0, t100: 0, t140: 0 }, "Kilian": { avg: 50.95, miss: 0, t100: 1, t140: 1, co: 100, leg: 29 } },
       HF2: { "Ben": { avg: 27.72, miss: 32, t100: 1, t140: 0, inTry: 5, inHit: 2 }, "Andres": { avg: 27.83, miss: 19, t100: 2, t140: 0, co: 20, leg: 50, inTry: 3, inHit: 2 } },
+      P7: { "Philipp": { avg: 25.48, miss: 33, t100: 0, t140: 0, co: 18, leg: 40, inTry: 29, inHit: 3 }, "Tom": { avg: 24.54, miss: 29, t100: 1, t140: 0, co: 4, leg: 56, inTry: 19, inHit: 3 } },
     },
     verlauf: {
       VF1: [["Leon", 35, 26], ["Leon", 44, 12]],
@@ -372,6 +376,7 @@ const SPIELTAGE = [
       PR2: [["Marius", 41, 16], ["Marius", 40, 8]],
       HF1: [["Kilian", 29, 55], ["Kilian", 30, 100]],
       HF2: [["Andres", 58, 2], ["Andres", 50, 20]],
+      P7: [["Philipp", 40, 18], ["Tom", 56, 4], ["Tom", 78, 4]],
     },
   },
 ];
