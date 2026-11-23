@@ -11,6 +11,8 @@ import { tippList, tippPoints } from "./tippspiel.js";
 export function newAcc(o) {
   o.avgSum = 0; o.avgN = 0; o.bestAvg = null; o.coHit = 0; o.coMiss = 0;
   o.f9Sum = 0; o.f9N = 0; o.t100 = 0; o.t140 = 0; o.tN = 0;
+  o.inTry = 0; o.inHit = 0;   // Double In
+  o.n171 = 0;                  // 171–179 (zählen in der Statistik zu den 180ern)
   return o;
 }
 
@@ -32,6 +34,10 @@ export function addMatchStats(acc, mt, name, standard) {
   const f9 = special ? null : toNum(ps.f9), t100 = toNum(ps.t100), t140 = toNum(ps.t140);
   if (f9 !== null) { acc.f9Sum += f9; acc.f9N++; }
   if (t100 !== null || t140 !== null) { acc.t100 += t100 || 0; acc.t140 += t140 || 0; acc.tN++; }
+  // Double In (zählt auch an Spezial-Spieltagen, dafür gibt es sie ja)
+  const inTry = toNum(ps.inTry), inHit = toNum(ps.inHit);
+  if (inTry) { acc.inTry += inTry; acc.inHit += inHit || 0; }
+  acc.n171 += toNum(ps.n171) || 0;
 }
 
 // ---------------------------------------------------------------------

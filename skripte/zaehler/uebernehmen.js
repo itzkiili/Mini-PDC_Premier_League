@@ -4,7 +4,9 @@
 //  Immer:              Legs, Sieger, Average (wird beim Spiel angezeigt),
 //                      Missed Doubles (Checkout-Quote), 100+ und 140+ (t100, t140),
 //                      High Finish, kürzestes Leg und 180er (Bonuswerte des Tages
-//                      und je Spiel in statistik), Legverlauf (verlauf)
+//                      und je Spiel in statistik), Legverlauf (verlauf),
+//                      171–179 als n171 (Statistik wie 180, kein Bonus),
+//                      bei Double In: inTry, inHit (siehe spiel.js)
 //  Nur im Ligamodus    First-9-Average (f9)
 //  (501 Double Out):   (bei Spezial-Modi nicht vergleichbar)
 //  Average und kürzestes Leg von Spezial-Spieltagen zählen nicht für die
@@ -49,6 +51,9 @@ export function applyToDay(day, matchId, m) {
     if (p.hiCo !== null) st.co = p.hiCo;
     if (p.bestLeg !== null) st.leg = p.bestLeg;
     if (p.n180) st.n180 = p.n180;
+    if (p.n171) st.n171 = p.n171;   // 171–179: Statistik wie 180, aber kein Bonus
+    // Double In: Darts aufs Doppel (inTry), reingekommen (inHit)
+    if (m.format.ein === "double" && p.inTry) { st.inTry = p.inTry; st.inHit = p.inHit; }
     if (Object.keys(st).length) stats[p.name] = st;
   });
   if (Object.keys(stats).length) {
@@ -93,6 +98,8 @@ export function resultText(label, m) {
     if (p.hiCo !== null) parts.push("High Finish " + p.hiCo);
     if (p.bestLeg !== null) parts.push("kürzestes Leg " + p.bestLeg);
     if (p.n180) parts.push(p.n180 + "× 180");
+    if (p.n171) parts.push(p.n171 + "× 171+");
+    if (m.format.ein === "double" && p.inTry) parts.push("Double In " + p.inHit + "/" + p.inTry);
     lines.push(p.name + ": " + (parts.join(", ") || "–"));
   });
   if (!s.done) lines.push("(Spiel noch nicht beendet)");

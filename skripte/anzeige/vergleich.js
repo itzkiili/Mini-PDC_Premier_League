@@ -167,7 +167,7 @@ function seasonBars(a, b, sa, sb) {
     ["Checkout", quote(sa.coHit, sa.coMiss), quote(sb.coHit, sb.coMiss), percent, true],
     ["100+", sa.tN ? sa.t100 : null, sb.tN ? sb.t100 : null, String, true],
     ["140+", sa.tN ? sa.t140 : null, sb.tN ? sb.t140 : null, String, true],
-    ["180er", sa.n180, sb.n180, String, true],
+    ["180er", sa.n180 + sa.n171, sb.n180 + sb.n171, String, true],   // inkl. 171–179
     ["High Finish", sa.hiCo, sb.hiCo, String, true],
     ["Kürzestes Leg", sa.bestLeg, sb.bestLeg, function (v) { return v + " D."; }, false],
   ];
