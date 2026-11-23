@@ -20,6 +20,9 @@ import {
   callerSettings, saveCallerSettings, speechAvailable, callerAvailable, callsAtStart, callsAfterVisit, speak, silence, initCaller, warmUp,
 } from "./caller.js";
 
+import { syncLive, liveSendOn, setLiveSend, liveStatus, onLiveStatus } from "../live/sender.js";
+import { liveEnabled } from "../live/verbindung.js";
+
 const STORE_KEY = "liga.zaehler";
 const QUICK = [0, 26, 41, 45, 60, 81, 85, 100, 140, 180];
 
@@ -28,7 +31,8 @@ let cur = null;
 // Zustand des Bildschirms (wird nicht gespeichert)
 const ui = { input: "", error: "", ask: null, editFormat: false, menu: false, msg: null };
 
-function saveCur() { store(STORE_KEY, cur ? JSON.stringify(cur) : null); }
+// Speichern und (wenn eingeschaltet) live übertragen
+function saveCur() { store(STORE_KEY, cur ? JSON.stringify(cur) : null); syncLive(cur); }
 function loadCur() {
   try { return JSON.parse(load(STORE_KEY) || "null"); } catch (e) { return null; }
 }
@@ -41,7 +45,7 @@ function sameFormat(a, b) {
   return a.start === b.start && a.ein === b.ein && a.aus === b.aus && a.legsToWin === b.legsToWin;
 }
 
-function formatText(f) {
+export function formatText(f) {
   return f.start + (f.ein === "double" ? " Double In" : "") + " " + AUS_NAMEN[f.aus] + " · " + bestOf(f.legsToWin);
 }
 
@@ -56,6 +60,11 @@ export function scoreButton(day, match) {
   return el("button", { type: "button", class: "zaehlen", text: "▶ Live zählen", title: "Live-Zähler für dieses Spiel öffnen",
     onclick: function (e) { e.stopPropagation(); openScorer(day, match); } });
 }
+
+onLiveStatus(function () {
+  const dlg = document.getElementById("zaehler-dialog");
+  if (dlg && dlg.open && cur && !ui.ask && !ui.input) draw();
+});
 
 export function openScorer(day, match) {
   const key = { liga: state.liga.name || "", nr: day.nr, id: match.id, players: [match.a.name, match.b.name] };
@@ -115,6 +124,7 @@ function topBar(s) {
       el("span", { class: "zl-title", text: matchLabel(cur) }),
       el("span", { class: "zl-format", text: formatText(f) }),
     ]),
+    liveBadge(),
     speakerButton(),
     btn("⋯", "zl-icon", function () { ui.menu = !ui.menu; draw(); }, { "aria-label": "Mehr", "aria-expanded": ui.menu ? "true" : "false" }),
   ]);
@@ -130,11 +140,28 @@ function topBar(s) {
       draw();
     }, { title: "Sprache der Ansagen wechseln" }));
   }
+  if (liveEnabled()) {
+    items.push(btn("Live-Übertragung: " + (liveSendOn() ? "an" : "aus"), "", function () {
+      setLiveSend(!liveSendOn());
+      ui.menu = false;
+      saveCur();
+      draw();
+    }, { title: "Zuschauer sehen das Spiel live auf ihren Handys" }));
+  }
   if (s) {
     items.push(btn("Letzte Aufnahme rückgängig", "", function () { ui.menu = false; undoLast(); }, { disabled: cur.match.events.length ? null : "disabled" }));
     items.push(btn("Spiel verwerfen", "danger", function () { ui.menu = false; discard(); }));
   }
   return el("div", null, [bar, el("div", { class: "zl-menu" }, items)]);
+}
+
+// Live-Übertragung: ● LIVE (angekommen), ● (wird gesendet), ⚠ (keine Verbindung)
+function liveBadge() {
+  if (!liveEnabled() || !liveSendOn() || !cur || !cur.match) return null;
+  const st = liveStatus();
+  const text = st === "fehler" ? "⚠ Live" : "● LIVE";
+  const title = st === "fehler" ? "Live-Übertragung: keine Verbindung (es wird weiter versucht)" : st === "ok" ? "Wird live übertragen" : "Verbinde …";
+  return el("span", { class: "zl-live " + st, text: text, title: title, "aria-label": title });
 }
 
 // Lautsprecher: Ansagen an/aus (pro Gerät gespeichert)
@@ -206,7 +233,7 @@ function setupView() {
 function playView(s) {
   const m = cur.match;
   const sum = summary(m);
-  const board = el("div", { class: "zl-board" }, [0, 1].map(function (i) { return playerPanel(s, sum, i); }));
+  const board = el("div", { class: "zl-board" }, [0, 1].map(function (i) { return playerPanel(m, s, sum, i, true); }));
   const kids = [board];
   const legStart = m.events.length && s.rest[0] === m.format.start && s.rest[1] === m.format.start;
   if (legStart && s.lastLeg) {
@@ -219,9 +246,9 @@ function playView(s) {
   return el("div", { class: "zl-play" }, kids);
 }
 
-function playerPanel(s, sum, i) {
-  const m = cur.match;
-  const active = s.turn === i;
+// Anzeige eines Spielers (auch für die Live-Ansicht); markTurn = wer am Wurf ist hervorheben
+export function playerPanel(m, s, sum, i, markTurn) {
+  const active = markTurn && s.turn === i;
   const rest = s.rest[i];
   const weg = isFinish(rest, m.format.aus) ? checkoutWeg(rest, m.format.aus) : null;
   const st = s.stats[i];

@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "live": {
+      ".read": true,
+      "$spiel": {
+        ".write": true,
+        ".validate": "$spiel.matches(/^s[0-9]{1,3}-[A-Za-z0-9]{1,8}$/) && newData.hasChildren(['nr', 'id', 'players', 'format', 'starter', 'updated'])",
+        "liga": { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "nr": { ".validate": "newData.isNumber()" },
+        "id": { ".validate": "newData.isString() && newData.val().length <= 8" },
+        "starter": { ".validate": "newData.isNumber()" },
+        "updated": { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+        "players": {
+          "$i": { ".validate": "$i.matches(/^[01]$/) && newData.isString() && newData.val().length <= 40" }
+        },
+        "format": {
+          "start": { ".validate": "newData.isNumber()" },
+          "ein": { ".validate": "newData.isString()" },
+          "aus": { ".validate": "newData.isString()" },
+          "legsToWin": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        },
+        "events": {
+          "$i": {
+            ".validate": "$i.matches(/^[0-9]{1,3}$/) && newData.hasChildren(['score', 'darts'])",
+            "score": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 180" },
+            "bust": { ".validate": "newData.isBoolean()" },
+            "darts": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 3" },
+            "doubles": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3" },
+            "inDarts": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

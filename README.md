@@ -13,6 +13,7 @@ Website für unsere Dartliga: Gesamttabelle, alle Spieltage mit Turnierbaum, Spi
 - **Spieltage** mit Turnierbaum (8 Spieler), Turnierbaum plus Verlierergruppe (7 Spieler) oder Dreiergruppen (5–6 Spieler) und der Platzierung des Tages
 - **Spielerkarte:** Klick auf einen Namen zeigt Statistiken, den Platzierungsverlauf, die Bilanz gegen jeden Gegner, Lieblings- und Angstgegner
 - **Direktvergleich** zweier Spieler: direkte Duelle, Saisonwerte als Balken, gemeinsamer Verlauf
+- **Live Scoring:** Während jemand mit dem Live-Zähler zählt, sehen alle anderen das Spiel live – über die Leiste „● LIVE“ über den Spieltagen oder am Spiel im Turnierbaum. Die Live-Ansicht zeigt Rest, Legs, Average, letzte Aufnahmen und Checkout-Weg, auf Wunsch mit Caller-Ansagen und als Vollbild-Tafel (Tablet/Fernseher). Übertragen wird über Firebase (siehe unten)
 - **Spielbericht:** Klick auf ein gespieltes Spiel (im Turnierbaum oder bei den direkten Duellen) zeigt dessen Statistik im Nachhinein – Average, First 9, Checkout-Quote, 100+/140+ und bei Spielen aus dem Live-Zähler auch High Finish, kürzestes Leg, 180er und den Legverlauf
 - **Saisonfinale:** vorläufiges Bracket der Top 8 nach aktuellem Tabellenstand
 - **Bearbeiten-Modus:** Spieler, Legs, Average, Missed Doubles und Bonuswerte direkt auf der Seite eintragen, mit Passwort geschützt und automatisch auf GitHub gespeichert
@@ -192,3 +193,12 @@ skripte/
 - Alles, was sich ändert (Daten, Bearbeiten-Modus, Saison), steht in `state` in `skripte/kern/zustand.js`. Nach einer Änderung `render()` aufrufen, im Bearbeiten-Modus `changed()`.
 - **Neue Datei in `skripte/`?** In `app/service-worker.js` in die Liste `CORE` eintragen und `CACHE_VERSION` hochzählen. `node werkzeuge/pruefen.mjs` meldet vergessene Einträge, falsche Importe und Tippfehler.
 - Änderungen am Zähler: `node werkzeuge/zaehler-test.mjs` prüft Checkouts, Bust, Legs, Statistik und das Übernehmen.
+
+## Live Scoring (Firebase)
+
+Der Zähler schreibt nach jeder Aufnahme das laufende Spiel (nur die Liste der Aufnahmen) in die **Firebase Realtime Database**; alle Zuschauer hören über die Web-Schnittstelle mit (Server-Sent Events) und rechnen den Stand selbst aus. Es wird keine Firebase-Bibliothek geladen.
+
+- Adresse der Datenbank: `skripte/live/konfig.js` (`LIVE_DB`, leer = Live aus)
+- Sicherheitsregeln: `werkzeuge/firebase-regeln.json` – in der Firebase-Konsole unter *Realtime Database → Regeln* einfügen und veröffentlichen. Lesen darf jeder, schreiben nur unter `live/` im Format des Zählers.
+- Nach dem Übernehmen oder Verwerfen wird das Spiel gelöscht; alte Einträge (älter als 3 Stunden, beendete nach 15 Minuten) werden nicht mehr angezeigt.
+- Im Zähler-Menü lässt sich die Übertragung pro Gerät ausschalten. Die offiziellen Ergebnisse laufen weiter über GitHub.
