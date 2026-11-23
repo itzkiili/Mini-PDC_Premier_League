@@ -34,8 +34,11 @@
 //  - statistik: optional je Spiel und Spieler Average (avg) und Missed
 //        Doubles (miss), z. B. VF1: { "Anna": { avg: 54.3, miss: 4 } }
 //        vom Live-Zähler zusätzlich: First-9-Average (f9), Anzahl der
-//        Aufnahmen 100–139 (t100) und 140–179 (t140), High Finish (co),
-//        kürzestes Leg in Darts (leg) und Anzahl 180er (n180) in diesem Spiel
+//        Aufnahmen 100–139 (t100) und 140–170 (t140), High Finish (co),
+//        kürzestes Leg in Darts (leg), Anzahl 180er (n180) und 171–179 (n171,
+//        zählen in der Statistik als 180er, geben aber keinen Bonus) in diesem Spiel;
+//        bei Double In: Darts aufs Doppel zum Reinkommen (inTry), wie oft
+//        reingekommen (inHit)
 //        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)
 //  - verlauf: optional je Spiel die Legs der Reihe nach (vom Live-Zähler):
 //        [Sieger, Darts, Checkout], z. B. VF1: [["Anna", 15, 40], ["Ben", 18, 32]]
@@ -56,11 +59,10 @@ const LIGA = {
   tippspiele: [
     { name: "Tippspiel Grand Slam", datum: "16.11.2026", tipps: { "Philipp": 16, "Kilian": 8, "Johannes": 14, "Leon": 14, "Ben": 12, "Andres": 12, "Tom": 12 }, punkte: 5 },
   ],
-
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 6,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-23T20:19:37.124Z",
+  stand: "2026-11-23T20:40:42.403Z",
 };
 
 const SPIELTAGE = [
@@ -330,6 +332,7 @@ const SPIELTAGE = [
       PR1: "Johannes",
       PR2: "Marius",
       HF1: "Kilian",
+      HF2: "Andres",
     },
     ergebnisse: {
       VF1: { "Leon": 2, "Johannes": 0 },
@@ -339,6 +342,7 @@ const SPIELTAGE = [
       PR1: { "Johannes": 2, "Philipp": 0 },
       PR2: { "Tom": 0, "Marius": 2 },
       HF1: { "Leon": 0, "Kilian": 2 },
+      HF2: { "Ben": 0, "Andres": 2 },
     },
     bonus: {
       "Leon": { co: 26, leg: 35 },
@@ -357,6 +361,7 @@ const SPIELTAGE = [
       PR1: { "Johannes": { avg: 34.16, miss: 11, t100: 1, t140: 0, co: 26, leg: 30 }, "Philipp": { avg: 28.62, miss: 4, t100: 0, t140: 0 } },
       PR2: { "Tom": { avg: 31.26, miss: 5, t100: 0, t140: 0 }, "Marius": { avg: 37.11, miss: 13, t100: 0, t140: 0, co: 16, leg: 40 } },
       HF1: { "Leon": { avg: 39, miss: 0, t100: 0, t140: 0 }, "Kilian": { avg: 50.95, miss: 0, t100: 1, t140: 1, co: 100, leg: 29 } },
+      HF2: { "Ben": { avg: 27.72, miss: 32, t100: 1, t140: 0, inTry: 5, inHit: 2 }, "Andres": { avg: 27.83, miss: 19, t100: 2, t140: 0, co: 20, leg: 50, inTry: 3, inHit: 2 } },
     },
     verlauf: {
       VF1: [["Leon", 35, 26], ["Leon", 44, 12]],
@@ -366,6 +371,7 @@ const SPIELTAGE = [
       PR1: [["Johannes", 58, 4], ["Johannes", 30, 26]],
       PR2: [["Marius", 41, 16], ["Marius", 40, 8]],
       HF1: [["Kilian", 29, 55], ["Kilian", 30, 100]],
+      HF2: [["Andres", 58, 2], ["Andres", 50, 20]],
     },
   },
 ];
