@@ -29,13 +29,12 @@ const ROWS = [
   ["Kürzestes Leg", function (p) { return toNum(p.ps.leg); }, function (v) { return v + " Darts"; }, false],
   ["100+", function (p) { return toNum(p.ps.t100); }, String, true],
   ["140+", function (p) { return toNum(p.ps.t140); }, String, true],
-  ["180er", function (p) { return toNum(p.ps.n180); }, String, true],
+  ["180er", function (p) {   // inkl. 171–179
+    const n = toNum(p.ps.n180), k = toNum(p.ps.n171); return n === null && k === null ? null : (n || 0) + (k || 0);
+  }, function (v, p) { return v + (toNum(p.ps.n171) ? " (" + toNum(p.ps.n171) + "× 171+)" : ""); }, true],
   ["Double In", function (p) {
     const t = toNum(p.ps.inTry); return t ? (toNum(p.ps.inHit) || 0) / t : null;
   }, function (v, p) { return Math.round(v * 100) + " % (" + (toNum(p.ps.inHit) || 0) + "/" + toNum(p.ps.inTry) + ")"; }, true],
-  ["Darts bis rein", function (p) {
-    const d = toNum(p.ps.inDarts), h = toNum(p.ps.inHit); return d !== null && h ? d / h : null;
-  }, function (v) { return "Ø " + v.toFixed(1).replace(".", ","); }, false],
 ];
 
 // Welche Seite ist besser? -1 = keine

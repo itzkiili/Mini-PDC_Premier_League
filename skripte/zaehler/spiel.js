@@ -52,14 +52,16 @@ export function isStandard(format) {
 }
 
 function emptyStats() {
-  return { points: 0, darts: 0, n180: 0, t100: 0, t140: 0, f9Points: 0, f9Darts: 0,
+  return { points: 0, darts: 0, n180: 0, n171: 0, t100: 0, t140: 0, f9Points: 0, f9Darts: 0,
     hiCo: null, bestLeg: null, doubles: 0, checkouts: 0, visits: [],
-    inTry: 0, inHit: 0, inDarts: 0 };   // Double In: Darts aufs Doppel, reingekommen, Darts bis rein (Summe)
+    inTry: 0, inHit: 0 };   // Double In: Darts aufs Doppel, reingekommen
 }
 
-// Aufnahmen zählen: 100+ = 100–139, 140+ = 140–179, 180 extra (wie im Fernsehen)
+// Aufnahmen zählen: 100+ = 100–139, 140+ = 140–170, 171–179 zählen in der Statistik
+// zu den 180ern (eigene Zahl n171, damit es Bonuspunkte nur für echte 180 gibt)
 export function visitClass(score) {
   if (score === 180) return "t180";
+  if (score >= 171) return "t171";
   if (score >= 140) return "t140";
   if (score >= 100) return "t100";
   return null;
@@ -91,11 +93,11 @@ export function replay(m) {
       st.f9Darts += Math.min(e.darts, 9 - before);
       if (!e.bust) st.f9Points += e.score;
     }
-    // Double In: inDarts = Darts aufs Doppel (ohne Treffer) bzw. der Dart, mit dem
-    // man reinkam; fehlt bei Aufnahmen ohne Rückfrage (älter oder schon drin)
+    // Double In: inDarts = Darts aufs Doppel (ohne Treffer 3) bzw. der Dart, mit
+    // dem man reinkam; fehlt bei Aufnahmen, die schon drin waren
     if (f.ein === "double" && s.rest[p] === f.start && typeof e.inDarts === "number") {
       st.inTry += e.inDarts;
-      if (!e.bust && e.score > 0) { st.inHit++; st.inDarts += before + e.inDarts; }
+      if (!e.bust && e.score > 0) st.inHit++;
     }
     st.darts += e.darts;
     s.legDarts[p] += e.darts;
@@ -105,6 +107,7 @@ export function replay(m) {
       s.rest[p] -= e.score;
       const cls = visitClass(e.score);
       if (cls === "t180") st.n180++;
+      else if (cls === "t171") st.n171++;
       else if (cls) st[cls]++;
     }
     st.visits.push(e.bust ? "Bust" : String(e.score));
@@ -163,8 +166,8 @@ export function checkoutDoubles(c, darts) {
 }
 
 // Aufnahme speichern; darts = Anzahl Darts beim Checkout, sonst 3
-// inDarts (nur Double In, solange man nicht drin ist): Darts aufs Doppel ohne
-// Treffer, bzw. mit dem wievielten Dart man reinkam
+// inDarts (nur Double In, solange man nicht drin ist): 3 ohne Treffer,
+// sonst mit dem wievielten Dart man reinkam
 export function addVisit(m, score, bust, darts, doubles, inDarts) {
   const e = { score: score, bust: !!bust, darts: darts || 3, doubles: doubles || 0 };
   if (typeof inDarts === "number") e.inDarts = inDarts;
@@ -190,15 +193,15 @@ export function summary(m) {
       t140: st.t140,
       darts: st.darts,
       n180: st.n180,
+      n171: st.n171,   // 171–179, zählen in der Statistik als 180er
       hiCo: st.hiCo,
       bestLeg: st.bestLeg,
       doubles: st.doubles,
       checkouts: st.checkouts,
       miss: Math.max(0, st.doubles - st.checkouts),
-      // Double In: Darts aufs Doppel, Treffer, Ø Darts bis rein
+      // Double In: Darts aufs Doppel, Treffer
       inTry: st.inTry,
       inHit: st.inHit,
-      inAvg: st.inHit ? st.inDarts / st.inHit : null,
     };
   });
 }

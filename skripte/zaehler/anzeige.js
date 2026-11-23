@@ -265,7 +265,7 @@ function inputArea(s) {
   const rest = s.rest[s.turn];
   const canCheck = isFinish(rest, m.format.aus);
   const pv = preview(s);
-  const hint = m.format.ein === "double" && rest === m.format.start ? "Double In: nur die zählenden Punkte eintragen (0 = nicht reingekommen)" : null;
+  const hint = m.format.ein === "double" && rest === m.format.start ? "Double In: nur die zählenden Punkte eintragen (0 = nicht reingekommen, zählt als 3 Darts aufs Doppel)" : null;
 
   const key = function (label, cls, fn, aria) {
     return el("button", { type: "button", class: "zl-key" + (cls ? " " + cls : ""), text: label, "aria-label": aria || null, onclick: fn });
@@ -327,9 +327,11 @@ function submit(quick, bust) {
     const opts = bustDoubles(m, s);
     return opts ? askFor({ score: score || 0, bust: true, doubleOptions: opts }) : commit(score || 0, true, 3, 0);
   }
-  // Double In, noch nicht drin: Darts aufs Doppel bzw. mit welchem Dart rein
+  // Double In, noch nicht drin: ohne Punkte 3 Fehlwürfe aufs Doppel,
+  // sonst nachfragen, mit welchem Dart man reinkam
   if (waitingForIn(m, s) && !c.checkout) {
-    return askFor({ score: score, inAsk: true, options: score === 0 ? [0, 1, 2, 3] : [1, 2, 3], def: score === 0 ? 3 : null });
+    if (score === 0) return commit(0, false, 3, 0, 3);
+    return askFor({ score: score, inAsk: true, options: [1, 2, 3] });
   }
   if (c.checkout) {
     if (c.dartOptions.length === 1) {
@@ -361,11 +363,11 @@ function askView(s) {
   const dbl = m.format.aus === "master" ? "Darts aufs Finish" : "Darts aufs Doppel";
   let title, sub, values, label, pick;
   if (a.inAsk) {
-    // Double In
-    title = a.score === 0 ? "Nicht reingekommen" : a.score + " geworfen – drin!";
-    sub = (a.score === 0 ? "Darts aufs Doppel (Double In)" : "Mit dem wievielten Dart rein?") + " – " + name;
+    // Double In: mit welchem Dart rein?
+    title = a.score + " geworfen – drin!";
+    sub = "Mit dem wievielten Dart rein? – " + name;
     values = a.options;
-    label = a.score === 0 ? String : function (d) { return d + ". Dart"; };
+    label = function (d) { return d + ". Dart"; };
     pick = function (d) { commit(a.score, false, 3, 0, d); };
   } else if (a.checkout && a.darts === null) {
     title = "Checkout " + a.score + "!";
@@ -387,8 +389,7 @@ function askView(s) {
   return el("div", { class: "zl-ask", role: "dialog", "aria-label": title }, [
     el("div", { class: "zl-ask-title" + (a.checkout || (a.inAsk && a.score > 0) ? " good" : a.bust ? " bad" : "") }, [el("b", { text: title }), el("span", { text: sub })]),
     el("div", { class: "zl-choices" }, values.map(function (v) {
-      // Vorauswahl (z. B. 3 Darts aufs Doppel): hervorgehoben, Enter wählt sie
-      return el("button", { type: "button", class: "zl-key" + (v === a.def ? " def" : ""), text: label(v), onclick: function () { pick(v); } });
+      return el("button", { type: "button", class: "zl-key", text: label(v), onclick: function () { pick(v); } });
     })),
     btn("Abbrechen", "ghost", function () { ui.ask = null; draw(); }),
   ]);
@@ -471,12 +472,11 @@ function doneView(s) {
     ["First 9", function (p) { return p.f9; }, function (v) { return v.toFixed(2).replace(".", ","); }, true],
     ["Checkout", quote, function (v, p) { return Math.round(v * 100) + " %" + " (" + p.checkouts + "/" + p.doubles + ")"; }, true],
     ["Double In", function (p) { return p.inTry ? p.inHit / p.inTry : null; }, function (v, p) { return Math.round(v * 100) + " % (" + p.inHit + "/" + p.inTry + ")"; }, true, "in"],
-    ["Darts bis rein", function (p) { return p.inAvg; }, function (v) { return "Ø " + v.toFixed(1).replace(".", ","); }, false, "in"],
     ["High Finish", function (p) { return p.hiCo; }, String, true],
     ["Kürzestes Leg", function (p) { return p.bestLeg; }, function (v) { return v + " Darts"; }, false],
     ["100+", function (p) { return p.t100; }, String, true],
     ["140+", function (p) { return p.t140; }, String, true],
-    ["180er", function (p) { return p.n180; }, String, true],
+    ["180er", function (p) { return p.n180 + p.n171; }, function (v, p) { return v + (p.n171 ? " (" + p.n171 + "× 171+)" : ""); }, true],
   ];
   // Sieger links, wie oben
   const pa = sum[w], pb = sum[l];
@@ -541,8 +541,7 @@ export function initScorer() {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (ui.ask) {
       if (e.key === "Escape") { e.preventDefault(); ui.ask = null; draw(); }
-      else if (e.key === "Enter" && ui.ask.inAsk && ui.ask.def !== null) { e.preventDefault(); commit(ui.ask.score, false, 3, 0, ui.ask.def); }
-      else if (/^[0-3]$/.test(e.key) && ui.ask.inAsk && ui.ask.options.indexOf(Number(e.key)) >= 0) { e.preventDefault(); commit(ui.ask.score, false, 3, 0, Number(e.key)); }
+      else if (/^[1-3]$/.test(e.key) && ui.ask.inAsk && ui.ask.options.indexOf(Number(e.key)) >= 0) { e.preventDefault(); commit(ui.ask.score, false, 3, 0, Number(e.key)); }
       return;
     }
     if (/^[0-9]$/.test(e.key)) { e.preventDefault(); typeDigit(e.key); }

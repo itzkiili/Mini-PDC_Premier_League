@@ -707,7 +707,6 @@ tr.r1 td.pts, tr.r2 td.pts, tr.r3 td.pts { font-weight: 700; }
 .zl-ask-title span { color: var(--muted); }
 .zl-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 8px; }
 .zl-choices .zl-key { min-height: 84px; font-size: 1.6rem; background: var(--surface); }
-.zl-choices .zl-key.def { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .zl-ask .zl-btn.ghost { align-self: center; }
 
 /* Endbildschirm */

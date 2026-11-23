@@ -74,10 +74,10 @@ function statTiles(st) {
       st.tN ? "in " + st.tN + (st.tN === 1 ? " gezähltem Spiel" : " gezählten Spielen") : "nur mit Live-Zähler"),
     tile("Checkout-Quote", doubles ? pct(st.coHit, doubles) : "–",
       doubles ? st.coHit + " von " + doubles + " Doppeln" : "noch nicht erfasst"),
-    tile("180er", String(st.n180), st.n180 ? "an " + st.days180 + (st.days180 === 1 ? " Spieltag" : " Spieltagen") : "noch keine"),
+    tile("180er", String(st.n180 + st.n171), st.n171 ? "davon " + st.n171 + "× 171+" : st.n180 ? "an " + st.days180 + (st.days180 === 1 ? " Spieltag" : " Spieltagen") : "noch keine"),
     tile("Höchstes Finish", st.hiCo ? String(st.hiCo) : "–", st.coTops ? st.coTops + "× Tagesbestwert" : (st.hiCo ? "Saison-Bestwert" : "noch nicht erfasst")),
     tile("Kürzestes Leg", st.bestLeg ? st.bestLeg + " Darts" : "–", st.legTops ? st.legTops + "× Tagesbestwert" : (st.bestLeg ? "Saison-Bestwert" : "noch nicht erfasst")),
-    st.inTry ? tile("Double-In-Quote", pct(st.inHit, st.inTry), st.inHit + " von " + st.inTry + (st.inLegs ? " · Ø " + (st.inDarts / st.inLegs).toFixed(1).replace(".", ",") + " Darts bis rein" : "")) : null,
+    st.inTry ? tile("Double-In-Quote", pct(st.inHit, st.inTry), st.inHit + " von " + st.inTry + " Darts aufs Doppel") : null,
     st.tippGames ? tile("Tippspiele", st.tippWins + " von " + st.tippGames + " gewonnen", st.tipp ? "+" + st.tipp + " Punkte" : "noch keine Punkte") : null,
   ]);
 }

@@ -11,7 +11,7 @@ import { serialize } from "../skripte/bearbeiten/datei.js";
 import { parseDataFile } from "../skripte/kern/daten.js";
 import { resolveDay, cleanupDay } from "../skripte/auswertung/spieltag.js";
 import { computeStandings } from "../skripte/auswertung/tabelle.js";
-import { doubleOptionsFor, bustDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard, waitingForIn } from "../skripte/zaehler/spiel.js";
+import { doubleOptionsFor, bustDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard, waitingForIn, visitClass } from "../skripte/zaehler/spiel.js";
 
 let ok = 0;
 const fails = [];
@@ -266,16 +266,35 @@ eq("Spezial: High Finish und kürzestes Leg (nur Bonus)", day.bonus, { Anna: { c
   addVisit(m, 0, false, 3, 0);       // Ben: drin, keine Rückfrage
   addVisit(m, 40, false, 1, 1);      // Anna checkt
   const sum = summary(m);
-  eq("Double In: Anna", [sum[0].inTry, sum[0].inHit, sum[0].inAvg], [5, 1, 5]);
-  eq("Double In: Ben", [sum[1].inTry, sum[1].inHit, sum[1].inAvg], [1, 1, 1]);
+  eq("Double In: Anna", [sum[0].inTry, sum[0].inHit], [5, 1]);
+  eq("Double In: Ben", [sum[1].inTry, sum[1].inHit], [1, 1]);
   eq("Normaler Beginn: nie warten", waitingForIn(newMatch(["A", "B"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 }), replay(newMatch(["A", "B"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 }))), false);
   const day = { nr: 1, spieler: ["Anna", "Ben", "", "", "", "", "", ""], modus: { start: 101, ein: "double" } };
   eq("Double In: übernehmen", applyToDay(day, "VF1", m), null);
-  eq("Double In: gespeichert", [day.statistik.VF1.Anna.inTry, day.statistik.VF1.Anna.inHit, day.statistik.VF1.Anna.inDarts, day.statistik.VF1.Ben.inTry], [5, 1, 5, 1]);
+  eq("Double In: gespeichert", [day.statistik.VF1.Anna.inTry, day.statistik.VF1.Anna.inHit, day.statistik.VF1.Anna.inDarts, day.statistik.VF1.Ben.inTry], [5, 1, undefined, 1]);
   const back = parseDataFile(serialize({ name: "Test" }, [day])).tage[0];
   eq("Double In: Datei hin und zurück", back.statistik.VF1.Anna, day.statistik.VF1.Anna);
   const row = computeStandings([resolveDay(back, [])]).rows.filter(function (x) { return x.name === "Anna"; })[0];
-  eq("Double In: Saisonwerte", [row.inTry, row.inHit, row.inDarts, row.inLegs], [5, 1, 5, 1]);
+  eq("Double In: Saisonwerte", [row.inTry, row.inHit], [5, 1]);
+}
+
+// ---------- 171–179 zählen zu den 180ern (Statistik), Bonus nur für 180 ----------
+{
+  eq("visitClass", [170, 171, 177, 179, 180, 140, 100].map(visitClass), ["t140", "t171", "t171", "t171", "t180", "t140", "t100"]);
+  const m = newMatch(["Anna", "Ben"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 });
+  [[177, 0], [180, 0], [104, 0], [40, 1]].forEach(function (v, i) {
+    addVisit(m, v[0], false, v[1] ? 1 : 3, v[1]);
+    if (i < 3) addVisit(m, 0, false, 3, 0);
+  });
+  const p = summary(m)[0];
+  eq("171+: getrennt gezählt", [p.n180, p.n171, p.t140, p.t100], [1, 1, 0, 1]);
+  const day = { nr: 1, spieler: ["Anna", "Ben", "", "", "", "", "", ""] };
+  applyToDay(day, "VF1", m);
+  eq("171+: Statistik n171, Bonus nur 180", [day.statistik.VF1.Anna.n180, day.statistik.VF1.Anna.n171, day.bonus.Anna.n180], [1, 1, 1]);
+  const back = parseDataFile(serialize({ name: "Test" }, [day])).tage[0];
+  eq("171+: Datei hin und zurück", back.statistik.VF1.Anna.n171, 1);
+  const row = computeStandings([resolveDay(back, [])]).rows.filter(function (x) { return x.name === "Anna"; })[0];
+  eq("171+: Saisonwert", row.n171, 1);
 }
 
 if (fails.length) {
