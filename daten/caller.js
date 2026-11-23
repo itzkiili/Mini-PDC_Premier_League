@@ -193,6 +193,7 @@ const CALLER = {
   "name_jonas": "daten/caller/name_jonas.wav?v=1794250380617",
   "name_kilian": "daten/caller/name_kilian.wav?v=1793645022671",
   "name_leon": "daten/caller/name_leon.wav?v=1793645022671",
+  "name_marius": "daten/caller/name_marius.wav?v=1795461127727",
   "name_max": "daten/caller/name_max.wav?v=1793645022671",
   "name_moritz": "daten/caller/name_moritz.wav?v=1793645022671",
   "name_philipp": "daten/caller/name_philipp.wav?v=1793645022671",
