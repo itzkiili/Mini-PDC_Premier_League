@@ -59,7 +59,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 6,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-21T23:26:25.601Z",
+  stand: "2026-11-23T18:03:54.870Z",
 };
 
 const SPIELTAGE = [
@@ -321,6 +321,20 @@ const SPIELTAGE = [
     datum: "23.11.2026",
     modus: { ein: "double" },
     spieler: ["Leon", "Johannes", "Kilian", "Philipp", "Ben", "Tom", "Andres", "Marius"],
-    sieger: {},
+    sieger: {
+      VF1: "Leon",
+    },
+    ergebnisse: {
+      VF1: { "Leon": 2, "Johannes": 0 },
+    },
+    bonus: {
+      "Leon": { co: 26, leg: 35 },
+    },
+    statistik: {
+      VF1: { "Leon": { avg: 38.05, miss: 9, t100: 2, t140: 0, co: 26, leg: 35 }, "Johannes": { avg: 36.27, miss: 8, t100: 1, t140: 0 } },
+    },
+    verlauf: {
+      VF1: [["Leon", 35, 26], ["Leon", 44, 12]],
+    },
   },
 ];
