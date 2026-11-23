@@ -59,7 +59,7 @@ const LIGA = {
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 6,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
-  stand: "2026-11-23T18:24:07.778Z",
+  stand: "2026-11-23T18:52:23.972Z",
 };
 
 const SPIELTAGE = [
@@ -324,22 +324,28 @@ const SPIELTAGE = [
     sieger: {
       VF1: "Leon",
       VF2: "Kilian",
+      VF3: "Ben",
     },
     ergebnisse: {
       VF1: { "Leon": 2, "Johannes": 0 },
       VF2: { "Kilian": 2, "Philipp": 0 },
+      VF3: { "Ben": 2, "Tom": 1 },
     },
     bonus: {
       "Leon": { co: 26, leg: 35 },
       "Kilian": { co: 10, leg: 42 },
+      "Ben": { co: 40, leg: 43 },
+      "Tom": { co: 4, leg: 70 },
     },
     statistik: {
       VF1: { "Leon": { avg: 38.05, miss: 9, t100: 2, t140: 0, co: 26, leg: 35 }, "Johannes": { avg: 36.27, miss: 8, t100: 1, t140: 0 } },
       VF2: { "Kilian": { avg: 32.67, miss: 20, t100: 1, t140: 1, co: 10, leg: 42 }, "Philipp": { avg: 30.33, miss: 4, t100: 0, t140: 0 } },
+      VF3: { "Ben": { avg: 25.16, miss: 42, t100: 0, t140: 0, co: 40, leg: 43 }, "Tom": { avg: 22.81, miss: 26, t100: 0, t140: 0, co: 4, leg: 70 } },
     },
     verlauf: {
       VF1: [["Leon", 35, 26], ["Leon", 44, 12]],
       VF2: [["Kilian", 50, 10], ["Kilian", 42, 10]],
+      VF3: [["Ben", 43, 40], ["Tom", 70, 4], ["Ben", 64, 2]],
     },
   },
 ];
