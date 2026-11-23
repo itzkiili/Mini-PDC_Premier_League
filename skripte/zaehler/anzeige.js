@@ -14,7 +14,7 @@ import { profileAvatar } from "../anzeige/profil.js";
 import { openAdmin } from "../bearbeiten/anmeldung.js";
 import { saveToGitHub } from "../bearbeiten/speichern.js";
 import { minDarts, checkoutWeg } from "./checkout.js";
-import { newMatch, replay, checkVisit, checkoutDoubles, bustDoubles, addVisit, undo, summary, isStandard } from "./spiel.js";
+import { newMatch, replay, checkVisit, checkoutDoubles, bustDoubles, addVisit, undo, summary, isStandard, waitingForIn } from "./spiel.js";
 import { applyToDay, hasResult, resultText } from "./uebernehmen.js";
 import {
   callerSettings, saveCallerSettings, speechAvailable, callerAvailable, callsAtStart, callsAfterVisit, speak, silence, initCaller, warmUp,
@@ -265,7 +265,7 @@ function inputArea(s) {
   const rest = s.rest[s.turn];
   const canCheck = isFinish(rest, m.format.aus);
   const pv = preview(s);
-  const hint = m.format.ein === "double" && rest === m.format.start ? "Double In: nur die zählenden Punkte eintragen" : null;
+  const hint = m.format.ein === "double" && rest === m.format.start ? "Double In: nur die zählenden Punkte eintragen (0 = nicht reingekommen)" : null;
 
   const key = function (label, cls, fn, aria) {
     return el("button", { type: "button", class: "zl-key" + (cls ? " " + cls : ""), text: label, "aria-label": aria || null, onclick: fn });
@@ -327,6 +327,10 @@ function submit(quick, bust) {
     const opts = bustDoubles(m, s);
     return opts ? askFor({ score: score || 0, bust: true, doubleOptions: opts }) : commit(score || 0, true, 3, 0);
   }
+  // Double In, noch nicht drin: Darts aufs Doppel bzw. mit welchem Dart rein
+  if (waitingForIn(m, s) && !c.checkout) {
+    return askFor({ score: score, inAsk: true, options: score === 0 ? [0, 1, 2, 3] : [1, 2, 3], def: score === 0 ? 3 : null });
+  }
   if (c.checkout) {
     if (c.dartOptions.length === 1) {
       const d = checkoutDoubles(c, c.dartOptions[0]);
@@ -340,9 +344,11 @@ function submit(quick, bust) {
 
 function askFor(a) { ui.ask = a; ui.input = ""; ui.error = ""; draw(); }
 
-function commit(score, bust, darts, doubles) {
+function commit(score, bust, darts, doubles, inDarts) {
   const before = replay(cur.match);
-  addVisit(cur.match, score, bust, darts, doubles);
+  // Checkout direkt aus dem Startwert (Double In und Out in einer Aufnahme): rein mit dem 1. Dart
+  if (inDarts === undefined && waitingForIn(cur.match, before) && !bust && score > 0) inDarts = 1;
+  addVisit(cur.match, score, bust, darts, doubles, inDarts);
   ui.ask = null; ui.input = ""; ui.error = "";
   saveCur(); draw();
   call(callsAfterVisit(cur.match, before, replay(cur.match), callerSettings().lang));
@@ -354,7 +360,14 @@ function askView(s) {
   const name = m.players[s.turn];
   const dbl = m.format.aus === "master" ? "Darts aufs Finish" : "Darts aufs Doppel";
   let title, sub, values, label, pick;
-  if (a.checkout && a.darts === null) {
+  if (a.inAsk) {
+    // Double In
+    title = a.score === 0 ? "Nicht reingekommen" : a.score + " geworfen – drin!";
+    sub = (a.score === 0 ? "Darts aufs Doppel (Double In)" : "Mit dem wievielten Dart rein?") + " – " + name;
+    values = a.options;
+    label = a.score === 0 ? String : function (d) { return d + ". Dart"; };
+    pick = function (d) { commit(a.score, false, 3, 0, d); };
+  } else if (a.checkout && a.darts === null) {
     title = "Checkout " + a.score + "!";
     sub = "Mit dem wievielten Dart?";
     values = a.checkout.dartOptions;
@@ -372,9 +385,10 @@ function askView(s) {
     pick = function (d) { commit(a.score, !!a.bust, a.checkout ? a.darts : 3, d); };
   }
   return el("div", { class: "zl-ask", role: "dialog", "aria-label": title }, [
-    el("div", { class: "zl-ask-title" + (a.checkout ? " good" : a.bust ? " bad" : "") }, [el("b", { text: title }), el("span", { text: sub })]),
+    el("div", { class: "zl-ask-title" + (a.checkout || (a.inAsk && a.score > 0) ? " good" : a.bust ? " bad" : "") }, [el("b", { text: title }), el("span", { text: sub })]),
     el("div", { class: "zl-choices" }, values.map(function (v) {
-      return el("button", { type: "button", class: "zl-key", text: label(v), onclick: function () { pick(v); } });
+      // Vorauswahl (z. B. 3 Darts aufs Doppel): hervorgehoben, Enter wählt sie
+      return el("button", { type: "button", class: "zl-key" + (v === a.def ? " def" : ""), text: label(v), onclick: function () { pick(v); } });
     })),
     btn("Abbrechen", "ghost", function () { ui.ask = null; draw(); }),
   ]);
@@ -456,6 +470,8 @@ function doneView(s) {
     ["Average", function (p) { return p.avg; }, function (v) { return v.toFixed(2).replace(".", ","); }, true],
     ["First 9", function (p) { return p.f9; }, function (v) { return v.toFixed(2).replace(".", ","); }, true],
     ["Checkout", quote, function (v, p) { return Math.round(v * 100) + " %" + " (" + p.checkouts + "/" + p.doubles + ")"; }, true],
+    ["Double In", function (p) { return p.inTry ? p.inHit / p.inTry : null; }, function (v, p) { return Math.round(v * 100) + " % (" + p.inHit + "/" + p.inTry + ")"; }, true, "in"],
+    ["Darts bis rein", function (p) { return p.inAvg; }, function (v) { return "Ø " + v.toFixed(1).replace(".", ","); }, false, "in"],
     ["High Finish", function (p) { return p.hiCo; }, String, true],
     ["Kürzestes Leg", function (p) { return p.bestLeg; }, function (v) { return v + " Darts"; }, false],
     ["100+", function (p) { return p.t100; }, String, true],
@@ -466,7 +482,7 @@ function doneView(s) {
   const pa = sum[w], pb = sum[l];
   const table = el("div", { class: "zl-stats" }, [
     el("div", { class: "zl-stat head" }, [el("b", { text: pa.name }), el("span"), el("b", { text: pb.name })]),
-  ].concat(stats.map(function (row) {
+  ].concat(stats.filter(function (row) { return row[4] !== "in" || m.format.ein === "double"; }).map(function (row) {
     const va = row[1](pa), vb = row[1](pb);
     const has = function (v) { return v !== null && v !== undefined; };
     let better = -1;
@@ -525,6 +541,8 @@ export function initScorer() {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (ui.ask) {
       if (e.key === "Escape") { e.preventDefault(); ui.ask = null; draw(); }
+      else if (e.key === "Enter" && ui.ask.inAsk && ui.ask.def !== null) { e.preventDefault(); commit(ui.ask.score, false, 3, 0, ui.ask.def); }
+      else if (/^[0-3]$/.test(e.key) && ui.ask.inAsk && ui.ask.options.indexOf(Number(e.key)) >= 0) { e.preventDefault(); commit(ui.ask.score, false, 3, 0, Number(e.key)); }
       return;
     }
     if (/^[0-9]$/.test(e.key)) { e.preventDefault(); typeDigit(e.key); }

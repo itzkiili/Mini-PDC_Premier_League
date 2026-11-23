@@ -48,7 +48,9 @@ const HEADER = [
   "//        Doubles (miss), z. B. VF1: { \"Anna\": { avg: 54.3, miss: 4 } }",
   "//        vom Live-Zähler zusätzlich: First-9-Average (f9), Anzahl der",
   "//        Aufnahmen 100–139 (t100) und 140–179 (t140), High Finish (co),",
-  "//        kürzestes Leg in Darts (leg) und Anzahl 180er (n180) in diesem Spiel",
+  "//        kürzestes Leg in Darts (leg) und Anzahl 180er (n180) in diesem Spiel;",
+  "//        bei Double In: Darts aufs Doppel zum Reinkommen (inTry), wie oft",
+  "//        reingekommen (inHit) und Darts bis rein, über die Legs summiert (inDarts)",
   "//        Checkout-Quote = gewonnene Legs / (gewonnene Legs + Missed Doubles)",
   "//  - verlauf: optional je Spiel die Legs der Reihe nach (vom Live-Zähler):",
   "//        [Sieger, Darts, Checkout], z. B. VF1: [[\"Anna\", 15, 40], [\"Ben\", 18, 32]]",
@@ -180,7 +182,7 @@ function dayLines(day) {
     const parts = Object.keys(sxAll[k]).map(function (n) {
       const ps = sxAll[k][n] || {};
       const f = [];
-      ["avg", "miss", "f9", "t100", "t140", "co", "leg", "n180"].forEach(function (k) {
+      ["avg", "miss", "f9", "t100", "t140", "co", "leg", "n180", "inTry", "inHit", "inDarts"].forEach(function (k) {
         if (toNum(ps[k]) !== null) f.push(k + ": " + toNum(ps[k]));
       });
       return f.length ? q(n) + ": { " + f.join(", ") + " }" : null;

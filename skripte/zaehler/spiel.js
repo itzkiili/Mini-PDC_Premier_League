@@ -53,7 +53,8 @@ export function isStandard(format) {
 
 function emptyStats() {
   return { points: 0, darts: 0, n180: 0, t100: 0, t140: 0, f9Points: 0, f9Darts: 0,
-    hiCo: null, bestLeg: null, doubles: 0, checkouts: 0, visits: [] };
+    hiCo: null, bestLeg: null, doubles: 0, checkouts: 0, visits: [],
+    inTry: 0, inHit: 0, inDarts: 0 };   // Double In: Darts aufs Doppel, reingekommen, Darts bis rein (Summe)
 }
 
 // Aufnahmen zählen: 100+ = 100–139, 140+ = 140–179, 180 extra (wie im Fernsehen)
@@ -62,6 +63,11 @@ export function visitClass(score) {
   if (score >= 140) return "t140";
   if (score >= 100) return "t100";
   return null;
+}
+
+// Double In: ist der Spieler am Zug in diesem Leg noch nicht drin?
+export function waitingForIn(m, s) {
+  return m.format.ein === "double" && !s.done && s.rest[s.turn] === m.format.start;
 }
 
 // ---------------------------------------------------------------------
@@ -84,6 +90,12 @@ export function replay(m) {
     if (before < 9) {
       st.f9Darts += Math.min(e.darts, 9 - before);
       if (!e.bust) st.f9Points += e.score;
+    }
+    // Double In: inDarts = Darts aufs Doppel (ohne Treffer) bzw. der Dart, mit dem
+    // man reinkam; fehlt bei Aufnahmen ohne Rückfrage (älter oder schon drin)
+    if (f.ein === "double" && s.rest[p] === f.start && typeof e.inDarts === "number") {
+      st.inTry += e.inDarts;
+      if (!e.bust && e.score > 0) { st.inHit++; st.inDarts += before + e.inDarts; }
     }
     st.darts += e.darts;
     s.legDarts[p] += e.darts;
@@ -151,8 +163,12 @@ export function checkoutDoubles(c, darts) {
 }
 
 // Aufnahme speichern; darts = Anzahl Darts beim Checkout, sonst 3
-export function addVisit(m, score, bust, darts, doubles) {
-  m.events.push({ score: score, bust: !!bust, darts: darts || 3, doubles: doubles || 0 });
+// inDarts (nur Double In, solange man nicht drin ist): Darts aufs Doppel ohne
+// Treffer, bzw. mit dem wievielten Dart man reinkam
+export function addVisit(m, score, bust, darts, doubles, inDarts) {
+  const e = { score: score, bust: !!bust, darts: darts || 3, doubles: doubles || 0 };
+  if (typeof inDarts === "number") e.inDarts = inDarts;
+  m.events.push(e);
 }
 
 export function undo(m) {
@@ -179,6 +195,10 @@ export function summary(m) {
       doubles: st.doubles,
       checkouts: st.checkouts,
       miss: Math.max(0, st.doubles - st.checkouts),
+      // Double In: Darts aufs Doppel, Treffer, Ø Darts bis rein
+      inTry: st.inTry,
+      inHit: st.inHit,
+      inAvg: st.inHit ? st.inDarts / st.inHit : null,
     };
   });
 }

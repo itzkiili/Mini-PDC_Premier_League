@@ -11,7 +11,7 @@ import { serialize } from "../skripte/bearbeiten/datei.js";
 import { parseDataFile } from "../skripte/kern/daten.js";
 import { resolveDay, cleanupDay } from "../skripte/auswertung/spieltag.js";
 import { computeStandings } from "../skripte/auswertung/tabelle.js";
-import { doubleOptionsFor, bustDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard } from "../skripte/zaehler/spiel.js";
+import { doubleOptionsFor, bustDoubles, newMatch, replay, checkVisit, checkoutDoubles, addVisit, undo, summary, isStandard, waitingForIn } from "../skripte/zaehler/spiel.js";
 
 let ok = 0;
 const fails = [];
@@ -252,6 +252,31 @@ eq("Spezial: Average gespeichert, kein First 9", day.statistik.VF1, { Anna: { av
   eq("Normaler Spieltag zählt Average", [resolveDay(day, []).standard, a2.avgN, a2.avgSum], [true, 1, 85]);
 }
 eq("Spezial: High Finish und kürzestes Leg (nur Bonus)", day.bonus, { Anna: { co: 110, leg: 6 } });
+
+// ---------- Double In ----------
+{
+  const f = { start: 101, ein: "double", aus: "double", legsToWin: 1 };
+  const m = newMatch(["Anna", "Ben"], 0, f);
+  eq("Double In: am Anfang nicht drin", waitingForIn(m, replay(m)), true);
+  addVisit(m, 0, false, 3, 0, 3);    // Anna: 3 Darts aufs Doppel, nicht rein
+  addVisit(m, 40, false, 3, 0, 1);   // Ben: mit dem 1. Dart rein
+  eq("Double In: Anna noch nicht drin", waitingForIn(m, replay(m)), true);
+  addVisit(m, 61, false, 3, 0, 2);   // Anna: mit dem 2. Dart rein, Rest 40
+  eq("Double In: Ben schon drin", waitingForIn(m, replay(m)), false);
+  addVisit(m, 0, false, 3, 0);       // Ben: drin, keine Rückfrage
+  addVisit(m, 40, false, 1, 1);      // Anna checkt
+  const sum = summary(m);
+  eq("Double In: Anna", [sum[0].inTry, sum[0].inHit, sum[0].inAvg], [5, 1, 5]);
+  eq("Double In: Ben", [sum[1].inTry, sum[1].inHit, sum[1].inAvg], [1, 1, 1]);
+  eq("Normaler Beginn: nie warten", waitingForIn(newMatch(["A", "B"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 }), replay(newMatch(["A", "B"], 0, { start: 501, ein: "single", aus: "double", legsToWin: 1 }))), false);
+  const day = { nr: 1, spieler: ["Anna", "Ben", "", "", "", "", "", ""], modus: { start: 101, ein: "double" } };
+  eq("Double In: übernehmen", applyToDay(day, "VF1", m), null);
+  eq("Double In: gespeichert", [day.statistik.VF1.Anna.inTry, day.statistik.VF1.Anna.inHit, day.statistik.VF1.Anna.inDarts, day.statistik.VF1.Ben.inTry], [5, 1, 5, 1]);
+  const back = parseDataFile(serialize({ name: "Test" }, [day])).tage[0];
+  eq("Double In: Datei hin und zurück", back.statistik.VF1.Anna, day.statistik.VF1.Anna);
+  const row = computeStandings([resolveDay(back, [])]).rows.filter(function (x) { return x.name === "Anna"; })[0];
+  eq("Double In: Saisonwerte", [row.inTry, row.inHit, row.inDarts, row.inLegs], [5, 1, 5, 1]);
+}
 
 if (fails.length) {
   console.log("✗ " + fails.length + " von " + (ok + fails.length) + " Tests fehlgeschlagen:\n  " + fails.join("\n  "));
