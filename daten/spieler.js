@@ -22,5 +22,14 @@ const SPIELER = {
     spitzname: "Madhouse Mundi",
     song: "Hey,Wir Woll'n Die Eisbär'n Sehn – Puhdys",
     songLink: "https://open.spotify.com/intl-de/track/2Epf5a8SVylcdU8NShYM4Z?si=4c56bb794a534c1b",
+  },
+  "Leon": {
+    spitzname: "Maverick",
+    song: "Mighty Wings – Cheap Trick",
+    songLink: "https://open.spotify.com/intl-de/track/32SckiFOYb8bwYewY51WA7?si=0bc9526551cd43ab",
+  },
+  "Tom": {
+    bild: "daten/bilder/tom.png",
   }
+
 };

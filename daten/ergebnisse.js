@@ -56,6 +56,7 @@ const LIGA = {
   tippspiele: [
     { name: "Tippspiel Grand Slam", datum: "16.11.2026", tipps: { "Philipp": 16, "Kilian": 8, "Johannes": 14, "Leon": 14, "Ben": 12, "Andres": 12, "Tom": 12 }, punkte: 5 },
   ],
+
   // Dieser Spieltag wird beim Öffnen der Seite angezeigt (weglassen = neuester)
   aktuell: 6,
   // Zeitpunkt der letzten Speicherung (wird automatisch gesetzt)
