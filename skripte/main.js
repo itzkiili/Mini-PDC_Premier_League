@@ -11,6 +11,7 @@
 //    bearbeiten/   Bearbeiten-Modus: Eingabe, Anmeldung, Speichern bei GitHub
 //    app/          Installation als App, Regelwerk-Ansicht, Hell/Dunkel
 //    zaehler/      Live-Zähler: Checkouts, Spiel, Bildschirm, Übernehmen
+//    live/         Live Scoring über Firebase: übertragen und zuschauen
 // =====================================================================
 import { state, render } from "./kern/zustand.js";
 import { initPage } from "./anzeige/seite.js";
@@ -23,6 +24,7 @@ import { initApp } from "./app/installieren.js";
 import { initRulesViewer } from "./app/regelwerk.js";
 import { initPullToRefresh } from "./app/aktualisieren.js";
 import { initScorer } from "./zaehler/anzeige.js";
+import { initLive } from "./live/anzeige.js";
 
 initThemeToggle();
 initPage();
@@ -30,6 +32,7 @@ initSongStop();
 initApp();
 initRulesViewer();
 initScorer();
+initLive();
 
 // Ungespeicherte Änderungen: vor dem Verlassen der Seite nachfragen
 window.addEventListener("beforeunload", function (e) {

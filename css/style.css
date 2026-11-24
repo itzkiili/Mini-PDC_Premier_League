@@ -587,6 +587,30 @@ tr.r1 td.pts, tr.r2 td.pts, tr.r3 td.pts { font-weight: 700; }
 .duel-row { cursor: pointer; }
 .duel-row:focus-visible td { background: var(--surface-2); }
 @media (hover: hover) { .duel-row:hover td { background: var(--surface-2); } }
+/* Live Scoring: Leiste, Hinweis im Turnierbaum, Live-Ansicht */
+.live-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.live-chip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font: inherit; color: inherit; text-align: left;
+  background: var(--surface); border: 1px solid #e5484d; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.live-chip.done { border-color: var(--line); }
+.live-chip .live-what { color: var(--muted); font-size: 0.85rem; }
+.live-dot { color: #e5484d; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.04em; }
+.live-chip.done .live-dot { color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .live-chip:not(.done) .live-dot, .match.live .match-head span:last-child { animation: live-blink 1.6s ease-in-out infinite; } }
+@keyframes live-blink { 50% { opacity: 0.45; } }
+.match.live { border-color: #e5484d; }
+.match.live .match-head span:last-child { color: #e5484d; font-weight: 700; }
+#live-dialog { width: min(760px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); padding: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--text); }
+#live-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+#live-dialog:fullscreen { width: 100vw; max-height: none; height: 100vh; border: 0; border-radius: 0; display: flex; flex-direction: column; }
+#live-dialog:fullscreen .live-body { flex: 1; display: flex; align-items: center; justify-content: center; }
+#live-dialog:fullscreen .zl-play { width: min(1400px, 100%); }
+#live-dialog:fullscreen .zl-rest { font-size: clamp(4rem, 16vw, 12rem); }
+#live-dialog:fullscreen .zl-pname { font-size: clamp(1.4rem, 3vw, 2.6rem); }
+.live-empty { padding: 20px; text-align: center; color: var(--muted); }
+.zl-live { font-size: 0.75rem; font-weight: 800; color: #e5484d; white-space: nowrap; align-self: center; }
+.zl-live.sendet { color: var(--muted); }
+.zl-live.fehler { color: #f5a623; }
+
 /* Live-Zähler */
 .match-foot { border-top: 1px solid var(--line); }
 .zaehlen { display: block; width: 100%; font: inherit; font-size: 0.78rem; font-weight: 600; color: var(--accent);

@@ -13,6 +13,7 @@ import { startDayIdx, setDayHash, dayNr, isPinnedDay } from "./navigation.js";
 import { renderStandings, playedDays, previousRanks } from "./tabelle.js";
 import { renderSeasonFinal } from "./saisonfinale.js";
 import { renderTippspiele } from "./tippspiele.js";
+import { renderLiveBar } from "../live/anzeige.js";
 import { dayView } from "./spieltag.js";
 import { renderNextMatch } from "./naechstes-spiel.js";
 import { renderFooter } from "./fusszeile.js";
@@ -40,6 +41,7 @@ function renderPage() {
   renderSeasonFinal(standings.rows, played.length);
   renderTippspiele();
   renderNameList(standings.rows);
+  renderLiveBar();
   renderDayTabs(resolved);
   renderDay(resolved);
   renderHeader(resolved, standings.rows);

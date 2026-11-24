@@ -11,6 +11,7 @@ import { shareDayLink } from "./navigation.js";
 import { nameBtn } from "./spielerkarte.js";
 import { openCompare } from "./vergleich.js";
 import { openMatchReport } from "./spielbericht.js";
+import { liveFor, openLive } from "../live/anzeige.js";
 import { achievementsOfDay } from "./erfolge.js";
 import { cleanModus, dayModus, vorlageOf, modusText } from "../auswertung/modus.js";
 import {
@@ -204,12 +205,20 @@ function matchEl(day, match, isFinal) {
   if (match.state === "freilos") stateText = "kampflos";
   else if (match.state === "offen") stateText = "offen";
   // Noch nicht gespielt und beide Spieler bekannt: Klick öffnet den Vergleich
-  const preview = !state.editing && match.state === "offen" && match.a.name && match.b.name;
+  // Läuft gerade live: Klick öffnet die Live-Ansicht
+  const live = !state.editing && match.state === "offen" ? liveFor(day.nr, match.id) : null;
+  if (live) stateText = live.done ? "Beendet ›" : "● LIVE ›";
+  const preview = !live && !state.editing && match.state === "offen" && match.a.name && match.b.name;
   if (preview) stateText = "Vorschau ›";
   // Gespielt: Klick öffnet den Spielbericht
   const report = !state.editing && match.state === "gespielt";
   if (report) stateText = "Statistik ›";
-  const attrs = { class: "match" + (isFinal ? " final" : "") + (preview || report ? " preview" : "") };
+  const attrs = { class: "match" + (isFinal ? " final" : "") + (preview || report || live ? " preview" : "") + (live && !live.done ? " live" : "") };
+  if (live) {
+    const key = live.key;
+    Object.assign(attrs, clickable(function () { openLive(key); }));
+    attrs.title = "Live ansehen";
+  }
   if (preview) {
     Object.assign(attrs, clickable(function () { openCompare(match.a.name, match.b.name); }));
     attrs.title = match.a.name + " und " + match.b.name + " vergleichen";
